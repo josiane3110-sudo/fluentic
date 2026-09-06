@@ -1,0 +1,6 @@
+{
+  "name": "Fluentic",
+  "description": "Multilingual language learning platform featuring step-by-step Duolingo-style bubble progression, interactive speaking scenarios, image flashcards, untimed speed drills, friendly grammar rules, and AI practice in 55+ languages.",
+  "requestFramePermissions": ["microphone"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
