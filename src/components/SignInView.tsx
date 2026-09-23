@@ -86,20 +86,19 @@ export const SignInView: React.FC<SignInViewProps> = ({
       className="relative min-h-screen flex items-center justify-center p-4 sm:p-6 z-20"
     >
       <div className="w-full max-w-lg mx-auto space-y-6">
-        {/* Fixed Brand Header */}
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-2">
+        {/* Fixed Header Layout */}
+        <div className="flex flex-wrap items-center justify-between gap-4 px-2">
+          {/* Logo & Tagline Container */}
           <div className="flex items-center gap-3">
-            <FluenticLogo size={36} />
+            <FluenticLogo size={42} />
             <div className="flex flex-col justify-center">
-              <span className="text-2xl font-black tracking-tight text-slate-900 leading-tight">
-                Fluentic
-              </span>
-              <span className="text-[10px] font-bold text-blue-600 tracking-wider uppercase">
-                AI Polyglot Operating System
+              <span className="text-xs font-black text-blue-600 tracking-wider uppercase">
+                AI Polyglot OS
               </span>
             </div>
           </div>
 
+          {/* Language Switcher */}
           <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-600 bg-white/90 backdrop-blur-md px-3 py-1.5 rounded-full border border-slate-200 shadow-xs shrink-0">
             <Globe2 className="w-3.5 h-3.5 text-blue-600" />
             <button
@@ -328,5 +327,7 @@ export const SignInView: React.FC<SignInViewProps> = ({
         </div>
       </div>
     </div>
+  );
+};
   );
 };
