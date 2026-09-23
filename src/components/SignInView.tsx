@@ -6,10 +6,7 @@ import {
   Mail, 
   User, 
   Globe2, 
-  Target, 
-  CheckCircle2, 
-  Award,
-  BookOpen
+  Award
 } from 'lucide-react';
 import { audioSynth } from '../services/audioSynthesizer';
 import { FluenticLogo } from './FluenticLogo';
@@ -88,22 +85,22 @@ export const SignInView: React.FC<SignInViewProps> = ({
       id="fluentic-main-entry-login-page"
       className="relative min-h-screen flex items-center justify-center p-4 sm:p-6 z-20"
     >
-      <div className="w-full max-w-lg mx-auto space-y-5">
-        {/* Brand Header */}
-        <div className="flex items-center justify-between px-2">
-          <div className="flex items-center gap-2">
-            <FluenticLogo size={34} />
-            <div className="flex flex-col">
-              <span className="text-xl font-black tracking-tight text-slate-900 leading-none">
+      <div className="w-full max-w-lg mx-auto space-y-6">
+        {/* Fixed Brand Header */}
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-2">
+          <div className="flex items-center gap-3">
+            <FluenticLogo size={36} />
+            <div className="flex flex-col justify-center">
+              <span className="text-2xl font-black tracking-tight text-slate-900 leading-tight">
                 Fluentic
               </span>
-              <span className="text-[10px] font-semibold text-blue-600 tracking-wider uppercase mt-0.5">
+              <span className="text-[10px] font-bold text-blue-600 tracking-wider uppercase">
                 AI Polyglot Operating System
               </span>
             </div>
           </div>
 
-          <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-600 bg-white/80 backdrop-blur-md px-3 py-1 rounded-full border border-slate-200 shadow-2xs">
+          <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-600 bg-white/90 backdrop-blur-md px-3 py-1.5 rounded-full border border-slate-200 shadow-xs shrink-0">
             <Globe2 className="w-3.5 h-3.5 text-blue-600" />
             <button
               type="button"
@@ -135,8 +132,8 @@ export const SignInView: React.FC<SignInViewProps> = ({
 
         {/* Main Entry Card */}
         <div className="rounded-3xl bg-white/95 backdrop-blur-2xl border border-blue-200/90 shadow-[0_20px_50px_rgba(30,58,138,0.08)] p-6 sm:p-8 space-y-5">
-          <div className="text-center space-y-1">
-            <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-slate-900">
+          <div className="text-center space-y-2">
+            <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-slate-900 leading-snug">
               {isDutch ? 'Kies je Talen & Start de Niveautest' : 'Select Languages & Begin Placement'}
             </h1>
             <p className="text-xs sm:text-sm text-slate-500 max-w-sm mx-auto leading-relaxed">
@@ -168,7 +165,7 @@ export const SignInView: React.FC<SignInViewProps> = ({
 
           {/* Setup & Entry Form */}
           <form onSubmit={handleSubmit} className="space-y-4">
-            {/* 1. Native Language Selector using SearchableLanguageSelect */}
+            {/* 1. Native Language Selector */}
             <div>
               <SearchableLanguageSelect
                 id="signin-native-language-select"
@@ -184,7 +181,7 @@ export const SignInView: React.FC<SignInViewProps> = ({
               />
             </div>
 
-            {/* 2. Target Language Selector using SearchableLanguageSelect */}
+            {/* 2. Target Language Selector */}
             <div>
               <div className="mb-2">
                 <SearchableLanguageSelect
@@ -201,7 +198,7 @@ export const SignInView: React.FC<SignInViewProps> = ({
                 />
               </div>
 
-              {/* Quick Pick Chips for popular target languages */}
+              {/* Quick Pick Chips */}
               <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
                 <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider shrink-0 mr-1">
                   {isDutch ? 'Populair:' : 'Popular:'}
@@ -243,7 +240,7 @@ export const SignInView: React.FC<SignInViewProps> = ({
                   id="login-name-input"
                   type="text"
                   required
-                  placeholder={isDutch ? 'Bijv. Josiane' : 'e.g. Josiane'}
+                  placeholder={isDutch ? 'Bijv. Alex' : 'e.g. Alex'}
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 bg-slate-50/60 hover:bg-white focus:bg-white text-slate-900 placeholder:text-slate-400 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
@@ -269,7 +266,7 @@ export const SignInView: React.FC<SignInViewProps> = ({
               </div>
             </div>
 
-            {/* Submit Button -> Placement Test */}
+            {/* Submit Button */}
             <button
               id="login-start-placement-btn"
               type="submit"
