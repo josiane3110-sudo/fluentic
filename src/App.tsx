@@ -69,20 +69,20 @@ const DEFAULT_USER: UserProfile = {
 };
 
 export function App() {
-  // Never load previous information (name, practices, progress) from persistent storage
+  // Ephemeral session user profile
   const [user, setUser] = useState<UserProfile>(DEFAULT_USER);
 
-  // Always show the main entry login page on load
+  // Main entry authentication state
   const [isSignedIn, setIsSignedIn] = useState<boolean>(false);
 
-  // Hard wipe of all previous records on application mount to guarantee strictly ephemeral session
+  // Hard wipe storage on mount to maintain ephemeral session privacy
   useEffect(() => {
     try {
       localStorage.clear();
       sessionStorage.clear();
       AccountDatabase.clearDatabase();
     } catch {
-      // Ignore storage errors
+      // Ignore storage clear errors
     }
   }, []);
 
@@ -106,7 +106,6 @@ export function App() {
   const [isAITutorOpen, setIsAITutorOpen] = useState(false);
   const [activeLessonNode, setActiveLessonNode] = useState<LearningNode | null>(null);
 
-  // In-memory state only: do NOT save previous information, name, or practices to disk
   const handleUpdateUser = (updated: UserProfile) => {
     setUser(updated);
   };
@@ -129,7 +128,7 @@ export function App() {
     });
   };
 
-  // Handler when completing onboarding & placement
+  // Onboarding & Placement completion handler
   const handleOnboardingComplete = (
     finalProfile: UserProfile,
     chosenTargetLanguage: Language,
@@ -147,7 +146,7 @@ export function App() {
     setIsRetakingPlacement(false);
   };
 
-  // Complete a lesson node
+  // Complete a learning node
   const handleLessonComplete = (xpEarned: number, gemsEarned: number) => {
     if (!activeLessonNode) return;
     const nodeId = activeLessonNode.id;
@@ -158,7 +157,6 @@ export function App() {
       ? user.completedNodeIds
       : [...user.completedNodeIds, nodeId];
 
-    // Increment streak if not yet practiced today
     const nextStreak = user.streakDays === 0 ? 1 : user.streakDays;
     const addedMinutes = activeLessonNode.targetDurationMinutes || 5;
     const nextPracticeMinutes = (user.totalPracticeMinutes || 0) + addedMinutes;
@@ -192,24 +190,20 @@ export function App() {
     }
   };
 
-  // If user is not signed in, ALWAYS show the dedicated clean main entry login page!
+  // Main entry login screen if not signed in
   if (!isSignedIn) {
     return (
       <div className="relative min-h-screen bg-[#f0f4f9] text-slate-900 font-sans selection:bg-blue-200 selection:text-blue-900 antialiased overflow-x-hidden">
-        {/* Living moving background */}
         <AmbientCanvas />
 
-        {/* Dedicated Main Entry Login Page with Language Configuration & Mandatory Placement Test */}
         <SignInView
           initialName=""
           initialEmail=""
-          initialNativeLanguageCode={user.nativeLanguageCode || 'nl'}
+          initialNativeLanguageCode={user.nativeLanguageCode || 'en'}
           initialTargetLanguageCode={activeLanguage?.code || 'es'}
           onSignIn={(name, email, nativeLangCode, targetLangCode) => {
             const targetLang = WORLD_LANGUAGES.find((l) => l.code === targetLangCode) || activeLanguage;
             setActiveLanguage(targetLang);
-            // Fresh in-memory session only - never persisted to disk
-            // MANDATORY PLACEMENT TEST: hasCompletedOnboarding is set to false!
             const brandNew: UserProfile = {
               ...DEFAULT_USER,
               id: `usr-${Date.now()}`,
@@ -221,7 +215,7 @@ export function App() {
               activeLanguage: targetLang.name,
               isGuest: false,
               isSignedIn: true,
-              hasCompletedOnboarding: false, // NO ONE ENTERS WITHOUT PLACEMENT TEST!
+              hasCompletedOnboarding: false,
               totalPracticeMinutes: 0,
               xp: 0,
               gems: 0,
@@ -246,7 +240,7 @@ export function App() {
               activeLanguage: targetLang.name,
               isGuest: true,
               isSignedIn: true,
-              hasCompletedOnboarding: false, // NO ONE ENTERS WITHOUT PLACEMENT TEST!
+              hasCompletedOnboarding: false,
               totalPracticeMinutes: 0,
               xp: 0,
               gems: 0,
@@ -299,14 +293,12 @@ export function App() {
     );
   }
 
-  // If user has not completed onboarding or clicked retake, show the entry page & placement screen
+  // Onboarding & Placement Screen view if onboarding is incomplete
   if (!user.hasCompletedOnboarding || isRetakingPlacement) {
     return (
       <div className="relative min-h-screen bg-[#f0f4f9] text-slate-900 font-sans selection:bg-blue-200 selection:text-blue-900 antialiased overflow-x-hidden">
-        {/* Living moving background */}
         <AmbientCanvas />
 
-        {/* Onboarding & Placement Screen */}
         <OnboardingPlacementView
           initialProfile={user}
           onComplete={handleOnboardingComplete}
@@ -317,10 +309,10 @@ export function App() {
 
   return (
     <div className="relative min-h-screen bg-[#f0f4f9] text-slate-900 font-sans selection:bg-blue-200 selection:text-blue-900 antialiased overflow-x-hidden">
-      {/* Dynamic Living Waves Canvas */}
+      {/* Living Ambient Canvas */}
       <AmbientCanvas />
 
-      {/* Top Horizon Deck */}
+      {/* Top Navigation Deck */}
       <TopHorizonDeck
         user={user}
         activeLanguage={activeLanguage}
@@ -432,12 +424,12 @@ export function App() {
         )}
       </main>
 
-      {/* Floating Spatial Orbit Dock (Bottom Arc Navigation) */}
+      {/* Orbit Dock Navigation Arc */}
       <OrbitDock
         activeTab={activeTab}
         onSelectTab={setActiveTab}
         isPro={user.isPro}
-        nativeLanguageCode={user.nativeLanguageCode || 'nl'}
+        nativeLanguageCode={user.nativeLanguageCode || 'en'}
         soundscapeMode={soundscapeMode}
         onToggleSoundscape={() => {
           const nextMode = soundscapeMode === 'alpha' ? 'mute' : 'alpha';
@@ -446,7 +438,7 @@ export function App() {
         }}
       />
 
-      {/* Command Spotlight Modal (Cmd+K) */}
+      {/* Command Spotlight Modal */}
       <CommandSpotlight
         isOpen={isSpotlightOpen}
         onClose={() => setIsSpotlightOpen(false)}
@@ -476,7 +468,7 @@ export function App() {
         />
       )}
 
-      {/* Floating AI Polyglot Tutor Launch Orb */}
+      {/* Clean Floating AI Tutor Button */}
       <button
         type="button"
         id="launch-ai-tutor-floating-btn"
@@ -484,7 +476,7 @@ export function App() {
           audioSynth.playGentleFeedback();
           setIsAITutorOpen(true);
         }}
-        className="fixed bottom-24 right-5 sm:right-8 z-40 flex items-center gap-2.5 px-4 py-3 rounded-2xl bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-500 text-white font-black text-xs sm:text-sm shadow-xl shadow-blue-500/30 hover:shadow-blue-500/50 hover:scale-105 active:scale-95 transition-all group"
+        className="fixed bottom-24 right-5 sm:right-8 z-40 flex items-center gap-2.5 px-4 py-3 rounded-2xl bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-500 text-white font-bold text-xs sm:text-sm shadow-xl shadow-blue-500/30 hover:shadow-blue-500/50 hover:scale-105 active:scale-95 transition-all group"
         title="Open Fluentic AI Polyglot Tutor"
       >
         <span className="relative flex h-2.5 w-2.5">
@@ -492,10 +484,7 @@ export function App() {
           <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-amber-300"></span>
         </span>
         <Sparkles className="w-4 h-4 fill-white" />
-        <span className="hidden sm:inline">AI Tutor</span>
-        <span className="px-1.5 py-0.5 rounded-md bg-white/20 text-[10px] font-bold">
-          Gemini 3.8
-        </span>
+        <span>AI Tutor</span>
       </button>
 
       {/* AI Tutor Modal */}
