@@ -248,20 +248,22 @@ export const LessonModal: React.FC<LessonModalProps> = ({
                 )}
               </div>
 
-              {/* Target phrase card with audio playback */}
-              {currentExercise.type !== 'listening-comprehension' && (
-                <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200/90 flex items-center justify-between gap-3">
+              {/* Target phrase card with audio playback - shown for speech-pronounce drills, or after answer is checked for review */}
+              {currentExercise.type !== 'listening-comprehension' && (currentExercise.type === 'speech-pronounce' || isAnswerChecked) && (
+                <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200/90 flex items-center justify-between gap-3 animate-fadeIn">
                   <div>
                     <div className="text-base sm:text-lg font-bold text-slate-900">
                       {currentExercise.targetPhrase}
                     </div>
-                    <div className="text-xs text-slate-500">{currentExercise.translation}</div>
+                    {isAnswerChecked && currentExercise.translation && (
+                      <div className="text-xs text-slate-500 mt-0.5">{currentExercise.translation}</div>
+                    )}
                   </div>
                   <div className="flex items-center gap-1">
                     <button
                       id="lesson-audio-play-btn"
                       onClick={() => handlePlayAudio(0.95)}
-                      className="p-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white shadow-xs transition-colors"
+                      className="p-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white shadow-xs transition-colors cursor-pointer"
                       title="Play native audio"
                     >
                       <Volume2 className="w-4 h-4" />
@@ -269,7 +271,7 @@ export const LessonModal: React.FC<LessonModalProps> = ({
                     <button
                       id="lesson-audio-slow-btn"
                       onClick={() => handlePlayAudio(0.65)}
-                      className="p-2 rounded-xl bg-white hover:bg-slate-100 text-slate-600 border border-slate-200 text-xs font-bold"
+                      className="p-2 rounded-xl bg-white hover:bg-slate-100 text-slate-600 border border-slate-200 text-xs font-bold cursor-pointer"
                       title="Slow pronunciation"
                     >
                       0.7x

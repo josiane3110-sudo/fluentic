@@ -8,8 +8,9 @@ import {
   LearningNode 
 } from './types';
 import { WORLD_LANGUAGES } from './data/languages';
-import { CryptoStorage, STORAGE_KEY_PROFILE } from './services/cryptoStorage';
+import { CryptoStorage, STORAGE_KEY_PROFILE, STORAGE_KEY_CARDS } from './services/cryptoStorage';
 import { audioSynth } from './services/audioSynthesizer';
+import { AccountDatabase, STORAGE_KEY_ACCOUNTS_DB } from './services/accountDatabase';
 
 import { Sparkles } from 'lucide-react';
 
@@ -21,6 +22,7 @@ import { CommandSpotlight } from './components/CommandSpotlight';
 import { AuthModal } from './components/AuthModal';
 import { LessonModal } from './components/LessonModal';
 import { OnboardingPlacementView } from './components/OnboardingPlacementView';
+import { SignInView } from './components/SignInView';
 import { AITutorModal } from './components/AITutorModal';
 
 // Views
@@ -28,30 +30,32 @@ import { HomeView } from './components/views/HomeView';
 import { DuolingoPathView } from './components/views/DuolingoPathView';
 import { SpeechLabView } from './components/views/SpeechLabView';
 import { DialogueTheatreView } from './components/views/DialogueTheatreView';
-import { FsrsVaultView } from './components/views/FsrsVaultView';
 import { DailyDisciplinesView } from './components/views/DailyDisciplinesView';
 import { ProStudioView } from './components/views/ProStudioView';
 import { SpeedTestView } from './components/views/SpeedTestView';
 import { GrammarModuleView } from './components/views/GrammarModuleView';
 
 const DEFAULT_USER: UserProfile = {
-  id: 'usr-guest-001',
+  id: 'usr-fresh-001',
   name: '',
-  email: 'explorer@fluentic.local',
-  avatar: 'PE',
+  email: '',
+  avatar: 'FL',
   isGuest: true,
   isPro: false,
-  hasCompletedOnboarding: false,
+  hasCompletedOnboarding: true,
   nativeLanguageCode: 'en',
   targetPace: 'dedicated',
   placementScore: 0,
   xp: 0,
   level: 1,
-  gems: 50,
+  gems: 0,
   streakDays: 0,
+  speakingPunctuation: 0,
+  speakingScore: 0,
+  totalPracticeMinutes: 0,
   streakShields: 0,
   streakProtected: false,
-  activeLanguageCode: 'es',
+  activeLanguageCode: 'en',
   activeCefr: 'A1',
   completedNodeIds: [],
   nodeCrowns: {},
@@ -59,13 +63,28 @@ const DEFAULT_USER: UserProfile = {
   dailyGoalCompleted: false,
   weeklyActivity: [0, 0, 0, 0, 0, 0, 0],
   unlockedAchievements: [],
+  claimedAchievements: [],
+  isSignedIn: false,
   dailyQuests: [],
 };
 
 export function App() {
-  const [user, setUser] = useState<UserProfile>(() =>
-    CryptoStorage.loadItem<UserProfile>(STORAGE_KEY_PROFILE, DEFAULT_USER)
-  );
+  // Never load previous information (name, practices, progress) from persistent storage
+  const [user, setUser] = useState<UserProfile>(DEFAULT_USER);
+
+  // Always show the main entry login page on load
+  const [isSignedIn, setIsSignedIn] = useState<boolean>(false);
+
+  // Hard wipe of all previous records on application mount to guarantee strictly ephemeral session
+  useEffect(() => {
+    try {
+      localStorage.clear();
+      sessionStorage.clear();
+      AccountDatabase.clearDatabase();
+    } catch {
+      // Ignore storage errors
+    }
+  }, []);
 
   const [activeLanguage, setActiveLanguage] = useState<Language>(() => {
     return (
@@ -87,10 +106,9 @@ export function App() {
   const [isAITutorOpen, setIsAITutorOpen] = useState(false);
   const [activeLessonNode, setActiveLessonNode] = useState<LearningNode | null>(null);
 
-  // Sync profile changes to encrypted local storage
+  // In-memory state only: do NOT save previous information, name, or practices to disk
   const handleUpdateUser = (updated: UserProfile) => {
     setUser(updated);
-    CryptoStorage.saveItem(STORAGE_KEY_PROFILE, updated);
   };
 
   const handleSelectLanguage = (lang: Language) => {
@@ -99,6 +117,7 @@ export function App() {
     handleUpdateUser({
       ...user,
       activeLanguageCode: lang.code,
+      activeLanguage: lang.name,
     });
   };
 
@@ -126,7 +145,6 @@ export function App() {
     );
     setActiveTab('home');
     setIsRetakingPlacement(false);
-    CryptoStorage.saveItem(STORAGE_KEY_PROFILE, finalProfile);
   };
 
   // Complete a lesson node
@@ -142,12 +160,15 @@ export function App() {
 
     // Increment streak if not yet practiced today
     const nextStreak = user.streakDays === 0 ? 1 : user.streakDays;
+    const addedMinutes = activeLessonNode.targetDurationMinutes || 5;
+    const nextPracticeMinutes = (user.totalPracticeMinutes || 0) + addedMinutes;
 
     handleUpdateUser({
       ...user,
       xp: user.xp + xpEarned,
       gems: user.gems + gemsEarned,
       streakDays: nextStreak,
+      totalPracticeMinutes: nextPracticeMinutes,
       completedNodeIds: completedIds,
       nodeCrowns: {
         ...(user.nodeCrowns || {}),
@@ -157,6 +178,126 @@ export function App() {
 
     setActiveLessonNode(null);
   };
+
+  const handleSignOut = () => {
+    audioSynth.playGentleFeedback();
+    setUser(DEFAULT_USER);
+    setIsSignedIn(false);
+    try {
+      localStorage.clear();
+      sessionStorage.clear();
+      AccountDatabase.clearDatabase();
+    } catch {
+      // Ignore
+    }
+  };
+
+  // If user is not signed in, ALWAYS show the dedicated clean main entry login page!
+  if (!isSignedIn) {
+    return (
+      <div className="relative min-h-screen bg-[#f0f4f9] text-slate-900 font-sans selection:bg-blue-200 selection:text-blue-900 antialiased overflow-x-hidden">
+        {/* Living moving background */}
+        <AmbientCanvas />
+
+        {/* Dedicated Main Entry Login Page with Language Configuration & Mandatory Placement Test */}
+        <SignInView
+          initialName=""
+          initialEmail=""
+          initialNativeLanguageCode={user.nativeLanguageCode || 'nl'}
+          initialTargetLanguageCode={activeLanguage?.code || 'es'}
+          onSignIn={(name, email, nativeLangCode, targetLangCode) => {
+            const targetLang = WORLD_LANGUAGES.find((l) => l.code === targetLangCode) || activeLanguage;
+            setActiveLanguage(targetLang);
+            // Fresh in-memory session only - never persisted to disk
+            // MANDATORY PLACEMENT TEST: hasCompletedOnboarding is set to false!
+            const brandNew: UserProfile = {
+              ...DEFAULT_USER,
+              id: `usr-${Date.now()}`,
+              name: name.trim() || 'Explorer',
+              email: email.trim() || `${name.trim().toLowerCase().replace(/\s+/g, '.')}@fluentic.local`,
+              avatar: (name.trim() || 'EX').slice(0, 2).toUpperCase(),
+              nativeLanguageCode: nativeLangCode,
+              activeLanguageCode: targetLang.code,
+              activeLanguage: targetLang.name,
+              isGuest: false,
+              isSignedIn: true,
+              hasCompletedOnboarding: false, // NO ONE ENTERS WITHOUT PLACEMENT TEST!
+              totalPracticeMinutes: 0,
+              xp: 0,
+              gems: 0,
+              streakDays: 0,
+              speakingPunctuation: 0,
+              speakingScore: 0,
+            };
+            setUser(brandNew);
+            setIsSignedIn(true);
+          }}
+          onContinueGuest={(nativeLangCode, targetLangCode) => {
+            const targetLang = WORLD_LANGUAGES.find((l) => l.code === targetLangCode) || activeLanguage;
+            setActiveLanguage(targetLang);
+            const guestProfile: UserProfile = {
+              ...DEFAULT_USER,
+              id: `usr-guest-${Date.now()}`,
+              name: nativeLangCode === 'nl' ? 'Gastgebruiker' : 'Guest Explorer',
+              email: 'guest@fluentic.local',
+              avatar: 'GE',
+              nativeLanguageCode: nativeLangCode,
+              activeLanguageCode: targetLang.code,
+              activeLanguage: targetLang.name,
+              isGuest: true,
+              isSignedIn: true,
+              hasCompletedOnboarding: false, // NO ONE ENTERS WITHOUT PLACEMENT TEST!
+              totalPracticeMinutes: 0,
+              xp: 0,
+              gems: 0,
+              streakDays: 0,
+              speakingPunctuation: 0,
+              speakingScore: 0,
+            };
+            setUser(guestProfile);
+            setIsSignedIn(true);
+          }}
+          onSkipTest={(nativeLangCode, targetLangCode, customName) => {
+            const targetLang = WORLD_LANGUAGES.find((l) => l.code === targetLangCode) || activeLanguage;
+            setActiveLanguage(targetLang);
+            setActiveCefr('A1');
+            const skipProfile: UserProfile = {
+              ...DEFAULT_USER,
+              id: `usr-${Date.now()}`,
+              name: customName?.trim() || (nativeLangCode === 'nl' ? 'Taalstudent' : 'Explorer'),
+              email: 'explorer@fluentic.local',
+              avatar: ((customName?.trim() || 'EX')).slice(0, 2).toUpperCase(),
+              nativeLanguageCode: nativeLangCode,
+              activeLanguageCode: targetLang.code,
+              activeLanguage: targetLang.name,
+              isGuest: true,
+              isSignedIn: true,
+              hasCompletedOnboarding: true,
+              placementScore: 0,
+              speakingPunctuation: 0,
+              speakingScore: 0,
+              placementDiagnosis: nativeLangCode === 'nl'
+                ? 'Niveautest overgeslagen. Je start direct bij ERK-niveau A1 (Beginner).'
+                : 'Placement test skipped. Starting directly at CEFR level A1 (Beginner).',
+              totalPracticeMinutes: 0,
+              xp: 0,
+              gems: 0,
+              streakDays: 0,
+              streakShields: 0,
+              streakProtected: false,
+              weeklyActivity: [0, 0, 0, 0, 0, 0, 0],
+              unlockedAchievements: [],
+              claimedAchievements: [],
+              completedNodeIds: [],
+              nodeCrowns: {},
+            };
+            setUser(skipProfile);
+            setIsSignedIn(true);
+          }}
+        />
+      </div>
+    );
+  }
 
   // If user has not completed onboarding or clicked retake, show the entry page & placement screen
   if (!user.hasCompletedOnboarding || isRetakingPlacement) {
@@ -196,6 +337,8 @@ export function App() {
         onOpenAuthModal={() => setIsAuthModalOpen(true)}
         onOpenProModal={() => setActiveTab('pro-studio')}
         onRetakePlacement={() => setIsRetakingPlacement(true)}
+        onSignOut={handleSignOut}
+        onSelectNativeLanguage={(code) => handleUpdateUser({ ...user, nativeLanguageCode: code })}
       />
 
       {/* Main View Area */}
@@ -206,6 +349,7 @@ export function App() {
             activeLanguage={activeLanguage}
             onNavigate={(tab) => setActiveTab(tab)}
             onStartNextLesson={() => setActiveTab('syllabus')}
+            onUpdateUser={handleUpdateUser}
           />
         )}
 
@@ -232,13 +376,6 @@ export function App() {
 
         {activeTab === 'dialogue-theatre' && (
           <DialogueTheatreView
-            activeLanguage={activeLanguage}
-            user={user}
-          />
-        )}
-
-        {activeTab === 'fsrs-vault' && (
-          <FsrsVaultView
             activeLanguage={activeLanguage}
             user={user}
           />
@@ -280,6 +417,7 @@ export function App() {
                 ...user,
                 xp: user.xp + xp,
                 gems: user.gems + gems,
+                totalPracticeMinutes: (user.totalPracticeMinutes || 0) + 2,
               });
             }}
           />
@@ -299,6 +437,13 @@ export function App() {
         activeTab={activeTab}
         onSelectTab={setActiveTab}
         isPro={user.isPro}
+        nativeLanguageCode={user.nativeLanguageCode || 'nl'}
+        soundscapeMode={soundscapeMode}
+        onToggleSoundscape={() => {
+          const nextMode = soundscapeMode === 'alpha' ? 'mute' : 'alpha';
+          setSoundscapeMode(nextMode);
+          audioSynth.startSoundscape(nextMode);
+        }}
       />
 
       {/* Command Spotlight Modal (Cmd+K) */}

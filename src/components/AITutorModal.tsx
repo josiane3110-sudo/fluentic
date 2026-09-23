@@ -33,6 +33,10 @@ interface Message {
   targetSnippet?: string;
   phoneticGuide?: string;
   translation?: string;
+  grammarAnatomy?: string;
+  mnemonic?: string;
+  realWorldExamples?: { target: string; translation: string }[];
+  commonMistakes?: string;
   tips?: string[];
   followUps?: string[];
   timestamp: string;
@@ -74,7 +78,54 @@ export const AITutorModal: React.FC<AITutorModalProps> = ({
 
   const [inputText, setInputText] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isListening, setIsListening] = useState(false);
+  const recognitionRef = useRef<any>(null);
   const scrollRef = useRef<HTMLDivElement | null>(null);
+
+  const toggleSpeechRecognition = () => {
+    const SpeechRecognition =
+      (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      alert('Speech recognition is not supported in this browser environment.');
+      return;
+    }
+
+    if (isListening) {
+      recognitionRef.current?.stop();
+      setIsListening(false);
+      return;
+    }
+
+    try {
+      const recognition = new SpeechRecognition();
+      recognition.lang = activeLanguage.code === 'nl' ? 'nl-NL' : 'en-US';
+      recognition.interimResults = false;
+      recognition.maxAlternatives = 1;
+
+      recognition.onstart = () => {
+        setIsListening(true);
+      };
+
+      recognition.onresult = (event: any) => {
+        const transcript = event.results[0][0].transcript;
+        setInputText((prev) => (prev ? `${prev} ${transcript}` : transcript));
+        setIsListening(false);
+      };
+
+      recognition.onerror = () => {
+        setIsListening(false);
+      };
+
+      recognition.onend = () => {
+        setIsListening(false);
+      };
+
+      recognitionRef.current = recognition;
+      recognition.start();
+    } catch {
+      setIsListening(false);
+    }
+  };
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -108,6 +159,7 @@ export const AITutorModal: React.FC<AITutorModalProps> = ({
           userMessage: text,
           targetLanguage: activeLanguage.name,
           userLevel: activeCefr,
+          nativeLanguage: user.nativeLanguageCode === 'nl' ? 'Dutch' : 'English',
           context: `User learning ${activeLanguage.name}, CEFR ${activeCefr}`,
         }),
       });
@@ -121,6 +173,10 @@ export const AITutorModal: React.FC<AITutorModalProps> = ({
           targetSnippet: data.targetLanguageSnippet,
           phoneticGuide: data.phoneticGuide,
           translation: data.englishTranslation,
+          grammarAnatomy: data.grammarAnatomy,
+          mnemonic: data.mnemonic,
+          realWorldExamples: data.realWorldExamples,
+          commonMistakes: data.commonMistakes,
           tips: data.quickTips,
           followUps: data.suggestedFollowUps,
           timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
@@ -137,10 +193,17 @@ export const AITutorModal: React.FC<AITutorModalProps> = ({
         sender: 'tutor',
         text: `Great question regarding ${activeLanguage.name}! In native conversation, confidence and continuous exposure matter most. Let's practice with everyday situational phrasing.`,
         targetSnippet: activeLanguage.sampleGreeting,
+        phoneticGuide: activeLanguage.code === 'nl' ? '[ˌɣu.dəˈmɔr.ɣə(n)]' : undefined,
         translation: 'Greetings & connection',
+        grammarAnatomy: 'Formulaic communicative opening with high functional frequency.',
+        mnemonic: 'Anchor the opening with a genuine smile and steady rhythm.',
         tips: [
           `Focus on rhythm and musical cadence in ${activeLanguage.name}.`,
           'Try shadow-reading aloud to internalize natural muscle memory.'
+        ],
+        followUps: [
+          `Teach me 3 slang words in ${activeLanguage.name}`,
+          `Give me a common conversational idiom`
         ],
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       };
@@ -237,6 +300,64 @@ export const AITutorModal: React.FC<AITutorModalProps> = ({
                   </div>
                 )}
 
+                {/* Grammar Anatomy Breakdown */}
+                {m.grammarAnatomy && (
+                  <div className="p-3 rounded-xl bg-indigo-50/80 border border-indigo-100 text-xs text-indigo-950 mt-2 space-y-1">
+                    <span className="font-extrabold uppercase text-[10px] tracking-wider block text-indigo-700">
+                      🔬 Linguistic & Grammar Anatomy:
+                    </span>
+                    <p className="leading-relaxed">{m.grammarAnatomy}</p>
+                  </div>
+                )}
+
+                {/* Memory Anchor / Mnemonic */}
+                {m.mnemonic && (
+                  <div className="p-3 rounded-xl bg-amber-50/90 border border-amber-200/80 text-xs text-amber-950 mt-2 flex items-start gap-2.5">
+                    <Lightbulb className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+                    <div className="space-y-0.5">
+                      <span className="font-extrabold text-[10px] uppercase tracking-wider block text-amber-800">
+                        Memory Anchor & Mnemonic:
+                      </span>
+                      <p className="leading-relaxed font-medium">{m.mnemonic}</p>
+                    </div>
+                  </div>
+                )}
+
+                {/* Real-World Native Dialogue Examples with Native Audio Speaker */}
+                {m.realWorldExamples && m.realWorldExamples.length > 0 && (
+                  <div className="p-3 rounded-xl bg-white border border-slate-200/80 text-xs space-y-2 mt-2">
+                    <span className="font-extrabold uppercase text-[10px] tracking-wider block text-slate-500">
+                      💬 Authentic Native Context:
+                    </span>
+                    {m.realWorldExamples.map((ex, idx) => (
+                      <div key={idx} className="flex items-center justify-between gap-2 p-2 rounded-lg bg-slate-50/80 hover:bg-blue-50/50 transition-colors">
+                        <div className="space-y-0.5">
+                          <div className="font-bold text-slate-900">{ex.target}</div>
+                          <div className="text-slate-500 italic text-[11px]">"{ex.translation}"</div>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => audioSynth.speakPhraseNative(ex.target, activeLanguage.code)}
+                          className="p-2 rounded-md bg-white hover:bg-blue-100 text-blue-600 border border-slate-200 shadow-2xs transition-colors shrink-0"
+                          title="Listen to native pronunciation"
+                        >
+                          <Volume2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Common Learner Trap */}
+                {m.commonMistakes && (
+                  <div className="p-2.5 rounded-xl bg-rose-50 border border-rose-200 text-xs text-rose-900 mt-2 space-y-0.5">
+                    <span className="font-extrabold uppercase text-[10px] tracking-wider block text-rose-600">
+                      ⚠️ Common Learner Trap & Native Nuance:
+                    </span>
+                    <p className="leading-relaxed">{m.commonMistakes}</p>
+                  </div>
+                )}
+
                 {/* Quick Tips */}
                 {m.tips && m.tips.length > 0 && (
                   <div className="pt-1 space-y-1">
@@ -279,7 +400,7 @@ export const AITutorModal: React.FC<AITutorModalProps> = ({
               </div>
               <div className="px-4 py-2.5 rounded-2xl bg-slate-100 text-slate-600 flex items-center gap-2">
                 <span className="w-2 h-2 rounded-full bg-blue-500 animate-ping" />
-                <span>Fluentic AI is crafting your explanation...</span>
+                <span>Fluentic AI is synthesizing master pedagogical insights...</span>
               </div>
             </div>
           )}
@@ -311,12 +432,25 @@ export const AITutorModal: React.FC<AITutorModalProps> = ({
             }}
             className="flex items-center gap-2"
           >
+            <button
+              type="button"
+              onClick={toggleSpeechRecognition}
+              className={`p-3 rounded-xl border transition-all shrink-0 ${
+                isListening
+                  ? 'bg-rose-500 border-rose-600 text-white animate-pulse'
+                  : 'bg-slate-50 hover:bg-slate-100 border-slate-200 text-slate-600'
+              }`}
+              title={isListening ? 'Stop listening' : 'Speak to AI Tutor'}
+            >
+              <Mic className="w-4 h-4" />
+            </button>
+
             <input
               id="ai-tutor-message-input"
               type="text"
               value={inputText}
               onChange={(e) => setInputText(e.target.value)}
-              placeholder={`Ask anything about ${activeLanguage.name} grammar, slang, or conversation...`}
+              placeholder={isListening ? 'Listening to your voice...' : `Ask anything about ${activeLanguage.name} grammar, pronunciation, or slang...`}
               className="flex-1 px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 placeholder:text-slate-400 text-xs sm:text-sm font-medium outline-none focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all shadow-2xs"
             />
             <button

@@ -43,6 +43,8 @@ interface TopHorizonDeckProps {
   onOpenAuthModal: () => void;
   onOpenProModal: () => void;
   onRetakePlacement?: () => void;
+  onSignOut?: () => void;
+  onSelectNativeLanguage?: (langCode: string) => void;
 }
 
 export const TopHorizonDeck: React.FC<TopHorizonDeckProps> = ({
@@ -61,11 +63,17 @@ export const TopHorizonDeck: React.FC<TopHorizonDeckProps> = ({
   onOpenAuthModal,
   onOpenProModal,
   onRetakePlacement,
+  onSignOut,
+  onSelectNativeLanguage,
 }) => {
   const [isLangModalOpen, setIsLangModalOpen] = useState(false);
+  const [matrixTab, setMatrixTab] = useState<'target' | 'native'>('target');
   const [langSearch, setLangSearch] = useState('');
   const [isSoundMenuOpen, setIsSoundMenuOpen] = useState(false);
+  const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const [isDialectDropdownOpen, setIsDialectDropdownOpen] = useState(false);
+  const [showGemsInfo, setShowGemsInfo] = useState(false);
+  const [showStreakInfo, setShowStreakInfo] = useState(false);
   const [volume, setVolume] = useState(0.4);
 
   // Level Locked Modal State
@@ -125,6 +133,20 @@ export const TopHorizonDeck: React.FC<TopHorizonDeckProps> = ({
               <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
             </button>
 
+            {/* Native Language (UI & Translation Language) Badge & Switcher */}
+            <button
+              id="top-native-language-btn"
+              onClick={() => {
+                setMatrixTab('native');
+                setIsLangModalOpen(true);
+              }}
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-300 text-slate-700 text-xs font-bold transition-all hover:border-blue-500 cursor-pointer shadow-2xs"
+              title={user.nativeLanguageCode === 'nl' ? 'Mijn moedertaal: Nederlands (klik om te wijzigen)' : 'My native language (click to change)'}
+            >
+              <Globe className="w-3.5 h-3.5 text-blue-600" />
+              <span>{user.nativeLanguageCode === 'nl' ? '🇳🇱 NL' : (user.nativeLanguageCode || 'en').toUpperCase()}</span>
+            </button>
+
             {/* Dialect Selector Dropdown (if available) */}
             {activeLanguage.dialects && activeLanguage.dialects.length > 0 && (
               <div className="relative hidden md:block">
@@ -174,26 +196,128 @@ export const TopHorizonDeck: React.FC<TopHorizonDeckProps> = ({
             </button>
           )}
 
-          {/* Right Section: Streak, Gems, Soundscape & Profile */}
-          <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
-            {/* Streak Counter */}
-            <div
-              id="top-deck-streak-pill"
-              className="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 py-1.5 rounded-xl bg-orange-50 border border-orange-200 text-orange-700 text-xs font-black shadow-2xs"
-              title={`${user?.streakDays || 0} ${i18n.streak}`}
+          {/* Right Section: Pro Studio Link, Streak, Gems, Soundscape & Profile */}
+          <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
+            {/* Direct Pro Studio Link with Real Payment Plans */}
+            <button
+              id="top-deck-pro-studio-btn"
+              onClick={() => {
+                audioSynth.playGentleFeedback();
+                onOpenProModal();
+              }}
+              className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white text-xs font-black shadow-sm transition-all hover:scale-102 active:scale-98 cursor-pointer border border-amber-400/40"
+              title="Open Fluentic Pro Studio & Real Payment Plans"
             >
-              <Flame className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-orange-500 fill-orange-500 animate-pulse" />
-              <span>{user?.streakDays || 0}</span>
+              <Crown className="w-3.5 h-3.5 fill-white text-white" />
+              <span>Pro Studio</span>
+              <span className="hidden sm:inline px-1 py-0.2 rounded bg-white/25 text-[10px] uppercase tracking-wider font-extrabold">
+                Plans
+              </span>
+            </button>
+
+            {/* Streak Counter with Interactive Usage Explanation */}
+            <div className="relative">
+              <button
+                type="button"
+                id="top-deck-streak-pill"
+                onClick={() => {
+                  setShowStreakInfo(!showStreakInfo);
+                  setShowGemsInfo(false);
+                }}
+                className="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 py-1.5 rounded-xl bg-orange-50 hover:bg-orange-100 border border-orange-200 text-orange-700 text-xs font-black shadow-2xs transition-colors cursor-pointer"
+                title="Click to see what Day Streak is used for"
+              >
+                <Flame className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-orange-500 fill-orange-500 animate-pulse" />
+                <span>{user?.streakDays || 0}d</span>
+              </button>
+
+              {showStreakInfo && (
+                <div
+                  className="absolute right-0 mt-2 w-64 p-3 rounded-2xl bg-white border border-orange-200 shadow-xl z-50 text-slate-900 animate-in fade-in zoom-in-95"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <div className="flex items-center justify-between pb-1.5 border-b border-orange-100 text-xs font-black text-orange-800">
+                    <span className="flex items-center gap-1.5">
+                      <Flame className="w-4 h-4 fill-orange-500 text-orange-500" />
+                      Day Streak ({user?.streakDays || 0} days)
+                    </span>
+                    <button
+                      onClick={() => setShowStreakInfo(false)}
+                      className="text-slate-400 hover:text-slate-600 text-xs cursor-pointer"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                  <p className="text-[11px] text-slate-600 mt-2 leading-relaxed">
+                    <strong>What is it used for?</strong> Your streak tracks consecutive days of daily language practice.
+                  </p>
+                  <ul className="text-[11px] text-slate-600 mt-1.5 space-y-1 list-disc list-inside">
+                    <li>Unlocks bonus gems at 7, 14, and 30-day milestones.</li>
+                    <li>Protects your linguistic momentum and neuroplasticity.</li>
+                    <li>If missed, a <strong>Streak Shield</strong> (50 💎) prevents it from resetting!</li>
+                  </ul>
+                </div>
+              )}
             </div>
 
-            {/* Gems Counter */}
-            <div
-              id="top-deck-gems-pill"
-              className="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 py-1.5 rounded-xl bg-blue-50 border border-blue-200 text-blue-700 text-xs font-black shadow-2xs"
-              title={`${user?.gems || 0} ${i18n.gems}`}
-            >
-              <Gem className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-blue-500 fill-blue-500" />
-              <span>{user?.gems || 0}</span>
+            {/* Gems Counter with Interactive Usage Explanation */}
+            <div className="relative">
+              <button
+                type="button"
+                id="top-deck-gems-pill"
+                onClick={() => {
+                  setShowGemsInfo(!showGemsInfo);
+                  setShowStreakInfo(false);
+                }}
+                className="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 py-1.5 rounded-xl bg-blue-50 hover:bg-blue-100 border border-blue-200 text-blue-700 text-xs font-black shadow-2xs transition-colors cursor-pointer"
+                title="Click to see what Gems are used for"
+              >
+                <Gem className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-blue-500 fill-blue-500" />
+                <span>{user?.gems || 0} 💎</span>
+              </button>
+
+              {showGemsInfo && (
+                <div
+                  className="absolute right-0 mt-2 w-72 p-3 rounded-2xl bg-white border border-blue-200 shadow-xl z-50 text-slate-900 animate-in fade-in zoom-in-95"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <div className="flex items-center justify-between pb-1.5 border-b border-blue-100 text-xs font-black text-blue-800">
+                    <span className="flex items-center gap-1.5">
+                      <Gem className="w-4 h-4 fill-blue-500 text-blue-500" />
+                      Gems Balance ({user?.gems || 0} 💎)
+                    </span>
+                    <button
+                      onClick={() => setShowGemsInfo(false)}
+                      className="text-slate-400 hover:text-slate-600 text-xs cursor-pointer"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                  <p className="text-[11px] text-slate-600 mt-2 leading-relaxed">
+                    <strong>What are Gems used for?</strong> Gems are Fluentic's reward currency earned through lessons and quests:
+                  </p>
+                  <div className="text-[11px] text-slate-600 mt-1.5 space-y-1.5">
+                    <div className="p-1.5 rounded-lg bg-blue-50/70 border border-blue-100">
+                      🛡️ <strong>Streak Freeze Shields:</strong> Buy shields (50 💎) so you never lose your practice streak when busy or traveling.
+                    </div>
+                    <div className="p-1.5 rounded-lg bg-indigo-50/70 border border-indigo-100">
+                      🎭 <strong>Generative AI Roleplays:</strong> Access advanced cultural scenarios in Dialogue Theatre.
+                    </div>
+                    <div className="p-1.5 rounded-lg bg-amber-50/70 border border-amber-100">
+                      ⚡ <strong>Instant Refills:</strong> Refill practice drills and custom speed challenges in the Pro Studio.
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => {
+                      setShowGemsInfo(false);
+                      onOpenProModal();
+                    }}
+                    className="w-full mt-2 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-[11px] font-bold text-center cursor-pointer transition-colors"
+                  >
+                    Open Pro Studio & Plans →
+                  </button>
+                </div>
+              )}
             </div>
 
             {/* Ambient Soundscape Controller */}
@@ -259,18 +383,92 @@ export const TopHorizonDeck: React.FC<TopHorizonDeckProps> = ({
             </div>
 
             {/* Profile Avatar / Auth Trigger */}
-            <button
-              id="top-deck-profile-btn"
-              onClick={onOpenAuthModal}
-              className="flex items-center gap-2 p-1 sm:px-2.5 sm:py-1 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-800 transition-all cursor-pointer"
-            >
-              <div className="w-7 h-7 rounded-lg bg-gradient-to-tr from-blue-600 to-indigo-600 text-white font-black text-xs flex items-center justify-center">
-                {user?.avatar || (user?.name || 'TL').slice(0, 2).toUpperCase()}
-              </div>
-              <span className="hidden sm:inline text-xs font-bold max-w-[90px] truncate">
-                {user?.name || i18n.guestUser}
-              </span>
-            </button>
+            <div className="relative">
+              <button
+                id="top-deck-profile-btn"
+                onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
+                className="flex items-center gap-2 p-1 sm:px-2.5 sm:py-1 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-800 transition-all cursor-pointer"
+              >
+                <div className="w-7 h-7 rounded-lg bg-gradient-to-tr from-blue-600 to-indigo-600 text-white font-black text-xs flex items-center justify-center">
+                  {user?.avatar || (user?.name || 'TL').slice(0, 2).toUpperCase()}
+                </div>
+                <span className="hidden sm:inline text-xs font-bold max-w-[90px] truncate">
+                  {user?.name || i18n.guestUser}
+                </span>
+              </button>
+
+              {/* Profile Dropdown Menu */}
+              {isProfileMenuOpen && (
+                <div 
+                  className="absolute right-0 mt-2 w-64 rounded-2xl bg-white border border-slate-200 shadow-xl p-3 z-50 text-slate-900 space-y-2 animate-in fade-in"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <div className="pb-2 border-b border-slate-100">
+                    <div className="font-extrabold text-sm text-slate-900 truncate">
+                      {user?.name || 'Gastgebruiker'}
+                    </div>
+                    <div className="text-xs text-slate-500 truncate">
+                      {user?.email || 'explorer@fluentic.local'}
+                    </div>
+                    <div className="mt-1 flex items-center gap-1 text-[11px] text-blue-600 font-semibold">
+                      <span>Moedertaal:</span>
+                      <span className="uppercase font-bold">{user?.nativeLanguageCode || 'nl'}</span>
+                      <span>•</span>
+                      <span>Doeltaal:</span>
+                      <span>{activeLanguage.flag} {activeLanguage.name}</span>
+                    </div>
+
+                    {/* Account Database Stats Pill */}
+                    <div className="mt-2 pt-2 border-t border-slate-100 flex items-center justify-between text-[11px] font-bold text-slate-700">
+                      <span className="flex items-center gap-1 text-blue-600">
+                        💎 {user?.gems || 0}
+                      </span>
+                      <span className="flex items-center gap-1 text-orange-600">
+                        🔥 {user?.streakDays || 0}d
+                      </span>
+                      <span className="flex items-center gap-1 text-emerald-600">
+                        ⏱️ {user?.totalPracticeMinutes || 0}m
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="space-y-1">
+                    <button
+                      onClick={() => {
+                        setIsProfileMenuOpen(false);
+                        if (onRetakePlacement) onRetakePlacement();
+                      }}
+                      className="w-full text-left px-3 py-2 rounded-xl text-xs font-bold text-slate-700 hover:bg-blue-50 hover:text-blue-700 transition-colors cursor-pointer"
+                    >
+                      🎯 Niveautest Opnieuw Doen
+                    </button>
+
+                    <button
+                      onClick={() => {
+                        setIsProfileMenuOpen(false);
+                        onOpenAuthModal();
+                      }}
+                      className="w-full text-left px-3 py-2 rounded-xl text-xs font-bold text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
+                    >
+                      🔐 Account & Versleuteling
+                    </button>
+
+                    {onSignOut && (
+                      <button
+                        onClick={() => {
+                          setIsProfileMenuOpen(false);
+                          onSignOut();
+                        }}
+                        className="w-full text-left px-3 py-2 rounded-xl text-xs font-bold text-blue-600 hover:bg-blue-50 transition-colors cursor-pointer border-t border-slate-100 flex items-center justify-between"
+                      >
+                        <span>🔄 Wissel Account / Re-log Database</span>
+                        <span className="text-[10px] bg-blue-100 text-blue-800 px-1.5 py-0.5 rounded-md font-extrabold">DB</span>
+                      </button>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </header>
@@ -294,10 +492,12 @@ export const TopHorizonDeck: React.FC<TopHorizonDeckProps> = ({
                 </div>
                 <div>
                   <h3 className="font-black text-slate-900 text-lg">
-                    {i18n.selectLanguage} & ERK-Niveau
+                    {matrixTab === 'target' ? i18n.selectLanguage : 'Kies Jouw Moedertaal'}
                   </h3>
                   <p className="text-xs text-slate-500">
-                    55 talen beschikbaar. Niveau wisselen vereist het afleggen van de niveautest.
+                    {matrixTab === 'target' 
+                      ? '55 talen beschikbaar om te leren. Kies je doeltaal.'
+                      : 'Kies jouw moedertaal. Alle uitleg en vertalingen worden hierop afgestemd.'}
                   </p>
                 </div>
               </div>
@@ -310,35 +510,67 @@ export const TopHorizonDeck: React.FC<TopHorizonDeckProps> = ({
               </button>
             </div>
 
+            {/* Mode Switcher: Target Language vs Native Language */}
+            <div className="px-5 pt-3 pb-1 bg-slate-50/50 border-b border-slate-100 flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setMatrixTab('target')}
+                className={`px-3 py-1.5 rounded-xl text-xs font-black transition-all cursor-pointer ${
+                  matrixTab === 'target'
+                    ? 'bg-blue-600 text-white shadow-xs'
+                    : 'bg-white text-slate-600 hover:text-slate-900 border border-slate-200'
+                }`}
+              >
+                🎯 Doeltaal om te leren (55)
+              </button>
+              <button
+                type="button"
+                onClick={() => setMatrixTab('native')}
+                className={`px-3 py-1.5 rounded-xl text-xs font-black transition-all cursor-pointer ${
+                  matrixTab === 'native'
+                    ? 'bg-indigo-600 text-white shadow-xs'
+                    : 'bg-white text-slate-600 hover:text-slate-900 border border-slate-200'
+                }`}
+              >
+                🗣️ Mijn Moedertaal (55)
+              </button>
+            </div>
+
             {/* Level Bar & Search Filter */}
             <div className="p-4 bg-white border-b border-slate-100 flex flex-col sm:flex-row gap-3 items-center justify-between">
-              {/* Level Selector with Locks */}
-              <div className="flex flex-wrap items-center gap-1.5 w-full sm:w-auto">
-                <span className="text-xs font-bold text-slate-700 mr-1">{i18n.level}:</span>
-                {(['A1', 'A2', 'B1', 'B2', 'C1', 'C2'] as CefrLevel[]).map((lvl) => {
-                  const isUnlocked = unlockedLevels.includes(lvl);
-                  const isCurrent = activeCefr === lvl;
+              {/* Level Selector with Locks (only in target language mode) */}
+              {matrixTab === 'target' ? (
+                <div className="flex flex-wrap items-center gap-1.5 w-full sm:w-auto">
+                  <span className="text-xs font-bold text-slate-700 mr-1">{i18n.level}:</span>
+                  {(['A1', 'A2', 'B1', 'B2', 'C1', 'C2'] as CefrLevel[]).map((lvl) => {
+                    const isUnlocked = unlockedLevels.includes(lvl);
+                    const isCurrent = activeCefr === lvl;
 
-                  return (
-                    <button
-                      key={lvl}
-                      id={`cefr-filter-${lvl}-btn`}
-                      onClick={() => handleLevelClick(lvl)}
-                      className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all flex items-center gap-1 cursor-pointer ${
-                        isCurrent
-                          ? 'bg-blue-600 text-white shadow-xs'
-                          : isUnlocked
-                          ? 'bg-slate-100 text-slate-800 hover:bg-slate-200 border border-slate-300'
-                          : 'bg-slate-100 text-slate-400 border border-slate-200 hover:border-amber-300 hover:bg-amber-50'
-                      }`}
-                      title={isUnlocked ? `${lvl} (${i18n.unlocked})` : `${lvl} (${i18n.locked})`}
-                    >
-                      <span>{lvl}</span>
-                      {!isUnlocked && <Lock className="w-3 h-3 text-amber-500" />}
-                    </button>
-                  );
-                })}
-              </div>
+                    return (
+                      <button
+                        key={lvl}
+                        id={`cefr-filter-${lvl}-btn`}
+                        onClick={() => handleLevelClick(lvl)}
+                        className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all flex items-center gap-1 cursor-pointer ${
+                          isCurrent
+                            ? 'bg-blue-600 text-white shadow-xs'
+                            : isUnlocked
+                            ? 'bg-slate-100 text-slate-800 hover:bg-slate-200 border border-slate-300'
+                            : 'bg-slate-100 text-slate-400 border border-slate-200 hover:border-amber-300 hover:bg-amber-50'
+                        }`}
+                        title={isUnlocked ? `${lvl} (${i18n.unlocked})` : `${lvl} (${i18n.locked})`}
+                      >
+                        <span>{lvl}</span>
+                        {!isUnlocked && <Lock className="w-3 h-3 text-amber-500" />}
+                      </button>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div className="text-xs font-semibold text-slate-600">
+                  Selecteer een taal om direct als moedertaal in te stellen:
+                </div>
+              )}
 
               {/* Search input */}
               <div className="relative w-full sm:w-64">
@@ -356,14 +588,23 @@ export const TopHorizonDeck: React.FC<TopHorizonDeckProps> = ({
             {/* Language Grid */}
             <div className="overflow-y-auto p-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
               {filteredLanguages.map((lang) => {
-                const isSelected = activeLanguage.code === lang.code;
+                const isSelected = matrixTab === 'target' 
+                  ? activeLanguage.code === lang.code 
+                  : (user.nativeLanguageCode || 'nl') === lang.code;
+
                 return (
                   <button
                     key={lang.code}
                     id={`matrix-lang-${lang.code}-btn`}
                     onClick={() => {
                       audioSynth.playSuccessChime();
-                      onSelectLanguage(lang);
+                      if (matrixTab === 'target') {
+                        onSelectLanguage(lang);
+                      } else {
+                        if (onSelectNativeLanguage) {
+                          onSelectNativeLanguage(lang.code);
+                        }
+                      }
                       setIsLangModalOpen(false);
                     }}
                     className={`flex items-start gap-3 p-3 rounded-2xl border text-left transition-all cursor-pointer ${

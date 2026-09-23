@@ -219,19 +219,38 @@ export const ProStudioView: React.FC<ProStudioViewProps> = ({
 
           {/* Gems Section */}
           <div className="space-y-4">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
               <div>
                 <h3 className="text-lg font-black text-slate-900 flex items-center gap-2">
                   <Gem className="w-5 h-5 text-blue-500 fill-blue-500" />
                   <span>Gem Vault Packages</span>
                 </h3>
                 <p className="text-xs text-slate-500">
-                  Instant gem credits to refill streak shields and wager in Grand Arena duels.
+                  Instantly credit gems to purchase Streak Shields (50 💎) and unlock Pro AI scenarios.
                 </p>
               </div>
-              <span className="px-3 py-1 rounded-xl bg-blue-50 text-blue-700 font-black text-xs border border-blue-200 font-mono">
-                Balance: {user.gems} 💎
+              <span className="px-3 py-1 rounded-xl bg-blue-50 text-blue-700 font-black text-xs border border-blue-200 font-mono self-start sm:self-auto">
+                Current Balance: {user.gems} 💎
               </span>
+            </div>
+
+            {/* Explicit Gems Purpose Explainer Banner */}
+            <div className="p-4 rounded-2xl bg-blue-50/70 border border-blue-200/80 space-y-2 text-xs">
+              <div className="font-extrabold text-blue-900 flex items-center gap-1.5">
+                <Sparkles className="w-4 h-4 text-blue-600" />
+                <span>What are Gems used for?</span>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 text-[11px] text-slate-700">
+                <div className="p-2 rounded-xl bg-white border border-blue-100">
+                  🛡️ <strong>Streak Shields (50 💎):</strong> Freezes your practice streak so traveling or a busy day never resets your count.
+                </div>
+                <div className="p-2 rounded-xl bg-white border border-blue-100">
+                  🎭 <strong>Generative Roleplays:</strong> Unlocks specialized cultural and occupational conversations in Dialogue Theatre.
+                </div>
+                <div className="p-2 rounded-xl bg-white border border-blue-100">
+                  🔬 <strong>Grammar Surgery:</strong> Provides deep acoustic & morphological breakdowns with native sentence diagnostics.
+                </div>
+              </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

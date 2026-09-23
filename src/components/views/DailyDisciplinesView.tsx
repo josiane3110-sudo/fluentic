@@ -26,8 +26,8 @@ export const DailyDisciplinesView: React.FC<DailyDisciplinesViewProps> = ({
   onToggleShield,
 }) => {
   const [rituals, setRituals] = useState([
-    { id: 'r-1', title: 'Complete 1 Constellation Node Lesson', xp: 50, completed: true },
-    { id: 'r-2', title: 'Review 5 Spaced Repetition Cards', xp: 30, completed: true },
+    { id: 'r-1', title: 'Complete 1 Path Lesson', xp: 50, completed: false },
+    { id: 'r-2', title: 'Complete 1 Interactive Grammar Drill', xp: 30, completed: false },
     { id: 'r-3', title: 'Record 1 Phonetic Articulation in Speech Lab', xp: 40, completed: false },
     { id: 'r-4', title: 'Engage in 1 Generative Roleplay Scenario', xp: 60, completed: false },
   ]);

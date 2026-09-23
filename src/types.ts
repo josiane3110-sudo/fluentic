@@ -45,6 +45,17 @@ export interface LearningNode {
 
 export type FsrsRating = 1 | 2 | 3 | 4; // 1: Again, 2: Hard, 3: Good, 4: Easy
 
+export interface DailyQuest {
+  id: string;
+  title: string;
+  category: 'xp' | 'practice' | 'speech' | 'review';
+  target: number;
+  current: number;
+  completed: boolean;
+  rewardGems: number;
+  rewardXp: number;
+}
+
 export interface UserProfile {
   id: string;
   name: string;
@@ -61,6 +72,8 @@ export interface UserProfile {
   placementLatencyMs?: number;
   gems: number;
   streakDays: number;
+  speakingPunctuation?: number;
+  speakingScore?: number;
   streakShields: number;
   streakProtected?: boolean;
   xp: number;
@@ -71,7 +84,12 @@ export interface UserProfile {
   dailyGoalCompleted?: boolean;
   weeklyActivity?: number[];
   unlockedAchievements?: string[];
-  dailyQuests?: any[];
+  claimedAchievements?: string[];
+  isSignedIn?: boolean;
+  totalPracticeMinutes?: number;
+  createdAt?: string;
+  lastLoginAt?: string;
+  dailyQuests?: DailyQuest[];
   activeLanguageCode?: string;
   activeLanguage?: string;
   activeDialect?: string;
@@ -160,7 +178,7 @@ export interface GrammarGap {
   };
 }
 
-export type SpatialViewMode = 'constellation' | 'bento' | 'chrono';
+export type SpatialViewMode = 'units' | 'chrono' | 'constellation' | 'bento';
 
 export type NavigationTab = 
   | 'home'

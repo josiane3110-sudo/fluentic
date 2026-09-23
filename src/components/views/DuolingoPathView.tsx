@@ -1,26 +1,16 @@
 import React from 'react';
 import { 
   Sparkles, 
-  Coffee, 
-  Smile, 
-  Clock, 
-  Compass, 
-  Utensils, 
-  Users, 
-  History, 
-  Plane, 
-  Crown, 
   Check, 
   Lock, 
   Star, 
-  Gift, 
-  Flame,
-  Volume2,
-  BookOpen
+  Crown, 
+  Flame 
 } from 'lucide-react';
 import { LearningNode, UserProfile, Language, CefrLevel } from '../../types';
 import { audioSynth } from '../../services/audioSynthesizer';
 import { getI18n } from '../../services/localization';
+import { WORLD_LANGUAGES } from '../../data/languages';
 
 interface DuolingoPathViewProps {
   user: UserProfile;
@@ -41,406 +31,205 @@ export interface PathUnit {
   milestoneGems: number;
 }
 
-// Generate rich, progressive step-by-step units: Phonics first, then Cafe & Survival Essentials
-export function getDuolingoUnits(language: Language, nativeCode: string = 'nl'): PathUnit[] {
+// Generate rich, progressive step-by-step units with authentic native scripts for any language
+export function getDuolingoUnits(language: Language, nativeCode: string = 'en'): PathUnit[] {
   const isDutch = nativeCode === 'nl';
-  const isLithuanian = language.code === 'lt';
+  const name = language.name;
+  const greeting = language.sampleGreeting || 'Hello';
 
-  if (isLithuanian) {
-    return [
-      {
-        id: 'unit-1',
-        unitNumber: 1,
-        title: isDutch ? 'Litouws Alfabet & Klanken' : 'Lithuanian Phonic Alphabet',
-        subhead: isDutch 
-          ? 'Beheers de speciale letters (ą, č, ę, ė, į, š, ų, ū, ž) en eerste begroetingen' 
-          : 'Master special letters and initial spoken greetings',
-        themeColor: 'from-emerald-500 to-teal-600',
-        accentBg: 'bg-emerald-50 text-emerald-900 border-emerald-200',
-        minCefr: 'A1',
-        milestoneGems: 20,
-        nodes: [
-          {
-            id: 'phonic-1',
-            title: isDutch ? 'Litouws Alfabet & Klinkers' : 'Alphabet & Vowels',
-            nativeTitle: 'Lietuvių abėcėlė',
-            category: 'Foundations',
-            cefr: 'A1',
-            description: isDutch 
-              ? 'Leer de zuivere klinkers en neusletters van het Litouws.' 
-              : 'Listen to pure vowels and unique Lithuanian diacritics.',
-            xpReward: 30,
-            gemReward: 6,
-            targetDurationMinutes: 3,
-            iconName: 'Sparkles',
-            coordinates: { x: 0, y: 0 },
-            exercises: [
-              {
-                id: 'ex-ph1-1',
-                type: 'multiple-choice',
-                prompt: isDutch 
-                  ? 'Kies de meest voorkomende ochtendbegroeting in het Litouws:' 
-                  : 'Select the morning greeting in Lithuanian:',
-                targetPhrase: 'Labas rytas!',
-                translation: isDutch ? 'Goedemorgen!' : 'Good morning!',
-                options: ['Labas rytas!', 'Labanakt', 'Viso gero', 'Ačiū'],
-                correctAnswer: 'Labas rytas!',
-                culturalNote: isDutch 
-                  ? '"Labas rytas" wordt tot het middaguur gebruikt.' 
-                  : 'Used until noon across Lithuania.'
-              },
-              {
-                id: 'ex-ph1-2',
-                type: 'speech-pronounce',
-                prompt: isDutch 
-                  ? 'Spreek deze algemene Litouwse begroeting hardop uit:' 
-                  : 'Speak this greeting aloud:',
-                targetPhrase: 'Laba diena!',
-                translation: isDutch ? 'Goedendag!' : 'Good afternoon!',
-                correctAnswer: 'Laba diena!',
-              },
-              {
-                id: 'ex-ph1-3',
-                type: 'multiple-choice',
-                prompt: isDutch 
-                  ? 'Hoe zeg je "Dank je wel" in het Litouws?' 
-                  : 'How do you say "Thank you" in Lithuanian?',
-                targetPhrase: 'Ačiū',
-                translation: isDutch ? 'Dank je wel' : 'Thank you',
-                options: ['Ačiū', 'Prašau', 'Atsiprašau', 'Taip'],
-                correctAnswer: 'Ačiū'
-              }
-            ]
-          },
-          {
-            id: 'phonic-2',
-            title: isDutch ? 'Diftongen & Klankcombinaties' : 'Diphthongs & Blends',
-            nativeTitle: 'Dvigarsiai (ai, au, ei, ie, uo)',
-            category: 'Foundations',
-            cefr: 'A1',
-            description: isDutch 
-              ? 'Oefen de melodische Litouwse tweeklanken zoals ie en uo.' 
-              : 'Master the musical diphthongs of the Lithuanian language.',
-            xpReward: 35,
-            gemReward: 7,
-            targetDurationMinutes: 3,
-            iconName: 'Sparkles',
-            coordinates: { x: 0, y: 0 },
-            exercises: [
-              {
-                id: 'ex-ph2-1',
-                type: 'multiple-choice',
-                prompt: isDutch ? 'Kies het Litouwse woord voor "Ja":' : 'Select "Yes":',
-                targetPhrase: 'Taip',
-                translation: isDutch ? 'Ja' : 'Yes',
-                options: ['Taip', 'Ne', 'Galbūt', 'Niekada'],
-                correctAnswer: 'Taip'
-              },
-              {
-                id: 'ex-ph2-2',
-                type: 'speech-pronounce',
-                prompt: isDutch ? 'Spreek uit: "Alstublieft":' : 'Pronounce "Please":',
-                targetPhrase: 'Prašau',
-                translation: isDutch ? 'Alstublieft' : 'Please',
-                correctAnswer: 'Prašau'
-              }
-            ]
-          },
-          {
-            id: 'phonic-3',
-            title: isDutch ? 'Aangename Kennismaking' : 'First Meetings',
-            nativeTitle: 'Susipažinimas',
-            category: 'Foundations',
-            cefr: 'A1',
-            description: isDutch 
-              ? 'Begroet nieuwe kennissen en wens mensen een fijne dag.' 
-              : 'Introduce yourself politely in social settings.',
-            xpReward: 40,
-            gemReward: 8,
-            targetDurationMinutes: 4,
-            iconName: 'Sparkles',
-            coordinates: { x: 0, y: 0 },
-            exercises: [
-              {
-                id: 'ex-ph3-1',
-                type: 'multiple-choice',
-                prompt: isDutch ? 'Kies het Litouwse "Aangename kennismaking":' : 'Select "Nice to meet you":',
-                targetPhrase: 'Malonu susipažinti',
-                translation: isDutch ? 'Aangename kennismaking' : 'Pleased to meet you',
-                options: ['Malonu susipažinti', 'Iki pasimatymo', 'Atsiprašau', 'Skanaus'],
-                correctAnswer: 'Malonu susipažinti'
-              }
-            ]
-          }
-        ]
-      },
+  // Specific high-frequency native words and phrases per language
+  const languageLexicon: Record<string, {
+    alphabetTitle: string;
+    vowelsNodeTitle: string;
+    greetingsNodeTitle: string;
+    cafeUnitTitle: string;
+    coffeePhrase: string;
+    waterPhrase: string;
+    billPhrase: string;
+    directionsUnitTitle: string;
+    stationPhrase: string;
+    rightPhrase: string;
+    socialUnitTitle: string;
+    friendPhrase: string;
+    goodbyePhrase: string;
+  }> = {
+    ar: {
+      alphabetTitle: 'الأبجدية العربية والأصوات',
+      vowelsNodeTitle: 'الحركات والحروف (أ، ب، ت)',
+      greetingsNodeTitle: 'التحيات والتعارف',
+      cafeUnitTitle: 'في المقهى والمطعم',
+      coffeePhrase: 'قهوة واحدة، من فضلك.',
+      waterPhrase: 'ماء، من فضلك.',
+      billPhrase: 'الحساب، لو سمحت.',
+      directionsUnitTitle: 'الاتجاهات والتنقل',
+      stationPhrase: 'أين محطة القطار؟',
+      rightPhrase: 'إلى اليمين',
+      socialUnitTitle: 'المحادثة والضيافة',
+      friendPhrase: 'أهلًا وسهلًا بك!',
+      goodbyePhrase: 'مع السلامة!'
+    },
+    ja: {
+      alphabetTitle: 'ひらがな・カタカナと発音',
+      vowelsNodeTitle: '母音と基本音 (あ・い・う・え・お)',
+      greetingsNodeTitle: '基本の挨拶とマナー',
+      cafeUnitTitle: '喫茶店と注文',
+      coffeePhrase: 'コーヒーを一つ、お願いします。',
+      waterPhrase: 'お水をください。',
+      billPhrase: 'お会計をお願いします。',
+      directionsUnitTitle: '道案内と駅',
+      stationPhrase: '駅はどこですか？',
+      rightPhrase: '右に曲がります',
+      socialUnitTitle: '日常会話と友達',
+      friendPhrase: 'お会いできて嬉しいです。',
+      goodbyePhrase: 'さようなら、また会いましょう！'
+    },
+    zh: {
+      alphabetTitle: '汉语拼音与声调',
+      vowelsNodeTitle: '声母与韵母 (a, o, e)',
+      greetingsNodeTitle: '基础问候与礼貌',
+      cafeUnitTitle: '咖啡厅与点餐',
+      coffeePhrase: '请给我一杯咖啡。',
+      waterPhrase: '请给我一杯水。',
+      billPhrase: '请结账，谢谢。',
+      directionsUnitTitle: '问路与交通',
+      stationPhrase: '请问火车站怎么走？',
+      rightPhrase: '向右拐',
+      socialUnitTitle: '社交日常对话',
+      friendPhrase: '很高兴认识你！',
+      goodbyePhrase: '再见，祝你顺心！'
+    },
+    ru: {
+      alphabetTitle: 'Русский алфавит и фонетика',
+      vowelsNodeTitle: 'Гласные и согласные звуки',
+      greetingsNodeTitle: 'Приветствия и этикет',
+      cafeUnitTitle: 'В уютном кафе',
+      coffeePhrase: 'Один кофе, пожалуйста.',
+      waterPhrase: 'Воду, пожалуйста.',
+      billPhrase: 'Счёт, пожалуйста.',
+      directionsUnitTitle: 'Ориентирование в городе',
+      stationPhrase: 'Где находится вокзал?',
+      rightPhrase: 'Направо',
+      socialUnitTitle: 'Дружеское общение',
+      friendPhrase: 'Очень приятно познакомиться!',
+      goodbyePhrase: 'До свидания, всего хорошего!'
+    },
+    de: {
+      alphabetTitle: 'Deutsches Alphabet & Aussprache',
+      vowelsNodeTitle: 'Umlaute & Diphtonge (ä, ö, ü)',
+      greetingsNodeTitle: 'Höfliche Begrüßungen',
+      cafeUnitTitle: 'Im Café & Bäckerei',
+      coffeePhrase: 'Einen Kaffee, bitte.',
+      waterPhrase: 'Ein Mineralwasser, bitte.',
+      billPhrase: 'Die Rechnung, bitte.',
+      directionsUnitTitle: 'Wegbeschreibung in der Stadt',
+      stationPhrase: 'Wo ist der Hauptbahnhof?',
+      rightPhrase: 'Nach rechts',
+      socialUnitTitle: 'Soziales & Bekanntschaften',
+      friendPhrase: 'Freut mich sehr, Sie kennenzulernen!',
+      goodbyePhrase: 'Auf Wiedersehen, bis bald!'
+    },
+    fr: {
+      alphabetTitle: 'Alphabet Français & Phonétique',
+      vowelsNodeTitle: 'Voyelles nasales et accents',
+      greetingsNodeTitle: 'Salutations et politesse',
+      cafeUnitTitle: 'Au Bistro & Café',
+      coffeePhrase: 'Un café, s\'il vous plaît.',
+      waterPhrase: 'De l\'eau, s\'il vous plaît.',
+      billPhrase: 'L\'addition, s\'il vous plaît.',
+      directionsUnitTitle: 'Orientation dans la Ville',
+      stationPhrase: 'Où se trouve la gare ?',
+      rightPhrase: 'À droite',
+      socialUnitTitle: 'Vie Sociale & Rencontres',
+      friendPhrase: 'Enchanté de faire votre connaissance !',
+      goodbyePhrase: 'Au revoir et à bientôt !'
+    },
+    es: {
+      alphabetTitle: 'Alfabeto Español y Fonética',
+      vowelsNodeTitle: 'Vocales puras y sonidos (ñ, ll)',
+      greetingsNodeTitle: 'Saludos y Cortesía',
+      cafeUnitTitle: 'En la Cafetería y Tapas',
+      coffeePhrase: 'Un café solo, por favor.',
+      waterPhrase: 'Un vaso de agua, por favor.',
+      billPhrase: 'La cuenta, por favor.',
+      directionsUnitTitle: 'Direcciones en la Ciudad',
+      stationPhrase: '¿Dónde está la estación?',
+      rightPhrase: 'A la derecha',
+      socialUnitTitle: 'Charla Social y Amigos',
+      friendPhrase: '¡Mucho gusto en conocerte!',
+      goodbyePhrase: '¡Hasta luego, que te vaya bien!'
+    },
+    it: {
+      alphabetTitle: 'Alfabeto Italiano e Fonetica',
+      vowelsNodeTitle: 'Vocali pure e suoni doppi',
+      greetingsNodeTitle: 'Saluti e Convenevoli',
+      cafeUnitTitle: 'Al Bar Italiano',
+      coffeePhrase: 'Un espresso, per favore.',
+      waterPhrase: 'Un bicchiere d\'acqua, per favore.',
+      billPhrase: 'Il conto, per favore.',
+      directionsUnitTitle: 'Orientamento in Città',
+      stationPhrase: 'Dov\'è la stazione ferroviaria?',
+      rightPhrase: 'A destra',
+      socialUnitTitle: 'Amicizia e Vita Sociale',
+      friendPhrase: 'Molto piacere di conoscerti!',
+      goodbyePhrase: 'Arrivederci, a presto!'
+    },
+    lt: {
+      alphabetTitle: 'Lietuvių abėcėlė ir balsiai',
+      vowelsNodeTitle: 'Nosinių balsių tarimas (ą, ę, į, ų)',
+      greetingsNodeTitle: 'Pasisveikinimai ir etiketas',
+      cafeUnitTitle: 'Kavinėje ir restorane',
+      coffeePhrase: 'Vieną kavą, prašau.',
+      waterPhrase: 'Vandens, prašau.',
+      billPhrase: 'Sąskaitą, prašau.',
+      directionsUnitTitle: 'Miesto navigacija',
+      stationPhrase: 'Kur yra geležinkelio stotis?',
+      rightPhrase: 'Į dešinę',
+      socialUnitTitle: 'Bendravimas ir draugystė',
+      friendPhrase: 'Labai malonu susipažinti!',
+      goodbyePhrase: 'Viso gero, iki pasimatymo!'
+    },
+    nl: {
+      alphabetTitle: 'Nederlands Alfabet & Klanken',
+      vowelsNodeTitle: 'Tweeklanken (ij, ui, eu, oe)',
+      greetingsNodeTitle: 'Begroetingen & Kennismaking',
+      cafeUnitTitle: 'In het Café & Terras',
+      coffeePhrase: 'Een koffie, alstublieft.',
+      waterPhrase: 'Een glas water, alstublieft.',
+      billPhrase: 'Mag ik de rekening, alstublieft?',
+      directionsUnitTitle: 'De Weg Vragen in de Stad',
+      stationPhrase: 'Waar is het treinstation?',
+      rightPhrase: 'Naar rechts',
+      socialUnitTitle: 'Gezelligheid & Gesprek',
+      friendPhrase: 'Leuk om je te ontmoeten!',
+      goodbyePhrase: 'Tot ziens, fijne dag!'
+    }
+  };
 
-      {
-        id: 'unit-2',
-        unitNumber: 2,
-        title: isDutch ? 'Café & Overlevingsessenties' : 'Cafe & Survival Essentials',
-        subhead: isDutch 
-          ? 'Bestel koffie en thee, vraag om de rekening en betaal in het café' 
-          : 'Order espresso, pastries, request the check and pay',
-        themeColor: 'from-amber-500 to-orange-600',
-        accentBg: 'bg-amber-50 text-amber-900 border-amber-200',
-        minCefr: 'A1',
-        milestoneGems: 25,
-        nodes: [
-          {
-            id: 'cafe-1',
-            title: isDutch ? 'In het Café Bestellen' : 'At the Cafe',
-            nativeTitle: 'Kavinėje',
-            category: 'Conversation',
-            cefr: 'A1',
-            description: isDutch 
-              ? 'Bestel beleefd een koffie of water in een Litouws café.' 
-              : 'Order your beverage politely in Vilnius or Kaunas.',
-            xpReward: 45,
-            gemReward: 10,
-            targetDurationMinutes: 4,
-            iconName: 'Coffee',
-            coordinates: { x: 0, y: 0 },
-            exercises: [
-              {
-                id: 'ex-cf1-1',
-                type: 'multiple-choice',
-                prompt: isDutch 
-                  ? 'Hoe bestel je beleefd "Eén koffie, alstublieft" in het Litouws?' 
-                  : 'How do you order: "A coffee, please"?',
-                targetPhrase: 'Vieną kavą, prašau.',
-                translation: isDutch ? 'Eén koffie, alstublieft.' : 'A coffee, please.',
-                options: ['Vieną kavą, prašau.', 'Duok man kavos.', 'Nenoriu kavos.', 'Sąskaita.'],
-                correctAnswer: 'Vieną kavą, prašau.',
-                grammarTip: isDutch 
-                  ? '"Kavą" staat in de 4e naamval (accusatief / galininkas) als lijdend voorwerp.' 
-                  : '"Kavą" is in accusative case as the direct object.'
-              },
-              {
-                id: 'ex-cf1-2',
-                type: 'speech-pronounce',
-                prompt: isDutch ? 'Spreek hardop uit: "Water, alstublieft":' : 'Pronounce: "Water, please":',
-                targetPhrase: 'Vandens, prašau.',
-                translation: isDutch ? 'Water, alstublieft.' : 'Water, please.',
-                correctAnswer: 'Vandens, prašau.'
-              }
-            ]
-          },
-          {
-            id: 'cafe-2',
-            title: isDutch ? 'Prijzen & Vragen' : 'Prices & Inquiries',
-            nativeTitle: 'Kainos ir klausimai',
-            category: 'Vocabulary',
-            cefr: 'A1',
-            description: isDutch 
-              ? 'Vraag hoeveel iets kost en begrijp bedragen.' 
-              : 'Inquire about costs and recognize amounts in euros.',
-            xpReward: 45,
-            gemReward: 10,
-            targetDurationMinutes: 4,
-            iconName: 'Coffee',
-            coordinates: { x: 0, y: 0 },
-            exercises: [
-              {
-                id: 'ex-cf2-1',
-                type: 'multiple-choice',
-                prompt: isDutch ? 'Hoe vraag je: "Hoeveel kost dit?"' : 'How do you ask: "How much does it cost?"',
-                targetPhrase: 'Kiek tai kainuoja?',
-                translation: isDutch ? 'Hoeveel kost dit?' : 'How much does it cost?',
-                options: ['Kiek tai kainuoja?', 'Kur yra stotis?', 'Kas čia yra?', 'Kiek valandų?'],
-                correctAnswer: 'Kiek tai kainuoja?'
-              }
-            ]
-          },
-          {
-            id: 'cafe-3',
-            title: isDutch ? 'De Rekening & Betalen' : 'The Bill & Paying',
-            nativeTitle: 'Sąskaitą, prašau',
-            category: 'Conversation',
-            cefr: 'A1',
-            description: isDutch 
-              ? 'Vraag de ober om de rekening en bedank voor de service.' 
-              : 'Ask for the bill, tip, and conclude dining politely.',
-            xpReward: 50,
-            gemReward: 12,
-            targetDurationMinutes: 4,
-            iconName: 'Coffee',
-            coordinates: { x: 0, y: 0 },
-            exercises: [
-              {
-                id: 'ex-cf3-1',
-                type: 'multiple-choice',
-                prompt: isDutch ? 'Hoe vraag je om de rekening?' : 'How do you ask for the bill?',
-                targetPhrase: 'Sąskaitą, prašau.',
-                translation: isDutch ? 'De rekening, alstublieft.' : 'The bill, please.',
-                options: ['Sąskaitą, prašau.', 'Kava baigėsi.', 'Nenoriu mokėti.', 'Iki rytojaus.'],
-                correctAnswer: 'Sąskaitą, prašau.'
-              }
-            ]
-          }
-        ]
-      },
+  const lex = languageLexicon[language.code] || {
+    alphabetTitle: `${name} Script & Sounds`,
+    vowelsNodeTitle: `Pure Vowels & Alphabet`,
+    greetingsNodeTitle: `Essential Greetings`,
+    cafeUnitTitle: `At the Cafe & Essentials`,
+    coffeePhrase: `${greeting} - Coffee, please.`,
+    waterPhrase: `Water, please.`,
+    billPhrase: `The bill, please.`,
+    directionsUnitTitle: `Transit & Navigation`,
+    stationPhrase: `Where is the station?`,
+    rightPhrase: `To the right`,
+    socialUnitTitle: `Conversations & Phrases`,
+    friendPhrase: `Pleased to meet you!`,
+    goodbyePhrase: `Goodbye!`
+  };
 
-      {
-        id: 'unit-3',
-        unitNumber: 3,
-        title: isDutch ? 'Wegwijzers & De Stad' : 'Directions & Navigation',
-        subhead: isDutch 
-          ? 'Vind je weg in Vilnius, vraag naar de trein en vind het hotel' 
-          : 'Find your way around Lithuanian streets and transit',
-        themeColor: 'from-blue-500 to-indigo-600',
-        accentBg: 'bg-blue-50 text-blue-900 border-blue-200',
-        minCefr: 'A2',
-        milestoneGems: 30,
-        nodes: [
-          {
-            id: 'city-1',
-            title: isDutch ? 'De Weg Vragen' : 'Asking Directions',
-            nativeTitle: 'Kur yra...?',
-            category: 'Conversation',
-            cefr: 'A2',
-            description: isDutch 
-              ? 'Vraag waar het treinstation of hotel is.' 
-              : 'Locate landmarks and stations in the city.',
-            xpReward: 50,
-            gemReward: 12,
-            targetDurationMinutes: 5,
-            iconName: 'Compass',
-            coordinates: { x: 0, y: 0 },
-            exercises: [
-              {
-                id: 'ex-ct1-1',
-                type: 'multiple-choice',
-                prompt: isDutch ? 'Hoe vraag je: "Waar is het treinstation?"' : 'How do you ask for the train station?',
-                targetPhrase: 'Kur yra geležinkelio stotis?',
-                translation: isDutch ? 'Waar is het treinstation?' : 'Where is the train station?',
-                options: ['Kur yra geležinkelio stotis?', 'Kur yra viešbutis?', 'Kur yra vaistinė?', 'Kur yra jūra?'],
-                correctAnswer: 'Kur yra geležinkelio stotis?'
-              }
-            ]
-          },
-          {
-            id: 'city-2',
-            title: isDutch ? 'Links & Rechts' : 'Left & Right',
-            nativeTitle: 'Kairėn ir dešinėn',
-            category: 'Conversation',
-            cefr: 'A2',
-            description: isDutch 
-              ? 'Begrijp richtingsaanwijzingen van voorbijgangers.' 
-              : 'Follow directions from locals.',
-            xpReward: 50,
-            gemReward: 12,
-            targetDurationMinutes: 4,
-            iconName: 'Compass',
-            coordinates: { x: 0, y: 0 },
-            exercises: [
-              {
-                id: 'ex-ct2-1',
-                type: 'multiple-choice',
-                prompt: isDutch ? 'Wat betekent "Į dešinę"?' : 'What does "Į dešinę" mean?',
-                targetPhrase: 'Į dešinę',
-                translation: isDutch ? 'Naar rechts' : 'To the right',
-                options: ['Naar rechts', 'Naar links', 'Rechtdoor', 'Terug'],
-                correctAnswer: 'Naar rechts'
-              }
-            ]
-          }
-        ]
-      },
-
-      {
-        id: 'unit-4',
-        unitNumber: 4,
-        title: isDutch ? 'Vrienden & Familie' : 'Friends & Identity',
-        subhead: isDutch 
-          ? 'Vertel over jezelf: "Ik kom uit Nederland", praat over familie' 
-          : 'Share where you are from and describe your family',
-        themeColor: 'from-purple-500 to-pink-600',
-        accentBg: 'bg-purple-50 text-purple-900 border-purple-200',
-        minCefr: 'B1',
-        milestoneGems: 35,
-        nodes: [
-          {
-            id: 'fam-1',
-            title: isDutch ? 'Herkomst & Taal' : 'Origin & Languages',
-            nativeTitle: 'Aš esu iš...',
-            category: 'Conversation',
-            cefr: 'B1',
-            description: isDutch 
-              ? 'Vertel dat je uit Nederland komt en Litouws leert.' 
-              : 'Explain your background and language studies.',
-            xpReward: 60,
-            gemReward: 15,
-            targetDurationMinutes: 5,
-            iconName: 'Users',
-            coordinates: { x: 0, y: 0 },
-            exercises: [
-              {
-                id: 'ex-fm1-1',
-                type: 'multiple-choice',
-                prompt: isDutch ? 'Kies de juiste zin voor: "Ik kom uit Nederland":' : 'Select "I am from the Netherlands":',
-                targetPhrase: 'Aš esu iš Nyderlandų.',
-                translation: isDutch ? 'Ik kom uit Nederland.' : 'I am from the Netherlands.',
-                options: ['Aš esu iš Nyderlandų.', 'Aš gyvenu Vilniuje.', 'Mano vardas Jonas.', 'Aš kalbu lietuviškai.'],
-                correctAnswer: 'Aš esu iš Nyderlandų.'
-              }
-            ]
-          }
-        ]
-      },
-
-      {
-        id: 'unit-5',
-        unitNumber: 5,
-        title: isDutch ? 'Grammatica & De 7 Naamvallen' : 'Lithuanian Grammar & Cases',
-        subhead: isDutch 
-          ? 'De 7 Litouwse naamvallen (linksniai) begrijpen en toepassen' 
-          : 'Master the 7 grammatical cases of the Lithuanian language',
-        themeColor: 'from-indigo-600 to-slate-800',
-        accentBg: 'bg-indigo-50 text-indigo-900 border-indigo-200',
-        minCefr: 'B2',
-        milestoneGems: 40,
-        nodes: [
-          {
-            id: 'gram-1',
-            title: isDutch ? 'De 7 Naamvallen' : 'The 7 Cases',
-            nativeTitle: 'Septyni linksniai',
-            category: 'Grammar',
-            cefr: 'B2',
-            description: isDutch 
-              ? 'Vardininkas, Kilmininkas, Naudininkas, Galininkas, Įnagininkas, Vietininkas, Šauksmininkas.' 
-              : 'Understand why noun endings inflect in Lithuanian.',
-            xpReward: 70,
-            gemReward: 20,
-            targetDurationMinutes: 6,
-            iconName: 'BookOpen',
-            coordinates: { x: 0, y: 0 },
-            exercises: [
-              {
-                id: 'ex-gr1-1',
-                type: 'multiple-choice',
-                prompt: isDutch 
-                  ? 'Welke naamval is "Vardininkas" in de Litouwse grammatica?' 
-                  : 'Which case is "Vardininkas"?',
-                targetPhrase: 'Vardininkas',
-                translation: isDutch ? 'Nominatief (Onderwerp)' : 'Nominative Case',
-                options: ['Nominatief (Onderwerp)', 'Genitief (Bezit / Ontkenning)', 'Datief (Meewerkend)', 'Accusatief (Lijdend)'],
-                correctAnswer: 'Nominatief (Onderwerp)'
-              }
-            ]
-          }
-        ]
-      }
-    ];
-  }
-
-  // Fallback generic units for other languages
   return [
+    // Unit 1: Foundations & Alphabet (A1)
     {
       id: 'unit-1',
       unitNumber: 1,
-      title: isDutch ? 'Fonetiek & Eerste Woorden' : 'Phonic Alphabet',
-      subhead: isDutch ? 'Klinkers, uitspraak en begroetingen' : 'Master native sounds and greetings',
+      title: isDutch ? `${name} Alfabet & Klanken` : `${name} Alphabet & Phonetics`,
+      subhead: isDutch 
+        ? `Beheers de uitspraak, letters en eerste begroetingen in het ${name}` 
+        : `Master script pronunciation, core phonemes, and essential greetings in ${name}`,
       themeColor: 'from-emerald-500 to-teal-600',
       accentBg: 'bg-emerald-50 text-emerald-900 border-emerald-200',
       minCefr: 'A1',
@@ -448,11 +237,13 @@ export function getDuolingoUnits(language: Language, nativeCode: string = 'nl'):
       nodes: [
         {
           id: 'phonic-1',
-          title: isDutch ? 'Basisklanken' : 'First Sounds',
-          nativeTitle: 'Phonetics',
+          title: isDutch ? 'Alfabet & Klinkers' : 'Alphabet & Pure Vowels',
+          nativeTitle: lex.alphabetTitle,
           category: 'Foundations',
           cefr: 'A1',
-          description: isDutch ? 'Oefen de uitspraak van de basisklanken.' : 'Listen to foundational sounds.',
+          description: isDutch 
+            ? `Leer de basisletters en zuivere klanken van het ${name}.` 
+            : `Listen to pure vowels and foundational script of ${name}.`,
           xpReward: 30,
           gemReward: 6,
           targetDurationMinutes: 3,
@@ -460,13 +251,268 @@ export function getDuolingoUnits(language: Language, nativeCode: string = 'nl'):
           coordinates: { x: 0, y: 0 },
           exercises: [
             {
-              id: 'ex-gen1-1',
+              id: 'ex-ph1-1',
               type: 'multiple-choice',
-              prompt: isDutch ? 'Kies de begroeting:' : 'Select greeting:',
-              targetPhrase: language.sampleGreeting || 'Hello',
+              prompt: isDutch 
+                ? `Kies de meest voorkomende begroeting in het ${name}:` 
+                : `Select the standard greeting in ${name}:`,
+              targetPhrase: greeting,
+              translation: isDutch ? 'Hallo / Goedendag!' : 'Hello / Good day!',
+              options: [greeting, lex.goodbyePhrase, lex.billPhrase, lex.rightPhrase],
+              correctAnswer: greeting,
+              culturalNote: isDutch 
+                ? `Universele respectvolle begroeting in het ${name}.` 
+                : `Standard respectful greeting used across native regions.`
+            },
+            {
+              id: 'ex-ph1-2',
+              type: 'speech-pronounce',
+              prompt: isDutch 
+                ? `Spreek deze ${name} begroeting hardop uit:` 
+                : `Speak this ${name} greeting aloud:`,
+              targetPhrase: greeting,
               translation: isDutch ? 'Begroeting' : 'Greeting',
-              options: [language.sampleGreeting || 'Hello', 'Goodbye', 'Please', 'Thanks'],
-              correctAnswer: language.sampleGreeting || 'Hello'
+              correctAnswer: greeting,
+            }
+          ]
+        },
+        {
+          id: 'phonic-2',
+          title: isDutch ? 'Klankcombinaties & Woorden' : 'Phonemes & Core Words',
+          nativeTitle: lex.vowelsNodeTitle,
+          category: 'Foundations',
+          cefr: 'A1',
+          description: isDutch 
+            ? `Oefen authentieke klanken en elementaire woorden.` 
+            : `Practice authentic sound combinations and first survival words.`,
+          xpReward: 35,
+          gemReward: 7,
+          targetDurationMinutes: 3,
+          iconName: 'Sparkles',
+          coordinates: { x: 0, y: 0 },
+          exercises: [
+            {
+              id: 'ex-ph2-1',
+              type: 'multiple-choice',
+              prompt: isDutch 
+                ? `Kies het authentieke ${name} woord voor water:` 
+                : `Select the authentic ${name} expression for water:`,
+              targetPhrase: lex.waterPhrase,
+              translation: isDutch ? 'Water, alstublieft.' : 'Water, please.',
+              options: [lex.waterPhrase, lex.coffeePhrase, lex.rightPhrase, lex.goodbyePhrase],
+              correctAnswer: lex.waterPhrase
+            }
+          ]
+        },
+        {
+          id: 'phonic-3',
+          title: isDutch ? 'Kennismaking & Etiquette' : 'Introductions & Etiquette',
+          nativeTitle: lex.greetingsNodeTitle,
+          category: 'Foundations',
+          cefr: 'A1',
+          description: isDutch 
+            ? `Leer beleefd hallo en tot ziens zeggen.` 
+            : `Introduce yourself politely in social settings.`,
+          xpReward: 40,
+          gemReward: 8,
+          targetDurationMinutes: 4,
+          iconName: 'Sparkles',
+          coordinates: { x: 0, y: 0 },
+          exercises: [
+            {
+              id: 'ex-ph3-1',
+              type: 'multiple-choice',
+              prompt: isDutch 
+                ? `Hoe neem je beleefd afscheid in het ${name}?` 
+                : `How do you say goodbye in ${name}?`,
+              targetPhrase: lex.goodbyePhrase,
+              translation: isDutch ? 'Tot ziens / Vaarwel' : 'Goodbye / Farewell',
+              options: [lex.goodbyePhrase, greeting, lex.coffeePhrase, lex.stationPhrase],
+              correctAnswer: lex.goodbyePhrase
+            }
+          ]
+        }
+      ]
+    },
+
+    // Unit 2: Cafe & Essentials (A1-A2)
+    {
+      id: 'unit-2',
+      unitNumber: 2,
+      title: isDutch ? `Café & Overlevingsessenties` : `Cafe & Survival Essentials`,
+      subhead: isDutch 
+        ? `Bestel drankjes, vraag om de rekening en communiceer in restaurants` 
+        : `Order beverages, ask for the check, and navigate dining comfortably`,
+      themeColor: 'from-amber-500 to-orange-600',
+      accentBg: 'bg-amber-50 text-amber-900 border-amber-200',
+      minCefr: 'A1',
+      milestoneGems: 25,
+      nodes: [
+        {
+          id: 'cafe-1',
+          title: isDutch ? 'In het Café Bestellen' : 'At the Cafe',
+          nativeTitle: lex.cafeUnitTitle,
+          category: 'Conversation',
+          cefr: 'A1',
+          description: isDutch 
+            ? `Bestel beleefd een koffie of drankje in het ${name}.` 
+            : `Order your beverage politely in ${name}.`,
+          xpReward: 45,
+          gemReward: 10,
+          targetDurationMinutes: 4,
+          iconName: 'Coffee',
+          coordinates: { x: 0, y: 0 },
+          exercises: [
+            {
+              id: 'ex-cf1-1',
+              type: 'multiple-choice',
+              prompt: isDutch 
+                ? `Hoe bestel je een koffie in het ${name}?` 
+                : `How do you order coffee in ${name}?`,
+              targetPhrase: lex.coffeePhrase,
+              translation: isDutch ? 'Een koffie, alstublieft.' : 'A coffee, please.',
+              options: [lex.coffeePhrase, lex.waterPhrase, lex.billPhrase, lex.goodbyePhrase],
+              correctAnswer: lex.coffeePhrase
+            },
+            {
+              id: 'ex-cf1-2',
+              type: 'speech-pronounce',
+              prompt: isDutch ? 'Spreek hardop uit: "Water, alstublieft":' : 'Pronounce: "Water, please":',
+              targetPhrase: lex.waterPhrase,
+              translation: isDutch ? 'Water, alstublieft.' : 'Water, please.',
+              correctAnswer: lex.waterPhrase
+            }
+          ]
+        },
+        {
+          id: 'cafe-2',
+          title: isDutch ? 'De Rekening & Betalen' : 'The Bill & Paying',
+          nativeTitle: lex.billPhrase,
+          category: 'Conversation',
+          cefr: 'A1',
+          description: isDutch 
+            ? `Vraag om de rekening en betaal beleefd.` 
+            : `Ask for the check and conclude dining.`,
+          xpReward: 50,
+          gemReward: 12,
+          targetDurationMinutes: 4,
+          iconName: 'Coffee',
+          coordinates: { x: 0, y: 0 },
+          exercises: [
+            {
+              id: 'ex-cf2-1',
+              type: 'multiple-choice',
+              prompt: isDutch ? 'Hoe vraag je om de rekening?' : 'How do you ask for the check?',
+              targetPhrase: lex.billPhrase,
+              translation: isDutch ? 'De rekening, alstublieft.' : 'The check, please.',
+              options: [lex.billPhrase, lex.coffeePhrase, lex.stationPhrase, lex.rightPhrase],
+              correctAnswer: lex.billPhrase
+            }
+          ]
+        }
+      ]
+    },
+
+    // Unit 3: Directions & Transit (A2)
+    {
+      id: 'unit-3',
+      unitNumber: 3,
+      title: isDutch ? `Wegwijzers & De Stad` : `Directions & Navigation`,
+      subhead: isDutch 
+        ? `Vind je weg in de stad, vraag naar het station en begrijp routes` 
+        : `Find your way around native streets, locate stations, and follow directions`,
+      themeColor: 'from-blue-500 to-indigo-600',
+      accentBg: 'bg-blue-50 text-blue-900 border-blue-200',
+      minCefr: 'A2',
+      milestoneGems: 30,
+      nodes: [
+        {
+          id: 'city-1',
+          title: isDutch ? 'De Weg Vragen' : 'Asking Directions',
+          nativeTitle: lex.directionsUnitTitle,
+          category: 'Conversation',
+          cefr: 'A2',
+          description: isDutch 
+            ? `Vraag waar het station of hotel zich bevindt.` 
+            : `Locate landmarks and transit stations in the city.`,
+          xpReward: 50,
+          gemReward: 12,
+          targetDurationMinutes: 5,
+          iconName: 'Compass',
+          coordinates: { x: 0, y: 0 },
+          exercises: [
+            {
+              id: 'ex-ct1-1',
+              type: 'multiple-choice',
+              prompt: isDutch ? `Hoe vraag je naar het station in het ${name}?` : `How do you ask for the train station in ${name}?`,
+              targetPhrase: lex.stationPhrase,
+              translation: isDutch ? 'Waar is het station?' : 'Where is the station?',
+              options: [lex.stationPhrase, lex.rightPhrase, lex.billPhrase, greeting],
+              correctAnswer: lex.stationPhrase
+            }
+          ]
+        },
+        {
+          id: 'city-2',
+          title: isDutch ? 'Links & Rechts' : 'Left & Right',
+          nativeTitle: lex.rightPhrase,
+          category: 'Conversation',
+          cefr: 'A2',
+          description: isDutch ? 'Begrijp richtingsaanwijzingen van locals.' : 'Follow directions from locals.',
+          xpReward: 50,
+          gemReward: 12,
+          targetDurationMinutes: 4,
+          iconName: 'Compass',
+          coordinates: { x: 0, y: 0 },
+          exercises: [
+            {
+              id: 'ex-ct2-1',
+              type: 'multiple-choice',
+              prompt: isDutch ? `Wat betekent deze richting in het ${name}?` : `What does this direction mean in ${name}?`,
+              targetPhrase: lex.rightPhrase,
+              translation: isDutch ? 'Naar rechts' : 'To the right',
+              options: [lex.rightPhrase, lex.stationPhrase, lex.goodbyePhrase, lex.coffeePhrase],
+              correctAnswer: lex.rightPhrase
+            }
+          ]
+        }
+      ]
+    },
+
+    // Unit 4: Social Dialogue & Mastery (B1+)
+    {
+      id: 'unit-4',
+      unitNumber: 4,
+      title: isDutch ? `Sociale Connecties & Gesprekken` : `Social Dialogue & Fluency`,
+      subhead: isDutch 
+        ? `Voer spontane gesprekken met moedertaalsprekers` 
+        : `Hold spontaneous conversations with native speakers`,
+      themeColor: 'from-purple-500 to-violet-600',
+      accentBg: 'bg-purple-50 text-purple-900 border-purple-200',
+      minCefr: 'B1',
+      milestoneGems: 40,
+      nodes: [
+        {
+          id: 'social-1',
+          title: isDutch ? 'Vriendschap Sluiten' : 'Meeting Friends',
+          nativeTitle: lex.socialUnitTitle,
+          category: 'Conversation',
+          cefr: 'B1',
+          description: isDutch ? 'Voer een warm en vriendelijk gesprek.' : 'Engage warmly in social circles.',
+          xpReward: 60,
+          gemReward: 15,
+          targetDurationMinutes: 5,
+          iconName: 'Users',
+          coordinates: { x: 0, y: 0 },
+          exercises: [
+            {
+              id: 'ex-sc1-1',
+              type: 'multiple-choice',
+              prompt: isDutch ? `Hoe begroet je een nieuwe vriend in het ${name}?` : `How do you greet a friend warmly in ${name}?`,
+              targetPhrase: lex.friendPhrase,
+              translation: isDutch ? 'Aangename kennismaking!' : 'Pleased to meet you!',
+              options: [lex.friendPhrase, lex.billPhrase, lex.goodbyePhrase, lex.stationPhrase],
+              correctAnswer: lex.friendPhrase
             }
           ]
         }
@@ -479,11 +525,11 @@ export const DuolingoPathView: React.FC<DuolingoPathViewProps> = ({
   user,
   activeLanguage,
   onSelectNode,
-  onClaimMilestone,
 }) => {
-  const isDutch = (user.nativeLanguageCode || 'nl') === 'nl';
-  const i18n = getI18n(user.nativeLanguageCode || 'nl');
-  const units = getDuolingoUnits(activeLanguage, user.nativeLanguageCode || 'nl');
+  const nativeCode = user.nativeLanguageCode || 'en';
+  const isDutch = nativeCode === 'nl';
+  const i18n = getI18n(nativeCode);
+  const units = getDuolingoUnits(activeLanguage, nativeCode);
   const completedIds = new Set(user.completedNodeIds || []);
 
   let foundFirstActive = false;
@@ -510,12 +556,12 @@ export const DuolingoPathView: React.FC<DuolingoPathViewProps> = ({
           </span>
         </div>
         <h2 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
-          {isDutch ? 'Stapsgewijs Leerpad' : 'Step-by-Step Curriculum'}
+          {activeLanguage.name} {isDutch ? 'Stapsgewijs Leerpad' : 'Step-by-Step Curriculum'}
         </h2>
         <p className="text-xs text-slate-500 max-w-md mx-auto leading-relaxed">
           {isDutch
             ? 'Je begint met de fonetiek en het alfabet, en stroomt dan direct door naar café- en overlevingsessenties. Voltooi elk bolletje om het volgende te ontgrendelen!'
-            : 'Start with Phonics, then progress to Cafe Essentials. Complete each bubble to unlock the next!'}
+            : 'Start with Phonics and native script, then progress to Cafe Essentials. Complete each bubble to unlock the next!'}
         </p>
       </div>
 

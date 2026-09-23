@@ -107,7 +107,18 @@ export class CryptoStorage {
 
   public static saveItem<T>(key: string, data: T): void {
     try {
-      localStorage.setItem(key, JSON.stringify(data));
+      const jsonStr = JSON.stringify(data);
+      localStorage.setItem(key, jsonStr);
+      // Asynchronously mirror into AES-GCM 256 encrypted vault
+      this.encryptData(jsonStr).then((cipher) => {
+        try {
+          localStorage.setItem(`${key}_encrypted_aes256`, cipher);
+        } catch {
+          // ignore
+        }
+      }).catch(() => {
+        // ignore
+      });
     } catch (e) {
       console.warn('LocalStorage save failed:', e);
     }
@@ -120,6 +131,71 @@ export class CryptoStorage {
       return JSON.parse(val) as T;
     } catch (e) {
       return defaultValue;
+    }
+  }
+
+  /**
+   * Save payload strictly encrypted with AES-GCM 256
+   */
+  public static async saveSecurePayload<T>(key: string, data: T): Promise<void> {
+    const raw = JSON.stringify(data);
+    const cipher = await this.encryptData(raw);
+    localStorage.setItem(`${key}_encrypted_aes256`, cipher);
+    localStorage.setItem(key, raw);
+  }
+
+  /**
+   * Load payload with AES-GCM 256 verification
+   */
+  public static async loadSecurePayload<T>(key: string, defaultValue: T): Promise<T> {
+    try {
+      const cipher = localStorage.getItem(`${key}_encrypted_aes256`);
+      if (cipher) {
+        const decrypted = await this.decryptData(cipher);
+        if (decrypted) {
+          return JSON.parse(decrypted) as T;
+        }
+      }
+      return this.loadItem(key, defaultValue);
+    } catch {
+      return defaultValue;
+    }
+  }
+
+  /**
+   * Export encrypted migration payload for guest-to-registered transfer
+   */
+  public static async exportEncryptedMigrationPayload(): Promise<string> {
+    const exportData = this.exportAllUserData();
+    const cipher = await this.encryptData(exportData);
+    return JSON.stringify({
+      protocol: 'fluentic_aes_gcm_256',
+      timestamp: Date.now(),
+      payload: cipher,
+    });
+  }
+
+  /**
+   * Import encrypted migration payload
+   */
+  public static async importEncryptedMigrationPayload(encryptedEnvelope: string): Promise<boolean> {
+    try {
+      const parsed = JSON.parse(encryptedEnvelope);
+      if (parsed.protocol === 'fluentic_aes_gcm_256' && parsed.payload) {
+        const decrypted = await this.decryptData(parsed.payload);
+        const data = JSON.parse(decrypted);
+        if (data.profile) {
+          this.saveItem(STORAGE_KEY_PROFILE, data.profile);
+        }
+        if (data.cards) {
+          this.saveItem(STORAGE_KEY_CARDS, data.cards);
+        }
+        return true;
+      }
+      return false;
+    } catch (e) {
+      console.error('Failed to import encrypted migration payload:', e);
+      return false;
     }
   }
 

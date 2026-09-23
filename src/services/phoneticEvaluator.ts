@@ -18,6 +18,8 @@ export interface SpeechEvaluationResult {
   isPassing: boolean; // strictly confidence >= 85%
   passed: boolean;
   confidenceScore: number; // 0 - 100
+  speakingPunctuation: number; // strictly 0 as requested
+  punctuationPenalty: number; // strictly 0
   isGibberishOrFiller: boolean;
   isGibberish: boolean;
   rejectionReason?: string;
@@ -116,6 +118,8 @@ export function evaluateSpokenPhrase(arg1: string, arg2: string, _languageCode?:
       isPassing: false,
       passed: false,
       confidenceScore: 12,
+      speakingPunctuation: 0,
+      punctuationPenalty: 0,
       isGibberishOrFiller: true,
       isGibberish: true,
       rejectionReason: fillerCheck.reason,
@@ -217,6 +221,8 @@ export function evaluateSpokenPhrase(arg1: string, arg2: string, _languageCode?:
     isPassing,
     passed: isPassing,
     confidenceScore,
+    speakingPunctuation: 0,
+    punctuationPenalty: 0,
     isGibberishOrFiller: false,
     isGibberish: false,
     normalizedTarget: normTarget,

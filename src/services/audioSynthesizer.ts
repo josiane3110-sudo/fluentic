@@ -3,6 +3,12 @@
  * Zero external MP3 dependencies. 100% synthesized in-browser.
  */
 
+declare global {
+  interface Window {
+    webkitAudioContext?: typeof AudioContext;
+  }
+}
+
 class AudioSynthesizer {
   private ctx: AudioContext | null = null;
   private binauralNodes: {
@@ -18,7 +24,7 @@ class AudioSynthesizer {
 
   private getAudioContext(): AudioContext {
     if (!this.ctx) {
-      const AudioCtxClass = window.AudioContext || (window as any).webkitAudioContext;
+      const AudioCtxClass = window.AudioContext || window.webkitAudioContext || AudioContext;
       this.ctx = new AudioCtxClass();
     }
     if (this.ctx.state === 'suspended') {
@@ -39,6 +45,68 @@ class AudioSynthesizer {
         this.ctx.currentTime,
         0.1
       );
+    }
+  }
+
+  /**
+   * Procedural subtle tab click feedback
+   */
+  public playTabClick() {
+    if (!this.soundEffectsEnabled) return;
+    try {
+      const ctx = this.getAudioContext();
+      const now = ctx.currentTime;
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(880, now);
+      osc.frequency.exponentialRampToValueAtTime(440, now + 0.04);
+
+      gain.gain.setValueAtTime(0.06, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
+
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+
+      osc.start(now);
+      osc.stop(now + 0.06);
+    } catch (e) {
+      console.warn('Audio notice:', e);
+    }
+  }
+
+  /**
+   * Combo Multiplier Chime with scaling dynamic pitch
+   */
+  public playComboMultiplier(combo: number = 1) {
+    if (!this.soundEffectsEnabled) return;
+    try {
+      const ctx = this.getAudioContext();
+      const now = ctx.currentTime;
+      const baseFreq = 523.25; // C5
+      // Pitch steps up with combo level
+      const pitchMultiplier = Math.min(2.5, 1 + Math.min(combo, 10) * 0.08);
+      const targetFreq = baseFreq * pitchMultiplier;
+
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(targetFreq * 0.85, now);
+      osc.frequency.exponentialRampToValueAtTime(targetFreq, now + 0.08);
+
+      gain.gain.setValueAtTime(0, now);
+      gain.gain.linearRampToValueAtTime(0.18, now + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
+
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+
+      osc.start(now);
+      osc.stop(now + 0.38);
+    } catch (e) {
+      console.warn('Audio notice:', e);
     }
   }
 

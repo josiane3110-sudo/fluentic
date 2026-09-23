@@ -198,9 +198,9 @@ export const DUTCH_TRANSLATIONS: TranslationDictionary = {
   takePlacementTestToUnlock: 'Doe de Niveautest (10 vragen) om door te stromen naar een hoger niveau.',
 
   // Navigation Tabs
-  navHome: 'Overzicht',
-  navPath: 'Leerpad',
-  navSpeechLab: 'Spraaklab',
+  navHome: 'Home',
+  navPath: 'Path',
+  navSpeechLab: 'Speaking',
   navDialogue: 'AI Gesprekken',
   navGrammar: 'Grammatica',
   navSpeedTest: 'Snelheidstest',
@@ -361,7 +361,7 @@ export const ENGLISH_FALLBACK_TRANSLATIONS: TranslationDictionary = {
 
   navHome: 'Home',
   navPath: 'Path',
-  navSpeechLab: 'Speech Lab',
+  navSpeechLab: 'Speaking',
   navDialogue: 'AI Dialogues',
   navGrammar: 'Grammar',
   navSpeedTest: 'Speed Test',
@@ -487,7 +487,7 @@ export const ENGLISH_FALLBACK_TRANSLATIONS: TranslationDictionary = {
 /**
  * Get active localized dictionary
  */
-export function getI18n(nativeCode: string = 'nl'): TranslationDictionary {
+export function getI18n(nativeCode: string = 'en'): TranslationDictionary {
   if (nativeCode === 'nl') {
     return DUTCH_TRANSLATIONS;
   }
