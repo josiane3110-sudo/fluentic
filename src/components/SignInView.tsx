@@ -88,14 +88,16 @@ export const SignInView: React.FC<SignInViewProps> = ({
       <div className="w-full max-w-lg mx-auto space-y-6">
         {/* Fixed Header Layout */}
         <div className="flex flex-wrap items-center justify-between gap-4 px-2">
-          {/* Logo & Brand Title */}
-          <div className="flex items-center gap-3">
-            <FluenticLogo size={42} />
-            <div className="flex flex-col justify-center">
+          {/* Logo & Brand Title Container */}
+          <div className="flex items-center gap-4">
+            <div className="relative shrink-0 flex items-center justify-center">
+              <FluenticLogo size={42} />
+            </div>
+            <div className="flex flex-col justify-center pl-2 border-l border-slate-200/80">
               <span className="text-2xl font-black tracking-tight text-slate-900 leading-none">
                 Fluentic
               </span>
-              <span className="text-xs font-bold text-blue-600 tracking-wider uppercase mt-1">
+              <span className="text-[10px] font-bold text-blue-600 tracking-wider uppercase mt-1">
                 AI Polyglot OS
               </span>
             </div>
