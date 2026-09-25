@@ -1,71 +1,3 @@
-import React, { useState } from 'react';
-import { Sparkles, BookOpen, Dumbbell } from 'lucide-react';
-import { CustomTranslatorView } from './components/CustomTranslatorView';
-
-export function App() {
-  // 1. Updated state to include 'translator'
-  const [activeTab, setActiveTab] = useState<'learn' | 'practice' | 'translator'>('learn');
-
-  return (
-    <div className="min-h-screen bg-slate-50 text-slate-900">
-      {/* Navigation Bar */}
-      <header className="bg-white border-b border-slate-200 sticky top-0 z-50">
-        <div className="max-w-5xl mx-auto px-4 h-16 flex items-center justify-between">
-          <h1 className="text-xl font-black text-blue-600">Fluentic</h1>
-
-          {/* 2. Navigation Buttons */}
-          <nav className="flex items-center gap-2">
-            <button
-              onClick={() => setActiveTab('learn')}
-              className={`flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                activeTab === 'learn' ? 'bg-blue-600 text-white' : 'text-slate-600 hover:bg-slate-100'
-              }`}
-            >
-              <BookOpen className="w-4 h-4" />
-              <span>Learn</span>
-            </button>
-
-            <button
-              onClick={() => setActiveTab('practice')}
-              className={`flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                activeTab === 'practice' ? 'bg-blue-600 text-white' : 'text-slate-600 hover:bg-slate-100'
-              }`}
-            >
-              <Dumbbell className="w-4 h-4" />
-              <span>Practice</span>
-            </button>
-
-            <button
-              onClick={() => setActiveTab('translator')}
-              className={`flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                activeTab === 'translator' ? 'bg-blue-600 text-white' : 'text-slate-600 hover:bg-slate-100'
-              }`}
-            >
-              <Sparkles className="w-4 h-4" />
-              <span>AI Translator</span>
-            </button>
-          </nav>
-        </div>
-      </header>
-
-      {/* Main Content Area */}
-      <main className="py-8">
-        {/* 3. Conditional View Rendering */}
-        {activeTab === 'learn' && (
-          <div className="text-center py-12 font-bold text-slate-500">Learn View Content</div>
-        )}
-
-        {activeTab === 'practice' && (
-          <div className="text-center py-12 font-bold text-slate-500">Practice View Content</div>
-        )}
-
-        {activeTab === 'translator' && <CustomTranslatorView />}
-      </main>
-    </div>
-  );
-}
-
-export default App;
 import React, { useState, useEffect } from 'react';
 import { 
   NavigationTab, 
@@ -101,6 +33,7 @@ import { DialogueTheatreView } from './components/views/DialogueTheatreView';
 import { DailyDisciplinesView } from './components/views/DailyDisciplinesView';
 import { ProStudioView } from './components/views/ProStudioView';
 import { GrammarModuleView } from './components/views/GrammarModuleView';
+import { SpeedTestView } from './components/views/SpeedTestView';
 
 const DEFAULT_USER: UserProfile = {
   id: 'usr-fresh-001',
@@ -401,7 +334,7 @@ export function App() {
       />
 
       {/* Main View Area */}
-      <main className="relative z-10 w-full">
+      <main className="relative z-10 w-full pb-28">
         {activeTab === 'home' && (
           <HomeView
             user={user}
