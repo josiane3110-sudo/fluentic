@@ -32,7 +32,6 @@ import { SpeechLabView } from './components/views/SpeechLabView';
 import { DialogueTheatreView } from './components/views/DialogueTheatreView';
 import { DailyDisciplinesView } from './components/views/DailyDisciplinesView';
 import { ProStudioView } from './components/views/ProStudioView';
-import { SpeedTestView } from './components/views/SpeedTestView';
 import { GrammarModuleView } from './components/views/GrammarModuleView';
 
 const DEFAULT_USER: UserProfile = {
