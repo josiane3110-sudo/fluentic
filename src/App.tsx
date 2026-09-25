@@ -33,7 +33,7 @@ import { DialogueTheatreView } from './components/views/DialogueTheatreView';
 import { DailyDisciplinesView } from './components/views/DailyDisciplinesView';
 import { ProStudioView } from './components/views/ProStudioView';
 import { GrammarModuleView } from './components/views/GrammarModuleView';
-import { SpeedTestView } from './components/views/SpeedTestView';
+import { CustomTranslatorView } from './components/CustomTranslatorView';
 
 const DEFAULT_USER: UserProfile = {
   id: 'usr-fresh-001',
@@ -400,19 +400,8 @@ export function App() {
           />
         )}
 
-        {activeTab === 'speed-test' && (
-          <SpeedTestView
-            activeLanguage={activeLanguage}
-            user={user}
-            onReward={(xp, gems) => {
-              handleUpdateUser({
-                ...user,
-                xp: user.xp + xp,
-                gems: user.gems + gems,
-                totalPracticeMinutes: (user.totalPracticeMinutes || 0) + 2,
-              });
-            }}
-          />
+        {activeTab === 'translator' && (
+          <CustomTranslatorView />
         )}
 
         {activeTab === 'pro-studio' && (
