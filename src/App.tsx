@@ -11,7 +11,7 @@ import {
 
 import { SignInView } from './components/SignInView';
 import { CustomTranslatorView } from './components/CustomTranslatorView';
-import { PlacementTestView } from './components/PlacementTestView';
+import { OnboardingPlacementView as PlacementTestView } from './components/OnboardingPlacementView';
 import { FluenticLogo } from './components/FluenticLogo';
 import { WORLD_LANGUAGES } from './data/languages';
 import { audioSynth } from './services/audioSynthesizer';
@@ -31,7 +31,6 @@ export default function App() {
   const [activeTab, setActiveTab] = useState<'learn' | 'practice' | 'translator'>('learn');
   const [isPlacementActive, setIsPlacementActive] = useState<boolean>(false);
 
-  // Load saved session state from transient memory/sessionStorage if available
   useEffect(() => {
     try {
       const savedSession = sessionStorage.getItem('fluentic_session');
@@ -47,7 +46,6 @@ export default function App() {
     }
   }, []);
 
-  // Save session updates
   const updateSession = (newSession: UserSession | null) => {
     setSession(newSession);
     if (newSession) {
@@ -57,7 +55,6 @@ export default function App() {
     }
   };
 
-  // Handler for full Sign In / Registration
   const handleSignIn = (
     name: string, 
     email: string, 
@@ -76,7 +73,6 @@ export default function App() {
     setIsPlacementActive(true);
   };
 
-  // Handler for Guest mode
   const handleContinueGuest = (nativeLanguageCode: string, targetLanguageCode: string) => {
     const newSession: UserSession = {
       name: 'Guest Learner',
@@ -90,7 +86,6 @@ export default function App() {
     setIsPlacementActive(true);
   };
 
-  // Handler to skip placement test directly to A1
   const handleSkipTest = (
     nativeLanguageCode: string, 
     targetLanguageCode: string, 
@@ -109,7 +104,6 @@ export default function App() {
     setIsPlacementActive(false);
   };
 
-  // Handler when Placement Test finishes
   const handlePlacementComplete = (calibratedLevel: string) => {
     if (!session) return;
     const updated = {
@@ -121,7 +115,6 @@ export default function App() {
     setIsPlacementActive(false);
   };
 
-  // Sign out / Reset session
   const handleSignOut = () => {
     audioSynth.playGentleFeedback();
     updateSession(null);
@@ -129,7 +122,6 @@ export default function App() {
     setActiveTab('learn');
   };
 
-  // 1. Show Login Screen if no session exists
   if (!session) {
     return (
       <SignInView
@@ -140,7 +132,6 @@ export default function App() {
     );
   }
 
-  // 2. Show Placement Test if session exists but placement isn't done
   if (isPlacementActive && !session.placementCompleted) {
     return (
       <PlacementTestView
@@ -148,7 +139,6 @@ export default function App() {
         targetLanguageCode={session.targetLanguageCode}
         onComplete={handlePlacementComplete}
         onCancel={() => {
-          // Fallback to A1 if user exits placement test
           handlePlacementComplete('A1');
         }}
       />
@@ -158,14 +148,11 @@ export default function App() {
   const nativeLang = WORLD_LANGUAGES.find((l) => l.code === session.nativeLanguageCode) || WORLD_LANGUAGES[0];
   const targetLang = WORLD_LANGUAGES.find((l) => l.code === session.targetLanguageCode) || WORLD_LANGUAGES[1];
 
-  // 3. Main Dashboard View
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 font-sans antialiased flex flex-col">
-      {/* HEADER NAVBAR */}
       <header className="bg-white/90 backdrop-blur-md border-b border-slate-200 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
           
-          {/* Logo Container (Clean & Tagline Removed) */}
           <div className="flex items-center gap-3 shrink-0">
             <FluenticLogo size={36} />
             <h1 className="text-xl font-black tracking-tight text-slate-900">
@@ -173,7 +160,6 @@ export default function App() {
             </h1>
           </div>
 
-          {/* Navigation Tabs */}
           <nav className="flex items-center gap-1 sm:gap-2 bg-slate-100/80 p-1.5 rounded-2xl border border-slate-200/60">
             <button
               onClick={() => {
@@ -221,7 +207,6 @@ export default function App() {
             </button>
           </nav>
 
-          {/* User Profile & Language Status */}
           <div className="flex items-center gap-2 shrink-0">
             <div className="hidden md:flex items-center gap-2 bg-slate-50 px-3 py-1.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-700">
               <Globe className="w-3.5 h-3.5 text-blue-600" />
@@ -252,7 +237,6 @@ export default function App() {
         </div>
       </header>
 
-      {/* MAIN CONTENT AREA */}
       <main className="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8">
         {activeTab === 'learn' && (
           <div className="space-y-6">
@@ -278,7 +262,6 @@ export default function App() {
               </button>
             </div>
 
-            {/* Curriculum Modules Placeholder */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="bg-white p-6 rounded-3xl border border-slate-200/80 space-y-3">
                 <div className="w-10 h-10 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center font-black">1</div>
