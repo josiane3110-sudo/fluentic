@@ -15,7 +15,8 @@ import {
   Check,
   Clock,
   Crown,
-  HelpCircle
+  HelpCircle,
+  Languages
 } from 'lucide-react';
 import { UserProfile, Language, NavigationTab } from '../../types';
 import { audioSynth } from '../../services/audioSynthesizer';
@@ -439,14 +440,6 @@ export const HomeView: React.FC<HomeViewProps> = ({
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
           {[
             {
-              id: 'speaking',
-              title: isDutch ? 'Speaking' : 'Speaking',
-              desc: isDutch ? 'Spraakherkenning' : 'Pronunciation',
-              icon: Mic,
-              color: 'text-blue-600 bg-blue-50 border-blue-200',
-              tab: 'speech-lab' as NavigationTab,
-            },
-            {
               id: 'dialogue',
               title: isDutch ? 'Dialoog' : 'Dialogue Theatre',
               desc: isDutch ? 'AI rollenspellen' : 'Roleplay scenarios',
@@ -463,12 +456,20 @@ export const HomeView: React.FC<HomeViewProps> = ({
               tab: 'grammar-module' as NavigationTab,
             },
             {
-              id: 'drill',
-              title: isDutch ? 'Snelheidstest' : 'Word Drill',
-              desc: isDutch ? 'Woordenschat' : 'Rapid practice',
-              icon: Zap,
-              color: 'text-amber-600 bg-amber-50 border-amber-200',
-              tab: 'speed-test' as NavigationTab,
+              id: 'translator',
+              title: isDutch ? 'AI Vertaler' : 'AI Translator',
+              desc: isDutch ? 'Live dialoog & vertaling' : 'Live dialogue & translation',
+              icon: Languages,
+              color: 'text-teal-600 bg-teal-50 border-teal-200',
+              tab: 'ai-translator' as NavigationTab,
+            },
+            {
+              id: 'syllabus',
+              title: isDutch ? 'Leerpad' : 'Learning Path',
+              desc: isDutch ? 'Volledig curriculum' : 'Full CEFR curriculum',
+              icon: Sparkles,
+              color: 'text-blue-600 bg-blue-50 border-blue-200',
+              tab: 'syllabus' as NavigationTab,
             },
           ].map((card) => {
             const Icon = card.icon;

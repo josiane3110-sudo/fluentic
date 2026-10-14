@@ -287,6 +287,58 @@ const GLOBAL_SCRIPT_DATABASE: Record<string, LanguageScriptProfile> = {
       { titleEn: 'De vs Het Articles', nativeTitle: 'De en Het Woorden', ruleEn: 'Common gender nouns take "de" (approx 75%); neuter nouns take "het" (all diminutives take "het").', example: 'De man, de tafel, het huis, het meisje' },
       { titleEn: 'Inversion and Subordinate Clause Word Order (SOV)', nativeTitle: 'Bijzin Woordvolgorde', ruleEn: 'In subordinate clauses, all verbs move to the very end of the sentence.', example: '...omdat ik gisteren naar school ben gefietst' }
     ]
+  },
+  it: {
+    greetings: [
+      { native: 'Ciao! Come stai oggi?', translationEn: 'Hello! How are you today?', ipa: '/ˈtʃa.o ˈko.me ˈstai ˈod.dʒi/' },
+      { native: 'Buongiorno! Molto piacere', translationEn: 'Good morning! Pleased to meet you', ipa: '/ˌbwɔnˈdʒor.no ˈmol.to pjaˈtʃe.re/' },
+      { native: 'Arrivederci e a presto!', translationEn: 'Goodbye and see you soon!', ipa: '/ar.ri.veˈder.tʃi e a ˈprɛs.to/' },
+    ],
+    cafePhrases: [
+      { native: 'Un espresso e un cornetto, per favore', translationEn: 'An espresso and a croissant, please', ipa: '/un eˈsprɛs.so e un korˈnet.to per faˈvo.re/' },
+      { native: 'Il conto, per favore', translationEn: 'The bill / check, please', ipa: '/il ˈkon.to per faˈvo.re/' },
+      { native: 'Quanto costa questo?', translationEn: 'How much does this cost?', ipa: '/ˈkwan.to ˈkɔs.ta ˈkwe.sto/' },
+    ],
+    transitPhrases: [
+      { native: 'Scusi, dov’è la stazione ferroviaria?', translationEn: 'Excuse me, where is the train station?', ipa: '/ˈsku.zi doˈvɛ lla statˈtsjo.ne/' },
+      { native: 'Giri a destra al prossimo incrocio', translationEn: 'Turn right at the next intersection', ipa: '/ˈdʒi.ri a ˈdɛ.stra al ˈprɔs.si.mo inˈkro.tʃo/' },
+    ],
+    socialPhrases: [
+      { native: 'Studio l’italiano con grande passione', translationEn: 'I study Italian with great passion', ipa: '/ˈstu.djo li.taˈlja.no kon ˈɡran.de pasˈsjo.ne/' },
+    ],
+    advancedPhrases: [
+      { native: 'Se l’avessi saputo prima, sarei venuto volentieri', translationEn: 'Had I known earlier, I would have gladly come', ipa: '/se laˈves.si saˈpu.to ˈpri.ma/' },
+    ],
+    grammarTopics: [
+      { titleEn: 'The Congiuntivo (Subjunctive Mood)', nativeTitle: 'Il Congiuntivo', ruleEn: 'Expresses subjectivity, doubt, emotions, and hypothetical wishes.', example: 'Penso che tu abbia ragione (I think you are right)' },
+      { titleEn: 'Direct and Indirect Pronoun Combination', nativeTitle: 'Pronomi Combinati', ruleEn: 'Indirect pronouns (mi, ti, gli) change to (me, te, glie-) when preceding direct pronouns (lo, la, li, le).', example: 'Me lo dici? (Will you tell me that?)' }
+    ]
+  },
+  pt: {
+    greetings: [
+      { native: 'Olá! Tudo bem com você?', translationEn: 'Hello! Is everything well with you?', ipa: '/oˈla ˈtu.du bɐ̃j kõ voˈse/' },
+      { native: 'Bom dia! Muito prazer em conhecê-lo', translationEn: 'Good morning! Pleased to meet you', ipa: '/bõ ˈdi.ɐ ˈmũj.tu pɾɐˈzeɾ/' },
+      { native: 'Até logo, tenha um bom dia!', translationEn: 'See you later, have a good day!', ipa: '/aˈtɛ ˈlɔ.ɡu ˈtɐ̃.ɲɐ ũ bõ ˈdi.ɐ/' },
+    ],
+    cafePhrases: [
+      { native: 'Um café e um pastel de nata, por favor', translationEn: 'A coffee and a custard tart, please', ipa: '/ũ kɐˈfɛ i ũ pɐʃˈtɛl də ˈna.tɐ/' },
+      { native: 'A conta, por favor', translationEn: 'The check / bill, please', ipa: '/ɐ ˈkõ.tɐ puɾ fɐˈvoɾ/' },
+      { native: 'Quanto custa isto?', translationEn: 'How much does this cost?', ipa: '/ˈkwɐ̃.tu ˈkuʃ.tɐ ˈiʃ.tu/' },
+    ],
+    transitPhrases: [
+      { native: 'Com licença, onde fica a estação central?', translationEn: 'Excuse me, where is the central station?', ipa: '/kõ liˈsẽ.sɐ ˈõ.dɨ ˈfi.kɐ ɐ ɨʃ.tɐˈsɐ̃w̃/' },
+      { native: 'Vire à direita na próxima esquina', translationEn: 'Turn right at the next corner', ipa: '/ˈvi.ɾi a diˈɾej.tɐ/' },
+    ],
+    socialPhrases: [
+      { native: 'Estou aprendendo português com muita alegria', translationEn: 'I am learning Portuguese with great joy', ipa: '/iʃˈtow ɐ.pɾẽˈdẽ.du puɾ.tuˈɡeʃ/' },
+    ],
+    advancedPhrases: [
+      { native: 'Se eu tivesse sabido antes, teria participado', translationEn: 'Had I known before, I would have participated', ipa: '/se ew tʃiˈvɛ.si sɐˈbi.du ˈɐ̃.tʃis/' },
+    ],
+    grammarTopics: [
+      { titleEn: 'Personal Infinitive (Infinitivo Pessoal)', nativeTitle: 'Infinitivo Pessoal', ruleEn: 'Unique to Portuguese: the infinitive conjugates to indicate its grammatical subject.', example: 'Para nós falarmos fluentemente (For us to speak fluently)' },
+      { titleEn: 'Future Subjunctive (Futuro do Subjuntivo)', nativeTitle: 'Futuro do Subjuntivo', ruleEn: 'Used in temporal and conditional clauses projecting into future reality.', example: 'Quando você chegar, começamos (When you arrive, we will start)' }
+    ]
   }
 };
 
@@ -304,22 +356,22 @@ function getScriptProfile(langCode: string, langName: string): LanguageScriptPro
     greetings: [
       { native: sample, translationEn: `Hello / Greetings in ${langName}`, ipa: `/${langCode}-greeting/` },
       { native: `${sample} • ${nativeName}`, translationEn: `Pleased to meet you in ${langName}`, ipa: `/${langCode}-meet/` },
-      { native: `${sample} (Farewell)`, translationEn: `Goodbye in ${langName}`, ipa: `/${langCode}-farewell/` },
+      { native: `${sample}`, translationEn: `Goodbye in ${langName}`, ipa: `/${langCode}-farewell/` },
     ],
     cafePhrases: [
-      { native: `${sample} [Coffee / Order]`, translationEn: `A coffee, please in ${langName}`, ipa: `/${langCode}-order/` },
-      { native: `${sample} [Check / Bill]`, translationEn: `The check, please in ${langName}`, ipa: `/${langCode}-bill/` },
-      { native: `${sample} [Price]`, translationEn: `How much is this? in ${langName}`, ipa: `/${langCode}-price/` },
+      { native: `${sample}`, translationEn: `A coffee, please in ${langName}`, ipa: `/${langCode}-order/` },
+      { native: `${sample}`, translationEn: `The check, please in ${langName}`, ipa: `/${langCode}-bill/` },
+      { native: `${sample}`, translationEn: `How much is this? in ${langName}`, ipa: `/${langCode}-price/` },
     ],
     transitPhrases: [
-      { native: `${sample} [Transit / Station]`, translationEn: `Where is the station? in ${langName}`, ipa: `/${langCode}-transit/` },
-      { native: `${sample} [Turn Right]`, translationEn: `Turn right at the corner in ${langName}`, ipa: `/${langCode}-directions/` },
+      { native: `${sample}`, translationEn: `Where is the station? in ${langName}`, ipa: `/${langCode}-transit/` },
+      { native: `${sample}`, translationEn: `Turn right in ${langName}`, ipa: `/${langCode}-directions/` },
     ],
     socialPhrases: [
-      { native: `${sample} [Learning ${langName}]`, translationEn: `I am learning ${langName}`, ipa: `/${langCode}-learning/` },
+      { native: `${sample}`, translationEn: `I am learning ${langName}`, ipa: `/${langCode}-learning/` },
     ],
     advancedPhrases: [
-      { native: `${sample} [Advanced Nuance]`, translationEn: `Advanced contextual idiom in ${langName}`, ipa: `/${langCode}-advanced/` },
+      { native: `${sample}`, translationEn: `Advanced idiom in ${langName}`, ipa: `/${langCode}-advanced/` },
     ],
     grammarTopics: [
       { titleEn: `Core Morphology of ${langName}`, nativeTitle: `${nativeName} Grammar`, ruleEn: `Essential word structure and sentence building rules in ${langName}.`, example: `${sample}` },
@@ -515,7 +567,7 @@ export class AICurriculumEngine {
   /**
    * Generates procedural learning nodes with authentic native scripts and localized prompts
    */
-  private static generateProceduralNodes(
+  public static generateProceduralNodes(
     targetLang: Language,
     nativeLangCode: string,
     cefr: CefrLevel

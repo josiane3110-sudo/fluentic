@@ -41,6 +41,7 @@ export interface TranslationDictionary {
   navDialogue: string;
   navGrammar: string;
   navSpeedTest: string;
+  navTranslator: string;
   navVault: string;
   navDisciplines: string;
   navPro: string;
@@ -204,6 +205,7 @@ export const DUTCH_TRANSLATIONS: TranslationDictionary = {
   navDialogue: 'AI Gesprekken',
   navGrammar: 'Grammatica',
   navSpeedTest: 'Snelheidstest',
+  navTranslator: 'AI Vertaler',
   navVault: 'Woordkaarten',
   navDisciplines: 'Reeks & Doelen',
   navPro: 'Pro Studio',
@@ -365,6 +367,7 @@ export const ENGLISH_FALLBACK_TRANSLATIONS: TranslationDictionary = {
   navDialogue: 'AI Dialogues',
   navGrammar: 'Grammar',
   navSpeedTest: 'Speed Test',
+  navTranslator: 'AI Translator',
   navVault: 'Flashcards',
   navDisciplines: 'Streaks & Goals',
   navPro: 'Pro Studio',

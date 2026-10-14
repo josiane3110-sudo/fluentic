@@ -60,14 +60,12 @@ export const CommandSpotlight: React.FC<CommandSpotlightProps> = ({
   if (!isOpen) return null;
 
   const quickActions = [
-    { id: 'act-1', title: 'Open Syllabus & Constellation', icon: Sparkles, tab: 'syllabus' as NavigationTab, hint: 'Key 1' },
-    { id: 'act-2', title: 'Speech Lab & Voice Formants', icon: Mic, tab: 'speech-lab' as NavigationTab, hint: 'Key 2' },
-    { id: 'act-3', title: 'Generative Scenario Studio & Debates', icon: MessageSquare, tab: 'dialogue-theatre' as NavigationTab, hint: 'Key 3' },
-    { id: 'act-4', title: 'FSRS Spaced Repetition Vault', icon: Layers, tab: 'fsrs-vault' as NavigationTab, hint: 'Key 4' },
-    { id: 'act-5', title: 'Grand Arena Speed Drills', icon: Swords, tab: 'grand-arena' as NavigationTab, hint: 'Key 5' },
-    { id: 'act-6', title: 'Daily Disciplines & Streak Rituals', icon: Calendar, tab: 'daily-disciplines' as NavigationTab, hint: 'Key 6' },
-    { id: 'act-7', title: 'Neural Radar & AI Grammar Surgeon', icon: Activity, tab: 'neural-radar' as NavigationTab, hint: 'Key 7' },
-    { id: 'act-8', title: 'Pro Studio & Python Linguistic Sandbox', icon: Crown, tab: 'pro-studio' as NavigationTab, hint: 'Key 8' },
+    { id: 'act-1', title: 'Open Syllabus & Learning Path', icon: Sparkles, tab: 'syllabus' as NavigationTab, hint: 'Key 2' },
+    { id: 'act-2', title: 'Generative Scenario Studio & Debates', icon: MessageSquare, tab: 'dialogue-theatre' as NavigationTab, hint: 'Key 3' },
+    { id: 'act-3', title: 'Grammar Modules & Conjugation', icon: Activity, tab: 'grammar-module' as NavigationTab, hint: 'Key 4' },
+    { id: 'act-4', title: 'AI Universal Translator & Live Dialogue', icon: Globe, tab: 'ai-translator' as NavigationTab, hint: 'Key 5' },
+    { id: 'act-5', title: 'Daily Disciplines & Streak Rituals', icon: Calendar, tab: 'daily-disciplines' as NavigationTab, hint: 'Key 6' },
+    { id: 'act-6', title: 'Pro Studio & Premium Tiers', icon: Crown, tab: 'pro-studio' as NavigationTab, hint: 'Key 7' },
   ];
 
   const soundActions = [

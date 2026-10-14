@@ -12,7 +12,8 @@ import {
   Award, 
   Crown,
   Activity,
-  Globe
+  Globe,
+  Languages
 } from 'lucide-react';
 import { UserProfile, Language, NavigationTab, CefrLevel } from '../../types';
 import { audioSynth } from '../../services/audioSynthesizer';
@@ -87,45 +88,46 @@ export const HolographicBentoView: React.FC<HolographicBentoViewProps> = ({
         </div>
 
         {/* Card 2: Speaking & Pronunciation Practice */}
+        {/* Card 2: AI Universal Translator & Live Dialogue */}
         <div className="p-6 rounded-3xl bg-white border border-slate-200 shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
           <div>
-            <div className="w-10 h-10 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold mb-3">
-              <Mic className="w-5 h-5" />
+            <div className="w-10 h-10 rounded-2xl bg-teal-50 text-teal-600 flex items-center justify-center font-bold mb-3">
+              <Languages className="w-5 h-5" />
             </div>
-            <h4 className="font-extrabold text-slate-900 text-base">Speaking Coach</h4>
+            <h4 className="font-extrabold text-slate-900 text-base">AI Translator & Dialogue</h4>
             <p className="text-xs text-slate-500 mt-1">
-              Speak into the microphone to practice your accent and get instant audio tips.
+              Ultra-fast translation across all global languages with two-way live conversation mode.
             </p>
           </div>
 
           <button
-            id="bento-goto-speech-btn"
-            onClick={() => onNavigate('speech-lab')}
-            className="mt-4 w-full py-2 px-3 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-700 font-bold text-xs flex items-center justify-between transition-colors"
+            id="bento-goto-translator-btn"
+            onClick={() => onNavigate('ai-translator')}
+            className="mt-4 w-full py-2 px-3 rounded-xl bg-teal-50 hover:bg-teal-100 text-teal-700 font-bold text-xs flex items-center justify-between transition-colors"
           >
-            <span>Practice Speaking</span>
+            <span>Open AI Translator</span>
             <ArrowRight className="w-3.5 h-3.5" />
           </button>
         </div>
 
-        {/* Card 3: Memory Flashcards */}
+        {/* Card 3: Generative Dialogue Theatre */}
         <div className="p-6 rounded-3xl bg-white border border-slate-200 shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
           <div>
-            <div className="w-10 h-10 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold mb-3">
-              <Layers className="w-5 h-5" />
+            <div className="w-10 h-10 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold mb-3">
+              <MessageSquare className="w-5 h-5" />
             </div>
-            <h4 className="font-extrabold text-slate-900 text-base">Smart Flashcards</h4>
+            <h4 className="font-extrabold text-slate-900 text-base">Dialogue Theatre</h4>
             <p className="text-xs text-slate-500 mt-1">
-              Interactive flashcards designed to help you remember words forever.
+              Interactive roleplay scenarios, cafe dialogues, and cultural debates with AI native speakers.
             </p>
           </div>
 
           <button
-            id="bento-goto-fsrs-btn"
-            onClick={() => onNavigate('fsrs-vault')}
-            className="mt-4 w-full py-2 px-3 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-bold text-xs flex items-center justify-between transition-colors"
+            id="bento-goto-dialogue-btn"
+            onClick={() => onNavigate('dialogue-theatre')}
+            className="mt-4 w-full py-2 px-3 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold text-xs flex items-center justify-between transition-colors"
           >
-            <span>Review Flashcards</span>
+            <span>Start Dialogue</span>
             <ArrowRight className="w-3.5 h-3.5" />
           </button>
         </div>

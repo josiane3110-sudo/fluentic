@@ -13,6 +13,7 @@ import {
   PlacementQuestionOption
 } from '../services/placementTestService';
 import { getI18n } from '../services/localization';
+import { isRtlLanguage, resolveDirection, hasRtlCharacters } from '../services/languageTypography';
 import { 
   Sparkles, 
   CheckCircle2, 
@@ -56,15 +57,20 @@ export const OnboardingPlacementView: React.FC<OnboardingPlacementViewProps> = (
     }
   }, [initialProfile]);
 
-  // Placement Test State
+  // Placement Test State & Dynamic Adaptive Routing
   const [selectedVariant, setSelectedVariant] = useState<'A' | 'B' | 'C' | 'D'>('A');
-  const [currentQIndex, setCurrentQIndex] = useState(0);
+  const [adaptiveStep, setAdaptiveStep] = useState(0); // 0 to 7 (8 adaptive questions)
+  const TOTAL_ADAPTIVE_QUESTIONS = 8;
+  const [activeTier, setActiveTier] = useState<CefrLevel>('A2'); // Standard adaptive entry point
   const [selectedOptionKey, setSelectedOptionKey] = useState<'A' | 'B' | 'C' | 'D' | null>(null);
   const [isAnswerChecked, setIsAnswerChecked] = useState(false);
   const [score, setScore] = useState(0);
   const [assessedLevel, setAssessedLevel] = useState<CefrLevel>('A1');
   const [unlockedLevels, setUnlockedLevels] = useState<CefrLevel[]>(['A1']);
   const [diagnosisText, setDiagnosisText] = useState('');
+  const [officialScoreText, setOfficialScoreText] = useState('');
+  const [answeredQuestionIds, setAnsweredQuestionIds] = useState<number[]>([]);
+  const [tierPerformance, setTierPerformance] = useState<{ level: CefrLevel; correct: boolean }[]>([]);
 
   // Localized dictionary based on chosen native language
   const i18n = getI18n(nativeLanguageCode);
@@ -73,7 +79,7 @@ export const OnboardingPlacementView: React.FC<OnboardingPlacementViewProps> = (
     WORLD_LANGUAGES.find((l) => l.code === 'en') || 
     WORLD_LANGUAGES[0];
 
-  // Helper to clearly display language name without overlapping or duplicate names (e.g. English English)
+  // Helper to clearly display language name without overlapping or duplicate names
   const getLanguageLabel = (lang: Language) => {
     if (!lang.nativeName || lang.nativeName.trim().toLowerCase() === lang.name.trim().toLowerCase()) {
       return lang.name;
@@ -81,30 +87,51 @@ export const OnboardingPlacementView: React.FC<OnboardingPlacementViewProps> = (
     return `${lang.name} • ${lang.nativeName}`;
   };
 
-  // Active Placement Test Variant
-  const currentTest = PlacementAssessmentEngine.getPlacementTest(
+  // Grouped questions by CEFR tier for dynamic adaptive routing
+  const adaptiveBank = PlacementAssessmentEngine.getAdaptivePlacementBank(
     targetLanguage.code,
     targetLanguage.name,
-    selectedVariant,
-    nativeLanguageCode
+    nativeLanguageCode,
+    selectedVariant
   );
 
-  const currentQuestion: PlacementTestQuestion = currentTest.questions[currentQIndex] || currentTest.questions[0];
+  // Pick next question from active tier that hasn't been asked yet
+  const getAdaptiveQuestionForTier = (tier: CefrLevel): PlacementTestQuestion => {
+    const questionsInTier = adaptiveBank[tier] || [];
+    const available = questionsInTier.filter((q) => !answeredQuestionIds.includes(q.id));
+    if (available.length > 0) {
+      return available[0];
+    }
+    // Fallback: pick any unused question across adjacent tiers
+    const allQuestions = PlacementAssessmentEngine.getPlacementTest(
+      targetLanguage.code,
+      targetLanguage.name,
+      selectedVariant,
+      nativeLanguageCode
+    ).questions;
+    const unused = allQuestions.filter((q) => !answeredQuestionIds.includes(q.id));
+    return unused[0] || allQuestions[0];
+  };
 
-  // Step 1 -> Step 2: Start the Placement Test
+  const currentQuestion = getAdaptiveQuestionForTier(activeTier);
+
+  // Step 1 -> Step 2: Start the Adaptive Placement Test
   const handleStartPlacementTest = () => {
     if (!name.trim()) {
       setName(nativeLanguageCode === 'nl' ? 'Taalstudent' : 'Polyglot Explorer');
     }
     audioSynth.playSuccessChime();
-    setCurrentQIndex(0);
+    setAdaptiveStep(0);
+    setActiveTier('A2');
+    setAnsweredQuestionIds([]);
+    setTierPerformance([]);
     setSelectedOptionKey(null);
     setIsAnswerChecked(false);
     setScore(0);
     setStep(2);
   };
 
-  // Skip Test: Allows user to bypass the test and start immediately with zeroed streak and progress
+  // Skip Test: Allows user to bypass the test and start immediately at A1
   const handleSkipTest = () => {
     audioSynth.playGentleFeedback();
     const cleanProfile: UserProfile = {
@@ -158,10 +185,27 @@ export const OnboardingPlacementView: React.FC<OnboardingPlacementViewProps> = (
   const handleSelectVariant = (variant: 'A' | 'B' | 'C' | 'D') => {
     audioSynth.playGentleFeedback();
     setSelectedVariant(variant);
-    setCurrentQIndex(0);
+    setAdaptiveStep(0);
+    setActiveTier('A2');
+    setAnsweredQuestionIds([]);
+    setTierPerformance([]);
     setSelectedOptionKey(null);
     setIsAnswerChecked(false);
     setScore(0);
+  };
+
+  // Dynamic Routing step transition
+  const getNextAdaptiveTier = (current: CefrLevel, wasCorrect: boolean): CefrLevel => {
+    const tiers: CefrLevel[] = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
+    const currentIdx = tiers.indexOf(current);
+
+    if (wasCorrect) {
+      // Step up in difficulty
+      return currentIdx < tiers.length - 1 ? tiers[currentIdx + 1] : 'C2';
+    } else {
+      // Step down in difficulty
+      return currentIdx > 0 ? tiers[currentIdx - 1] : 'A1';
+    }
   };
 
   // Check Answer
@@ -179,23 +223,53 @@ export const OnboardingPlacementView: React.FC<OnboardingPlacementViewProps> = (
     }
   };
 
-  // Next Question or Finish
+  // Next Question with Dynamic Adaptive Routing
   const handleNextQuestion = () => {
     audioSynth.playGentleFeedback();
 
-    if (currentQIndex + 1 < currentTest.questions.length) {
-      setCurrentQIndex((prev) => prev + 1);
+    const wasCorrect = selectedOptionKey === currentQuestion.correct_key;
+    const currentQLevel = (currentQuestion.level?.toUpperCase() as CefrLevel) || activeTier;
+    const updatedHistory = [...tierPerformance, { level: currentQLevel, correct: wasCorrect }];
+    setTierPerformance(updatedHistory);
+    setAnsweredQuestionIds((prev) => [...prev, currentQuestion.id]);
+
+    if (adaptiveStep + 1 < TOTAL_ADAPTIVE_QUESTIONS) {
+      // Route difficulty adaptively based on accuracy
+      const nextTier = getNextAdaptiveTier(activeTier, wasCorrect);
+      setActiveTier(nextTier);
+      setAdaptiveStep((prev) => prev + 1);
       setSelectedOptionKey(null);
       setIsAnswerChecked(false);
     } else {
-      // Calculate final score & CEFR qualification
+      // Test Complete: Calculate official verified CEFR diagnostic score
       const finalScore = score + (selectedOptionKey === currentQuestion.correct_key && !isAnswerChecked ? 1 : 0);
-      const result = PlacementAssessmentEngine.calculateCefrPlacement(finalScore, nativeLanguageCode);
+      
+      // Determine highest sustained level where student performed correctly
+      const tiersHierarchy: CefrLevel[] = ['C2', 'C1', 'B2', 'B1', 'A2', 'A1'];
+      let calibratedTier: CefrLevel = 'A1';
+
+      for (const tier of tiersHierarchy) {
+        const correctAtTier = updatedHistory.filter((item) => item.level === tier && item.correct).length;
+        if (correctAtTier > 0) {
+          calibratedTier = tier;
+          break;
+        }
+      }
+
+      // If score is high across the adaptive ladder
+      if (finalScore >= 7) calibratedTier = 'C2';
+      else if (finalScore >= 6 && calibratedTier < 'C1') calibratedTier = 'C1';
+      else if (finalScore >= 5 && calibratedTier < 'B2') calibratedTier = 'B2';
+      else if (finalScore >= 3 && calibratedTier < 'B1') calibratedTier = 'B1';
+      else if (finalScore >= 2 && calibratedTier < 'A2') calibratedTier = 'A2';
+
+      const result = PlacementAssessmentEngine.calculateCefrPlacement(finalScore, nativeLanguageCode, calibratedTier);
 
       setScore(finalScore);
       setAssessedLevel(result.level);
       setUnlockedLevels(result.unlockedLevels);
       setDiagnosisText(result.diagnosis);
+      setOfficialScoreText(result.officialScoreText);
       setStep(3);
       audioSynth.playTriumphChime();
     }
@@ -431,13 +505,18 @@ export const OnboardingPlacementView: React.FC<OnboardingPlacementViewProps> = (
               <div className="flex items-center gap-2">
                 <span className="text-2xl">{targetLanguage.flag}</span>
                 <div>
-                  <h2 className="text-base font-black text-slate-900">
-                    {getLanguageLabel(targetLanguage)}
-                  </h2>
+                  <div className="flex items-center gap-2">
+                    <h2 className="text-base font-black text-slate-900">
+                      {getLanguageLabel(targetLanguage)}
+                    </h2>
+                    <span className="px-2 py-0.5 rounded-full bg-blue-100 text-blue-900 font-extrabold text-[10px] border border-blue-200">
+                      Tier: {activeTier}
+                    </span>
+                  </div>
                   <p className="text-xs text-slate-500">
                     {nativeLanguageCode === 'nl' 
-                      ? `ERK Niveautest • Vraag ${currentQIndex + 1} van ${currentTest.questions.length}` 
-                      : `CEFR Placement Ladder • Question ${currentQIndex + 1} of ${currentTest.questions.length}`}
+                      ? `ERK Adaptieve Niveautest • Vraag ${adaptiveStep + 1} van ${TOTAL_ADAPTIVE_QUESTIONS}` 
+                      : `CEFR Adaptive Placement • Question ${adaptiveStep + 1} of ${TOTAL_ADAPTIVE_QUESTIONS}`}
                   </p>
                 </div>
               </div>
@@ -483,12 +562,27 @@ export const OnboardingPlacementView: React.FC<OnboardingPlacementViewProps> = (
               </div>
             </div>
 
-            {/* Progress Bar */}
-            <div className="w-full bg-slate-100 rounded-full h-2.5 overflow-hidden">
-              <div
-                className="bg-gradient-to-r from-blue-600 to-indigo-600 h-2.5 rounded-full transition-all duration-300"
-                style={{ width: `${((currentQIndex + 1) / currentTest.questions.length) * 100}%` }}
-              />
+            {/* Dynamic Adaptive Routing Indicator & Progress Bar */}
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between text-[11px] font-bold">
+                <span className="text-blue-700 flex items-center gap-1.5">
+                  <Sparkles className="w-3.5 h-3.5 text-blue-600" />
+                  <span>
+                    {nativeLanguageCode === 'nl'
+                      ? `Dynamische Adaptieve Routering • Actieve Moeilijkheidsgraad: ${activeTier}`
+                      : `Dynamic Adaptive Routing • Current Difficulty Tier: ${activeTier}`}
+                  </span>
+                </span>
+                <span className="text-slate-500">
+                  {Math.round(((adaptiveStep + 1) / TOTAL_ADAPTIVE_QUESTIONS) * 100)}%
+                </span>
+              </div>
+              <div className="w-full bg-slate-100 rounded-full h-2.5 overflow-hidden">
+                <div
+                  className="bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 h-2.5 rounded-full transition-all duration-300"
+                  style={{ width: `${((adaptiveStep + 1) / TOTAL_ADAPTIVE_QUESTIONS) * 100}%` }}
+                />
+              </div>
             </div>
 
             {/* Question Card */}
@@ -498,14 +592,14 @@ export const OnboardingPlacementView: React.FC<OnboardingPlacementViewProps> = (
                 <div className="flex items-center gap-2">
                   <span className="px-3 py-1 rounded-full bg-blue-100 text-blue-900 font-extrabold border border-blue-200 flex items-center gap-1.5">
                     <Target className="w-3.5 h-3.5" />
-                    <span>Niveau {currentQuestion.level}</span>
+                    <span>Niveau {currentQuestion.level || activeTier}</span>
                   </span>
                   <span className="font-bold text-slate-700">
                     {currentQuestion.target_skill}
                   </span>
                 </div>
                 <span className="text-slate-400 font-medium text-[11px]">
-                  {nativeLanguageCode === 'nl' ? '10 officiële CEFR vragen' : '10 standardized CEFR questions'}
+                  {nativeLanguageCode === 'nl' ? 'Officiële CEFR standaarden' : 'Standardized CEFR proficiency'}
                 </span>
               </div>
 
@@ -515,12 +609,22 @@ export const OnboardingPlacementView: React.FC<OnboardingPlacementViewProps> = (
               </div>
 
               {/* Distinct High-Contrast Prompt Card with Audio Playback */}
-              <div className="p-5 sm:p-6 rounded-2xl bg-gradient-to-br from-slate-900 via-slate-800 to-blue-950 text-white shadow-md border border-slate-700/50 flex items-center justify-between gap-4">
-                <div className="min-w-0 space-y-1">
-                  <div className="text-[11px] uppercase tracking-wider text-blue-300 font-extrabold">
-                    {getLanguageLabel(targetLanguage)}
+              <div className="p-5 sm:p-6 rounded-2xl bg-gradient-to-br from-[#0F2137] via-[#1B365D] to-[#0B1B3D] text-white shadow-lg border border-[#C5A059]/30 flex items-center justify-between gap-4">
+                <div className="min-w-0 space-y-1 flex-1">
+                  <div className="text-[11px] uppercase tracking-wider text-[#D4AF37] font-extrabold flex items-center gap-2">
+                    <span>{getLanguageLabel(targetLanguage)}</span>
+                    {isRtlLanguage(targetLanguage.code) && (
+                      <span className="px-1.5 py-0.5 rounded bg-[#C5A059]/20 text-[10px] text-[#FDE68A] font-bold border border-[#C5A059]/40">
+                        RTL
+                      </span>
+                    )}
                   </div>
-                  <p className="text-lg sm:text-xl font-extrabold text-white tracking-wide leading-relaxed break-words">
+                  <p
+                    dir={resolveDirection(currentQuestion.prompt || currentQuestion.prompt_native, targetLanguage.code)}
+                    className={`text-lg sm:text-xl font-extrabold text-white tracking-wide leading-relaxed break-words ${
+                      resolveDirection(currentQuestion.prompt || currentQuestion.prompt_native, targetLanguage.code) === 'rtl' ? 'text-right font-arabic' : 'text-left'
+                    }`}
+                  >
                     {currentQuestion.prompt || currentQuestion.prompt_native}
                   </p>
                 </div>
@@ -542,10 +646,10 @@ export const OnboardingPlacementView: React.FC<OnboardingPlacementViewProps> = (
                       console.error(e);
                     }
                   }}
-                  className="w-11 h-11 rounded-2xl bg-white/10 hover:bg-white/20 active:scale-95 text-white border border-white/20 flex items-center justify-center shrink-0 transition-all cursor-pointer shadow-sm"
+                  className="w-11 h-11 rounded-2xl bg-white/10 hover:bg-white/20 active:scale-95 text-white border border-[#C5A059]/30 flex items-center justify-center shrink-0 transition-all cursor-pointer shadow-sm"
                   title={nativeLanguageCode === 'nl' ? 'Luister naar uitspraak' : 'Listen to pronunciation'}
                 >
-                  <Volume2 className="w-5 h-5 text-blue-300" />
+                  <Volume2 className="w-5 h-5 text-[#D4AF37]" />
                 </button>
               </div>
 
@@ -556,7 +660,7 @@ export const OnboardingPlacementView: React.FC<OnboardingPlacementViewProps> = (
                   const isCorrect = opt.key === currentQuestion.correct_key;
                   const optionText = opt.text || opt.text_native || '';
 
-                  let cardStyle = 'bg-white border-slate-200/90 hover:border-blue-300 text-slate-900 hover:bg-slate-50/50';
+                  let cardStyle = 'bg-white border-slate-200/90 hover:border-[#C5A059]/50 text-slate-900 hover:bg-slate-50/50';
 
                   if (isAnswerChecked) {
                     if (isCorrect) {
@@ -567,7 +671,7 @@ export const OnboardingPlacementView: React.FC<OnboardingPlacementViewProps> = (
                       cardStyle = 'bg-slate-50/60 border-slate-200 text-slate-400 opacity-60';
                     }
                   } else if (isSelected) {
-                    cardStyle = 'bg-blue-50 border-blue-600 text-blue-950 ring-2 ring-blue-500/20 font-bold shadow-xs';
+                    cardStyle = 'bg-blue-50/80 border-[#1B365D] text-slate-950 ring-2 ring-[#C5A059]/40 font-bold shadow-xs';
                   }
 
                   return (
@@ -587,12 +691,17 @@ export const OnboardingPlacementView: React.FC<OnboardingPlacementViewProps> = (
                           : isAnswerChecked && isSelected
                           ? 'bg-rose-600 text-white'
                           : isSelected
-                          ? 'bg-blue-600 text-white'
+                          ? 'bg-[#1B365D] text-[#D4AF37]'
                           : 'bg-slate-100 text-slate-700'
                       }`}>
                         {opt.key}
                       </span>
-                      <div className="text-sm sm:text-base font-semibold leading-snug break-words flex-1">
+                      <div
+                        dir={resolveDirection(optionText, targetLanguage.code)}
+                        className={`text-sm sm:text-base font-semibold leading-snug break-words flex-1 ${
+                          resolveDirection(optionText, targetLanguage.code) === 'rtl' ? 'text-right font-arabic' : 'text-left'
+                        }`}
+                      >
                         {optionText}
                       </div>
                     </button>
@@ -671,7 +780,7 @@ export const OnboardingPlacementView: React.FC<OnboardingPlacementViewProps> = (
                   className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 text-white font-bold text-xs sm:text-sm shadow-md shadow-blue-500/20 flex items-center gap-2 cursor-pointer"
                 >
                   <span>
-                    {currentQIndex + 1 < currentTest.questions.length
+                    {adaptiveStep + 1 < TOTAL_ADAPTIVE_QUESTIONS
                       ? (nativeLanguageCode === 'nl' ? 'Volgende Vraag' : 'Next Question')
                       : (nativeLanguageCode === 'nl' ? 'Bekijk Resultaat' : 'View Results')}
                   </span>
@@ -695,25 +804,27 @@ export const OnboardingPlacementView: React.FC<OnboardingPlacementViewProps> = (
               </h2>
               <p className="text-sm text-slate-600 max-w-lg mx-auto">
                 {nativeLanguageCode === 'nl'
-                  ? `Gefeliciteerd ${name}! Op basis van jouw score van ${score}/10 op de officiële ERK-ladder is jouw niveau vastgesteld.`
-                  : `Congratulations ${name}! Based on your score of ${score}/10 on the CEFR ladder, your initial learning tier is confirmed.`}
+                  ? `Gefeliciteerd ${name}! Op basis van jouw adaptieve sessie op de officiële ERK-ladder is jouw taalniveau vastgesteld.`
+                  : `Congratulations ${name}! Based on your dynamic adaptive placement session, your official CEFR proficiency level is confirmed.`}
               </p>
             </div>
 
-            {/* Qualified Level Highlight Badge */}
-            <div className="inline-flex items-center gap-3 px-6 py-3 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-xl shadow-blue-500/25">
-              <GraduationCap className="w-6 h-6" />
-              <div className="text-left">
-                <div className="text-[10px] uppercase font-black tracking-widest text-blue-200">
-                  {nativeLanguageCode === 'nl' ? 'Gekwalificeerd ERK-Niveau' : 'Qualified CEFR Level'}
-                </div>
-                <div className="text-xl font-black">
-                  {assessedLevel}
-                </div>
+            {/* Official Diagnostic Score Banner */}
+            <div className="max-w-xl mx-auto p-5 rounded-3xl bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 text-white shadow-xl shadow-blue-500/25 space-y-2">
+              <div className="text-[11px] font-black uppercase tracking-widest text-blue-200">
+                {nativeLanguageCode === 'nl' ? 'Officieel Diagnostisch ERK-Resultaat' : 'Official CEFR Diagnostic Result'}
+              </div>
+              <div className="text-2xl sm:text-3xl font-black">
+                {officialScoreText || (nativeLanguageCode === 'nl' ? `Geverifieerd Niveau: ${assessedLevel}` : `Verified Level: ${assessedLevel}`)}
+              </div>
+              <div className="text-xs text-blue-100 font-medium">
+                {nativeLanguageCode === 'nl'
+                  ? 'Vastgesteld via praktische scenario-begripsvragen zonder theoretische grammaticaregels.'
+                  : 'Standardized practical real-world comprehension without theoretical grammar jargon.'}
               </div>
             </div>
 
-            {/* Diagnosis in Dutch */}
+            {/* Diagnosis / Practical Real-World Comprehension */}
             <div className="max-w-xl mx-auto p-4 rounded-2xl bg-blue-50/70 border border-blue-200 text-xs text-blue-950 font-medium leading-relaxed">
               {diagnosisText}
             </div>

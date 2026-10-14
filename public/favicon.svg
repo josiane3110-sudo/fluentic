@@ -1,19 +1,19 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 260 270" fill="none">
   <defs>
     <linearGradient id="fl-gold-swoosh" x1="0%" y1="100%" x2="100%" y2="0%">
-      <stop offset="0%" stop-color="#9E6F22" />
-      <stop offset="35%" stop-color="#C59239" />
-      <stop offset="70%" stop-color="#E2B85E" />
-      <stop offset="100%" stop-color="#F5CF78" />
+      <stop offset="0%" stop-color="#C5A059" />
+      <stop offset="50%" stop-color="#D4AF37" />
+      <stop offset="100%" stop-color="#F5D77F" />
     </linearGradient>
     <linearGradient id="fl-star-gold" x1="0%" y1="0%" x2="100%" y2="100%">
       <stop offset="0%" stop-color="#FDE68A" />
-      <stop offset="100%" stop-color="#B45309" />
+      <stop offset="50%" stop-color="#D4AF37" />
+      <stop offset="100%" stop-color="#C5A059" />
     </linearGradient>
     <linearGradient id="fl-navy-body" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#1E2E5D" />
-      <stop offset="60%" stop-color="#0E1A3C" />
-      <stop offset="100%" stop-color="#081129" />
+      <stop offset="0%" stop-color="#1B365D" />
+      <stop offset="60%" stop-color="#0F2137" />
+      <stop offset="100%" stop-color="#0B1B3D" />
     </linearGradient>
   </defs>
   <path d="M 44 14 Q 44 32 26 32 Q 44 32 44 50 Q 44 32 62 32 Q 44 32 44 14 Z" fill="url(#fl-star-gold)" />

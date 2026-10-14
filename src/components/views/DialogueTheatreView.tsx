@@ -12,10 +12,14 @@ import {
   CheckCircle2, 
   AlertCircle, 
   Lightbulb, 
-  Check 
+  Check,
+  Mic,
+  MicOff
 } from 'lucide-react';
 import { Language, UserProfile } from '../../types';
 import { audioSynth } from '../../services/audioSynthesizer';
+import { speechDetector } from '../../services/speechDetectionService';
+import { isRtlLanguage, stripTransliteration } from '../../services/languageTypography';
 import { getI18n } from '../../services/localization';
 import { WORLD_LANGUAGES } from '../../data/languages';
 
@@ -352,7 +356,28 @@ export const DialogueTheatreView: React.FC<DialogueTheatreViewProps> = ({
   const [currentSuggestions, setCurrentSuggestions] = useState<Array<{ text: string; translation: string }>>([]);
   const [inputText, setInputText] = useState('');
   const [isTyping, setIsTyping] = useState(false);
+  const [isListening, setIsListening] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
+
+  const toggleSpeechRecognition = async () => {
+    if (isListening) {
+      speechDetector.stopListening();
+      setIsListening(false);
+      return;
+    }
+
+    audioSynth.playGentleFeedback();
+    setIsListening(true);
+    const started = await speechDetector.startListening({
+      langCode: activeLanguage.code,
+      onTranscript: (finalTranscript) => {
+        setInputText((prev) => (prev ? prev + ' ' : '') + finalTranscript);
+      },
+      onError: () => setIsListening(false),
+      onEnd: () => setIsListening(false),
+    });
+    if (!started) setIsListening(false);
+  };
 
   // Initialize or reset messages when scenario or language changes
   useEffect(() => {
@@ -702,8 +727,23 @@ export const DialogueTheatreView: React.FC<DialogueTheatreViewProps> = ({
 
         {/* Input Bar */}
         <div className="p-3 sm:p-4 bg-white border-t border-slate-200 flex items-center gap-2">
+          <button
+            type="button"
+            id="dialogue-mic-btn"
+            onClick={toggleSpeechRecognition}
+            className={`p-3 rounded-2xl transition-all cursor-pointer shrink-0 ${
+              isListening
+                ? 'bg-rose-500 text-white animate-pulse ring-4 ring-rose-400/30'
+                : 'bg-slate-100 hover:bg-slate-200 text-slate-600'
+            }`}
+            title={isListening ? 'Stop listening' : 'Speak your answer (Speech Recognition)'}
+          >
+            {isListening ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
+          </button>
+
           <input
             type="text"
+            dir={isRtlLanguage(activeLanguage.code) ? 'rtl' : 'ltr'}
             value={inputText}
             onChange={(e) => setInputText(e.target.value)}
             onKeyDown={(e) => {
@@ -712,15 +752,23 @@ export const DialogueTheatreView: React.FC<DialogueTheatreViewProps> = ({
                 handleSendMessage();
               }
             }}
-            placeholder={isDutch ? `Schrijf je antwoord in het ${activeLanguage.name}...` : `Type your reply in ${activeLanguage.name}...`}
-            className="flex-1 px-4 py-2.5 rounded-2xl bg-slate-100 border border-transparent focus:border-blue-400 focus:bg-white text-xs sm:text-sm text-slate-800 placeholder:text-slate-400 outline-none transition-all"
+            placeholder={
+              isListening
+                ? (isDutch ? 'Luisteren... spreek nu...' : 'Listening... speak now...')
+                : isDutch
+                ? `Schrijf of spreek in het ${activeLanguage.name}...`
+                : `Type or speak reply in ${activeLanguage.name}...`
+            }
+            className={`flex-1 px-4 py-2.5 rounded-2xl bg-slate-100 border border-transparent focus:border-[#C5A059] focus:bg-white text-xs sm:text-sm text-slate-800 placeholder:text-slate-400 outline-none transition-all ${
+              isRtlLanguage(activeLanguage.code) ? 'text-right' : 'text-left'
+            }`}
           />
 
           <button
             type="button"
             disabled={!inputText.trim() || isTyping}
             onClick={() => handleSendMessage()}
-            className="p-3 rounded-2xl bg-blue-600 hover:bg-blue-700 disabled:opacity-40 text-white shadow-md shadow-blue-500/20 transition-all cursor-pointer"
+            className="p-3 rounded-2xl bg-[#1B365D] hover:bg-[#0F2137] disabled:opacity-40 text-[#D4AF37] shadow-md shadow-blue-900/15 transition-all cursor-pointer border border-[#C5A059]/40"
           >
             <Send className="w-4 h-4" />
           </button>

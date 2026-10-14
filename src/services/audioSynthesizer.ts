@@ -373,11 +373,42 @@ class AudioSynthesizer {
     }
   }
 
+  private customPersona: {
+    enabled: boolean;
+    name: string;
+    accent: string;
+    pitch: number;
+    rate: number;
+    voiceName?: string;
+    cadenceWordsPerMin?: number;
+  } | null = null;
+
+  public setCustomVoicePersona(persona: {
+    enabled: boolean;
+    name: string;
+    accent: string;
+    pitch: number;
+    rate: number;
+    voiceName?: string;
+    cadenceWordsPerMin?: number;
+  } | null) {
+    this.customPersona = persona;
+  }
+
+  public getCustomVoicePersona() {
+    return this.customPersona;
+  }
+
   /**
-   * Native Web Speech Synthesis with target language localization
+   * Native Web Speech Synthesis with target language localization & Custom Persona Neural Audio
    */
   public speakPhraseNative(phrase: string, langCode: string = 'es'): Promise<void> {
-    return this.speakText(phrase, langCode, 0.9);
+    const customRate = this.customPersona?.enabled ? this.customPersona.rate : 0.9;
+    return this.speakText(phrase, langCode, customRate);
+  }
+
+  public speak(phrase: string, langCode: string = 'es', rate?: number): Promise<void> {
+    return this.speakText(phrase, langCode, rate);
   }
 
   public speakText(text: string, langCode: string = 'es', rate: number = 0.95): Promise<void> {
@@ -391,14 +422,27 @@ class AudioSynthesizer {
       window.speechSynthesis.cancel();
       const utterance = new SpeechSynthesisUtterance(text);
       utterance.lang = langCode;
-      utterance.rate = rate;
-      utterance.pitch = 1.0;
+
+      // Apply custom voice persona if active
+      if (this.customPersona && this.customPersona.enabled) {
+        utterance.pitch = Math.max(0.6, Math.min(1.6, this.customPersona.pitch));
+        utterance.rate = Math.max(0.6, Math.min(1.4, this.customPersona.rate));
+      } else {
+        utterance.rate = rate;
+        utterance.pitch = 1.0;
+      }
 
       // Try to find matching voice
       const voices = window.speechSynthesis.getVoices();
-      const matchingVoice = voices.find(v => v.lang.startsWith(langCode));
-      if (matchingVoice) {
-        utterance.voice = matchingVoice;
+      let selectedVoice = voices.find((v) => v.lang.startsWith(langCode));
+
+      if (this.customPersona?.enabled && this.customPersona.voiceName) {
+        const customMatch = voices.find((v) => v.name.includes(this.customPersona!.voiceName!));
+        if (customMatch) selectedVoice = customMatch;
+      }
+
+      if (selectedVoice) {
+        utterance.voice = selectedVoice;
       }
 
       utterance.onend = () => resolve();
@@ -410,3 +454,4 @@ class AudioSynthesizer {
 }
 
 export const audioSynth = new AudioSynthesizer();
+

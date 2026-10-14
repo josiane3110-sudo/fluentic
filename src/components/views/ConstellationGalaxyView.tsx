@@ -14,7 +14,7 @@ import {
   Lock 
 } from 'lucide-react';
 import { LearningNode, CefrLevel, UserProfile, Language } from '../../types';
-import { SAMPLE_CURRICULUM_NODES } from '../../data/curriculum';
+import { AICurriculumEngine } from '../../services/aiCurriculumService';
 import { audioSynth } from '../../services/audioSynthesizer';
 
 interface ConstellationGalaxyViewProps {
@@ -42,7 +42,11 @@ export const ConstellationGalaxyView: React.FC<ConstellationGalaxyViewProps> = (
   activeCefr,
   onSelectNode,
 }) => {
-  const currentNodes = SAMPLE_CURRICULUM_NODES[activeCefr] || SAMPLE_CURRICULUM_NODES.A1;
+  const currentNodes = AICurriculumEngine.generateProceduralNodes(
+    activeLanguage,
+    user.nativeLanguageCode || 'en',
+    activeCefr
+  );
 
   return (
     <div

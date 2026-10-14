@@ -39,26 +39,25 @@ export const FluenticLogo: React.FC<FluenticLogoProps> = ({
     >
       <defs>
         <linearGradient id="fl-gold-swoosh" x1="0%" y1="100%" x2="100%" y2="0%">
-          <stop offset="0%" stopColor="#9E6F22" />
-          <stop offset="35%" stopColor="#C59239" />
-          <stop offset="70%" stopColor="#E2B85E" />
-          <stop offset="100%" stopColor="#F5CF78" />
+          <stop offset="0%" stopColor="#C5A059" />
+          <stop offset="50%" stopColor="#D4AF37" />
+          <stop offset="100%" stopColor="#F5D77F" />
         </linearGradient>
 
         <linearGradient id="fl-star-gold" x1="0%" y1="0%" x2="100%" y2="100%">
           <stop offset="0%" stopColor="#FDE68A" />
-          <stop offset="50%" stopColor="#D97706" />
-          <stop offset="100%" stopColor="#B45309" />
+          <stop offset="50%" stopColor="#D4AF37" />
+          <stop offset="100%" stopColor="#C5A059" />
         </linearGradient>
 
         <linearGradient id="fl-navy-body" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#1E2E5D" />
-          <stop offset="60%" stopColor="#0E1A3C" />
-          <stop offset="100%" stopColor="#081129" />
+          <stop offset="0%" stopColor="#1B365D" />
+          <stop offset="60%" stopColor="#0F2137" />
+          <stop offset="100%" stopColor="#0B1B3D" />
         </linearGradient>
 
         <filter id="fl-subtle-glow" x="-20%" y="-20%" width="140%" height="140%">
-          <feDropShadow dx="0" dy="2" stdDeviation="3" floodColor="#C59239" floodOpacity="0.25" />
+          <feDropShadow dx="0" dy="2" stdDeviation="3" floodColor="#D4AF37" floodOpacity="0.3" />
         </filter>
       </defs>
 

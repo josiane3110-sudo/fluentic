@@ -42,6 +42,7 @@ interface TopHorizonDeckProps {
   onOpenSpotlight: () => void;
   onOpenAuthModal: () => void;
   onOpenProModal: () => void;
+  onOpenAITutor?: () => void;
   onRetakePlacement?: () => void;
   onSignOut?: () => void;
   onSelectNativeLanguage?: (langCode: string) => void;
@@ -62,6 +63,7 @@ export const TopHorizonDeck: React.FC<TopHorizonDeckProps> = ({
   onOpenSpotlight,
   onOpenAuthModal,
   onOpenProModal,
+  onOpenAITutor,
   onRetakePlacement,
   onSignOut,
   onSelectNativeLanguage,
@@ -185,16 +187,33 @@ export const TopHorizonDeck: React.FC<TopHorizonDeckProps> = ({
             )}
           </div>
 
-          {/* Quick Placement Test Retake Button */}
-          {onRetakePlacement && (
-            <button
-              onClick={() => onRetakePlacement()}
-              className="hidden xl:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 text-xs font-bold transition-all cursor-pointer"
-            >
-              <Sparkles className="w-3.5 h-3.5" />
-              <span>{i18n.retakeTest}</span>
-            </button>
-          )}
+          {/* Quick Placement Test Retake & Dedicated AI Tutor Button */}
+          <div className="flex items-center gap-2">
+            {onOpenAITutor && (
+              <button
+                id="top-deck-ai-tutor-btn"
+                onClick={() => {
+                  audioSynth.playGentleFeedback();
+                  onOpenAITutor();
+                }}
+                className="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-[#0F2137] via-[#1B365D] to-[#0F2137] text-[#D4AF37] border border-[#C5A059]/40 text-xs font-black shadow-xs hover:scale-102 active:scale-98 transition-all cursor-pointer"
+                title="Open Fluentic AI Polyglot Tutor"
+              >
+                <Sparkles className="w-3.5 h-3.5 text-[#D4AF37] fill-[#D4AF37]/30" />
+                <span>AI Tutor</span>
+              </button>
+            )}
+
+            {onRetakePlacement && (
+              <button
+                onClick={() => onRetakePlacement()}
+                className="hidden xl:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 text-xs font-bold transition-all cursor-pointer"
+              >
+                <Sparkles className="w-3.5 h-3.5" />
+                <span>{i18n.retakeTest}</span>
+              </button>
+            )}
+          </div>
 
           {/* Right Section: Pro Studio Link, Streak, Gems, Soundscape & Profile */}
           <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0">

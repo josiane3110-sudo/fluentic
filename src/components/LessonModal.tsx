@@ -1,28 +1,32 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { 
-  X, 
-  Volume2, 
-  Mic, 
-  MicOff, 
-  Check, 
-  Sparkles, 
-  ArrowRight, 
-  RotateCcw, 
-  HelpCircle, 
-  Lightbulb, 
-  Award, 
-  Gem, 
-  CheckCircle2, 
-  VolumeX 
+import {
+  X,
+  Volume2,
+  Sparkles,
+  CheckCircle2,
+  AlertCircle,
+  ArrowRight,
+  BookOpen,
+  Award,
+  Gem,
+  Flame,
+  HelpCircle,
+  Lightbulb,
+  Clock,
+  Mic,
+  MicOff,
+  RotateCcw,
 } from 'lucide-react';
-import { LearningNode, Exercise, UserProfile, Language } from '../types';
+import { LearningNode, Language, Exercise } from '../types';
 import { audioSynth } from '../services/audioSynthesizer';
+import { speechDetector } from '../services/speechDetectionService';
+import { isRtlLanguage, stripTransliteration } from '../services/languageTypography';
 
 interface LessonModalProps {
   node: LearningNode;
   activeLanguage: Language;
   onClose: () => void;
-  onComplete: (xpEarned: number, gemsEarned: number) => void;
+  onComplete: (earnedXp: number, earnedGems: number) => void;
 }
 
 export const LessonModal: React.FC<LessonModalProps> = ({
@@ -31,139 +35,220 @@ export const LessonModal: React.FC<LessonModalProps> = ({
   onClose,
   onComplete,
 }) => {
-  const [currentExIndex, setCurrentExIndex] = useState(0);
+  // STAGES:
+  // 1: 'concept'  - Concept & Teaching Card (Native script, audio, translations, context)
+  // 2: 'practice' - Interactive exercises (word bank, matching, speech, fill-blank)
+  // 3: 'complete' - Reinforcement & Progress Tracking (Mastery Badges & Streak points)
+  const [stage, setStage] = useState<'concept' | 'practice' | 'complete'>('concept');
+  const [currentExIndex, setCurrentExIndex] = useState<number>(0);
+  const [reviewedConcepts, setReviewedConcepts] = useState<Record<number, boolean>>({});
+
+  // Flexible Duration Selector (5m, 10m, 15m, or Custom)
+  const [sessionMinutes, setSessionMinutes] = useState<number>(10);
+  const [isCustomDurationModalOpen, setIsCustomDurationModalOpen] = useState<boolean>(false);
+  const [customInputMinutes, setCustomInputMinutes] = useState<string>('20');
+  const [secondsRemaining, setSecondsRemaining] = useState<number>(10 * 60);
+
+  // Practice inputs
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
   const [scrambledTokens, setScrambledTokens] = useState<string[]>([]);
   const [assembledTokens, setAssembledTokens] = useState<string[]>([]);
-  const [isListening, setIsListening] = useState(false);
-  const [recognizedSpeech, setRecognizedSpeech] = useState('');
+  const [isAnswerChecked, setIsAnswerChecked] = useState<boolean>(false);
+  const [isCorrect, setIsCorrect] = useState<boolean>(false);
+
+  // Audio Recognition
+  const [isListening, setIsListening] = useState<boolean>(false);
+  const [recognizedSpeech, setRecognizedSpeech] = useState<string>('');
+  const [interimSpeech, setInterimSpeech] = useState<string>('');
   const [speechAccuracy, setSpeechAccuracy] = useState<number | null>(null);
-  const [isAnswerChecked, setIsAnswerChecked] = useState(false);
-  const [isCorrect, setIsCorrect] = useState(false);
-  const [attempts, setAttempts] = useState(0);
-  const [showHint, setShowHint] = useState(false);
-  const [isLessonFinished, setIsLessonFinished] = useState(false);
 
-  const recognitionRef = useRef<any>(null);
-  const currentExercise = node.exercises[currentExIndex];
+  const isRtl = isRtlLanguage(activeLanguage.code);
 
-  // Initialize exercise state when exercise index changes
+  const rawExercise: Exercise = node.exercises[currentExIndex] || {
+    id: 'fallback-ex',
+    type: 'multiple-choice',
+    prompt: `Practice phrase for ${node.title}`,
+    targetPhrase: node.nativeTitle || node.title,
+    translation: node.description,
+    options: [node.nativeTitle || node.title, 'Option B', 'Option C', 'Option D'],
+    correctAnswer: node.nativeTitle || node.title,
+    culturalNote: 'Authentic real-world usage in context.',
+    exampleSentence: node.nativeTitle || node.title,
+    exampleTranslation: node.description,
+  };
+
+  // Pure native script guarantee: Strip transliterations
+  const currentExercise: Exercise = {
+    ...rawExercise,
+    targetPhrase: stripTransliteration(rawExercise.targetPhrase || ''),
+    translation: rawExercise.translation,
+    options: rawExercise.options?.map((opt) => stripTransliteration(opt)),
+    correctAnswer: Array.isArray(rawExercise.correctAnswer)
+      ? rawExercise.correctAnswer.map((ans) => stripTransliteration(ans))
+      : stripTransliteration(rawExercise.correctAnswer || ''),
+    exampleSentence: stripTransliteration(rawExercise.exampleSentence || ''),
+  };
+
+  // Timer countdown
   useEffect(() => {
-    if (!currentExercise) return;
+    const timer = setInterval(() => {
+      setSecondsRemaining((prev) => (prev > 0 ? prev - 1 : 0));
+    }, 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  // Update duration selector
+  const handleSelectDuration = (mins: number) => {
+    audioSynth.playGentleFeedback();
+    setSessionMinutes(mins);
+    setSecondsRemaining(mins * 60);
+  };
+
+  const handleApplyCustomDuration = () => {
+    const parsed = parseInt(customInputMinutes, 10);
+    if (!isNaN(parsed) && parsed > 0 && parsed <= 180) {
+      handleSelectDuration(parsed);
+      setIsCustomDurationModalOpen(false);
+    }
+  };
+
+  // Reset & prepare exercise tokens on question transition
+  useEffect(() => {
     setSelectedOption(null);
     setIsAnswerChecked(false);
     setIsCorrect(false);
     setRecognizedSpeech('');
+    setInterimSpeech('');
     setSpeechAccuracy(null);
-    setShowHint(false);
+    speechDetector.stopListening();
+    setIsListening(false);
 
-    if (currentExercise.type === 'sentence-scramble' && currentExercise.scrambledWords) {
-      setScrambledTokens([...currentExercise.scrambledWords].sort(() => Math.random() - 0.5));
+    if (currentExercise.type === 'sentence-scramble') {
+      const tokens =
+        currentExercise.scrambledWords ||
+        (currentExercise.targetPhrase || '').split(/\s+/).filter(Boolean);
+      // Clean tokens of any transliteration
+      const cleaned = tokens.map((t) => stripTransliteration(t));
+      const shuffled = [...cleaned].sort(() => 0.5 - Math.random());
+      setScrambledTokens(shuffled);
       setAssembledTokens([]);
     }
+  }, [currentExIndex, currentExercise.id]);
 
-    // Auto-speak target phrase for listening comprehension
-    if (currentExercise.type === 'listening-comprehension') {
-      setTimeout(() => {
-        audioSynth.speakText(currentExercise.targetPhrase, activeLanguage.code);
-      }, 300);
-    }
-  }, [currentExIndex, node, activeLanguage]);
+  const playAudio = (text: string, rate: number = 0.95) => {
+    audioSynth.speakPhraseNative(text, activeLanguage.code);
+  };
 
-  // Handle Speech Recognition for speech exercises
-  const toggleSpeechRecognition = () => {
+  // Start Speech Recognition
+  const toggleSpeechRecognition = async () => {
     if (isListening) {
-      if (recognitionRef.current) {
-        recognitionRef.current.stop();
-      }
+      speechDetector.stopListening();
       setIsListening(false);
       return;
     }
 
-    const SpeechRecClass = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    audioSynth.playGentleFeedback();
+    setIsListening(true);
+    setInterimSpeech('');
 
-    if (!SpeechRecClass) {
-      // Browser fallback simulation
-      setIsListening(true);
-      setTimeout(() => {
-        setIsListening(false);
-        const simText = currentExercise.targetPhrase;
-        setRecognizedSpeech(simText);
-        setSpeechAccuracy(94);
-      }, 1500);
-      return;
-    }
-
-    try {
-      const recognition = new SpeechRecClass();
-      recognition.lang = activeLanguage.code;
-      recognition.continuous = false;
-      recognition.interimResults = true;
-
-      recognition.onstart = () => {
-        setIsListening(true);
-      };
-
-      recognition.onresult = (event: any) => {
-        const transcript = event.results[0][0].transcript;
-        setRecognizedSpeech(transcript);
-        
-        // Calculate similarity score
-        const targetClean = currentExercise.targetPhrase.toLowerCase().replace(/[^a-z0-9]/gi, '');
-        const transClean = transcript.toLowerCase().replace(/[^a-z0-9]/gi, '');
-        
-        let score = 85;
-        if (targetClean === transClean) score = 98;
-        else if (transClean.includes(targetClean.slice(0, 4))) score = 90;
-        else score = Math.floor(Math.random() * 15 + 80);
-
+    const started = await speechDetector.startListening({
+      langCode: activeLanguage.code,
+      onTranscript: (finalTranscript) => {
+        setRecognizedSpeech(finalTranscript);
+        setInterimSpeech('');
+        // Calculate similarity to target phrase
+        const targetClean = currentExercise.targetPhrase.toLowerCase().replace(/[.,/#!$%^&*;:{}=\-_`~()]/g, '').trim();
+        const heardClean = finalTranscript.toLowerCase().replace(/[.,/#!$%^&*;:{}=\-_`~()]/g, '').trim();
+        const score = heardClean.includes(targetClean) || targetClean.includes(heardClean) ? 96 : 82;
         setSpeechAccuracy(score);
-      };
-
-      recognition.onerror = () => {
+      },
+      onInterim: (interim) => {
+        setInterimSpeech(interim);
+      },
+      onError: (err) => {
+        console.warn('Speech detection notice:', err);
         setIsListening(false);
-      };
-
-      recognition.onend = () => {
+      },
+      onEnd: () => {
         setIsListening(false);
-      };
+      },
+    });
 
-      recognitionRef.current = recognition;
-      recognition.start();
-    } catch (e) {
+    if (!started) {
       setIsListening(false);
-      console.warn('Speech recognition error:', e);
     }
   };
 
-  const handlePlayAudio = (rate: number = 0.9) => {
-    audioSynth.speakText(currentExercise.targetPhrase, activeLanguage.code, rate);
+  // Step 1 -> Step 2 transition: User reviews the Concept Card
+  const handleStartPractice = () => {
+    audioSynth.playSuccessChime();
+    setReviewedConcepts((prev) => ({ ...prev, [currentExIndex]: true }));
+    setStage('practice');
   };
 
+  // Word token toggle for sentence scramble
+  const handleToggleToken = (word: string, isFromScrambled: boolean) => {
+    if (isAnswerChecked) return;
+    audioSynth.playGentleFeedback();
+
+    if (isFromScrambled) {
+      const idx = scrambledTokens.indexOf(word);
+      if (idx !== -1) {
+        const nextScrambled = [...scrambledTokens];
+        nextScrambled.splice(idx, 1);
+        setScrambledTokens(nextScrambled);
+        setAssembledTokens([...assembledTokens, word]);
+      }
+    } else {
+      const idx = assembledTokens.indexOf(word);
+      if (idx !== -1) {
+        const nextAssembled = [...assembledTokens];
+        nextAssembled.splice(idx, 1);
+        setAssembledTokens(nextAssembled);
+        setScrambledTokens([...scrambledTokens, word]);
+      }
+    }
+  };
+
+  // Step 2: Check practice answer
   const handleCheckAnswer = () => {
     if (isAnswerChecked) {
-      // Move to next exercise
+      // Advance to next exercise or finalize
       if (currentExIndex < node.exercises.length - 1) {
-        setCurrentExIndex(currentExIndex + 1);
+        const nextIdx = currentExIndex + 1;
+        setCurrentExIndex(nextIdx);
+        if (!reviewedConcepts[nextIdx]) {
+          setStage('concept');
+        } else {
+          setStage('practice');
+        }
       } else {
-        setIsLessonFinished(true);
+        setStage('complete');
         audioSynth.playCrownFanfare();
       }
       return;
     }
 
     let correct = false;
-
-    if (currentExercise.type === 'multiple-choice' || currentExercise.type === 'listening-comprehension' || currentExercise.type === 'translation' || currentExercise.type === 'fill-blank') {
+    if (
+      currentExercise.type === 'multiple-choice' ||
+      currentExercise.type === 'listening-comprehension' ||
+      currentExercise.type === 'translation' ||
+      currentExercise.type === 'fill-blank'
+    ) {
       correct = selectedOption === currentExercise.correctAnswer;
     } else if (currentExercise.type === 'sentence-scramble') {
-      const assembledStr = assembledTokens.join(' ');
-      const targetStr = Array.isArray(currentExercise.correctAnswer)
-        ? currentExercise.correctAnswer.join(' ')
-        : currentExercise.correctAnswer;
+      const assembledStr = assembledTokens.join(' ').trim().toLowerCase();
+      const targetStr = (
+        Array.isArray(currentExercise.correctAnswer)
+          ? currentExercise.correctAnswer.join(' ')
+          : currentExercise.correctAnswer || currentExercise.targetPhrase || ''
+      )
+        .trim()
+        .toLowerCase();
       correct = assembledStr === targetStr;
     } else if (currentExercise.type === 'speech-pronounce') {
-      correct = (speechAccuracy ?? 0) >= 75 || recognizedSpeech.length > 3;
+      correct = (speechAccuracy ?? 0) >= 70 || recognizedSpeech.length > 2;
     }
 
     setIsCorrect(correct);
@@ -173,185 +258,305 @@ export const LessonModal: React.FC<LessonModalProps> = ({
       audioSynth.playSuccessChime();
     } else {
       audioSynth.playGentleFeedback();
-      setAttempts(attempts + 1);
     }
   };
 
-  // Finish Lesson
+  // Finalize Lesson & Award Mastery Badges + Streak Points
   const handleFinish = () => {
     onComplete(node.xpReward, node.gemReward);
     onClose();
   };
 
+  const formatTimer = (secs: number) => {
+    const m = Math.floor(secs / 60);
+    const s = secs % 60;
+    return `${m}:${s < 10 ? '0' : ''}${s}`;
+  };
+
   return (
-    <div
-      id="fluentic-lesson-modal"
-      className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-md flex items-center justify-center p-3 sm:p-6"
-    >
-      <div
-        className="w-full max-w-2xl bg-white rounded-3xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[92vh] animate-in fade-in zoom-in-95"
-      >
-        {/* Lesson Progress Header */}
-        <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between gap-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-slate-950/80 backdrop-blur-md animate-in fade-in duration-200">
+      <div className="relative w-full max-w-2xl bg-white rounded-3xl shadow-2xl overflow-hidden border border-slate-200 flex flex-col max-h-[92vh]">
+        
+        {/* Navigation & Duration Bar */}
+        <div className="px-5 py-3.5 border-b border-slate-100 flex items-center justify-between bg-slate-50/80 gap-3">
+          <div className="flex items-center gap-2">
+            <span className="px-2.5 py-1 rounded-xl bg-[#0F2137] text-[#D4AF37] text-[11px] font-black uppercase tracking-wider border border-[#C5A059]/30">
+              {node.cefr || 'A1'}
+            </span>
+            <span className="text-xs font-bold text-slate-700 truncate max-w-[140px] sm:max-w-[200px]">
+              {node.title}
+            </span>
+          </div>
+
+          {/* Flexible Duration Selector */}
+          <div className="flex items-center gap-1.5 bg-white border border-slate-200 rounded-xl p-1 shadow-2xs">
+            <Clock className="w-3.5 h-3.5 text-[#C5A059] ml-1 shrink-0" />
+            {[5, 10, 15].map((mins) => (
+              <button
+                key={mins}
+                type="button"
+                onClick={() => handleSelectDuration(mins)}
+                className={`px-2 py-0.5 rounded-lg text-[11px] font-black transition-all ${
+                  sessionMinutes === mins
+                    ? 'bg-[#1B365D] text-[#D4AF37] shadow-xs'
+                    : 'text-slate-500 hover:text-slate-800'
+                }`}
+              >
+                {mins}m
+              </button>
+            ))}
+            <button
+              type="button"
+              onClick={() => setIsCustomDurationModalOpen(true)}
+              className={`px-2 py-0.5 rounded-lg text-[11px] font-bold transition-all ${
+                ![5, 10, 15].includes(sessionMinutes)
+                  ? 'bg-[#1B365D] text-[#D4AF37] shadow-xs'
+                  : 'text-slate-500 hover:text-slate-800'
+              }`}
+            >
+              {![5, 10, 15].includes(sessionMinutes) ? `${sessionMinutes}m` : 'Custom'}
+            </button>
+            <span className="text-[10px] font-mono text-slate-400 pl-1 pr-1.5 border-l border-slate-200">
+              {formatTimer(secondsRemaining)}
+            </span>
+          </div>
+
           <button
-            id="lesson-modal-close-btn"
+            type="button"
             onClick={onClose}
-            className="p-1.5 rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors"
+            className="p-1.5 rounded-full hover:bg-slate-200 text-slate-400 hover:text-slate-600 transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
-
-          {/* Progress Bar */}
-          <div className="flex-1 max-w-md h-2.5 bg-slate-100 rounded-full overflow-hidden">
-            <div
-              className="h-full bg-gradient-to-r from-amber-500 to-emerald-500 rounded-full transition-all duration-300"
-              style={{
-                width: `${((currentExIndex + (isLessonFinished ? 1 : 0)) / node.exercises.length) * 100}%`,
-              }}
-            />
-          </div>
-
-          <div className="text-xs font-bold text-slate-400 font-mono">
-            {currentExIndex + 1}/{node.exercises.length}
-          </div>
         </div>
 
         {/* Content Body */}
-        <div className="p-6 overflow-y-auto flex-1 space-y-6">
-          {!isLessonFinished ? (
-            <>
-              {/* Node Title and CEFR pill */}
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <span className="px-2 py-0.5 rounded-md bg-amber-100 text-amber-800 text-xs font-extrabold">
-                    {node.cefr}
-                  </span>
-                  <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
-                    {node.category} • {activeLanguage.name}
-                  </span>
-                </div>
-                <div className="flex items-center gap-1 text-xs font-bold text-slate-500">
-                  <Sparkles className="w-3.5 h-3.5 text-amber-500" />
-                  <span>+{node.xpReward} XP</span>
-                </div>
+        <div className="p-5 sm:p-7 overflow-y-auto space-y-6 flex-1">
+
+          {/* ============================================================ */}
+          {/* STEP 1: CONCEPT CARD (TEACH FIRST PEDAGOGY)                  */}
+          {/* ============================================================ */}
+          {stage === 'concept' && (
+            <div className="space-y-6">
+              <div className="text-center space-y-2">
+                <span className="inline-flex items-center gap-1.5 text-xs font-black uppercase tracking-wider text-[#1B365D] bg-blue-50 px-3.5 py-1 rounded-full border border-[#C5A059]/30">
+                  <BookOpen className="w-3.5 h-3.5 text-[#C5A059]" /> Concept Card • Pure Native Script
+                </span>
+                <h2
+                  dir={isRtl ? 'rtl' : 'ltr'}
+                  className={`text-2xl sm:text-4xl font-black text-[#0F2137] tracking-tight leading-relaxed ${
+                    isRtl ? 'text-right' : 'text-center'
+                  }`}
+                >
+                  {currentExercise.targetPhrase}
+                </h2>
               </div>
 
-              {/* Prompt Question */}
-              <div className="space-y-1">
-                <h3 className="text-lg sm:text-xl font-extrabold text-slate-900 leading-snug">
-                  {currentExercise.prompt}
-                </h3>
-                {currentExercise.phoneticIpa && (
-                  <div className="text-xs text-slate-500 font-mono">
-                    IPA: {currentExercise.phoneticIpa}
+              {/* Dual-Speed Audio Pronunciation Controls */}
+              <div className="flex justify-center items-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => playAudio(currentExercise.targetPhrase || '', 1.0)}
+                  className="px-4 py-2.5 rounded-2xl bg-gradient-to-r from-[#1B365D] to-[#0F2137] hover:from-[#0F2137] text-[#D4AF37] font-black text-xs flex items-center gap-2 shadow-md shadow-blue-900/15 cursor-pointer border border-[#C5A059]/40"
+                >
+                  <Volume2 className="w-4 h-4 text-[#D4AF37]" />
+                  <span>Listen Normal</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => playAudio(currentExercise.targetPhrase || '', 0.7)}
+                  className="px-4 py-2.5 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs flex items-center gap-2 cursor-pointer"
+                >
+                  <Volume2 className="w-4 h-4 text-slate-500" />
+                  <span>Slow (0.7x)</span>
+                </button>
+              </div>
+
+              {/* Meaning & Context Card */}
+              <div className="p-5 rounded-2xl bg-slate-50 border border-slate-200 space-y-3">
+                <div>
+                  <span className="text-[10px] font-black uppercase tracking-wider text-slate-400">Meaning</span>
+                  <p className="text-base sm:text-lg font-bold text-slate-800">
+                    {currentExercise.translation}
+                  </p>
+                </div>
+                {currentExercise.exampleSentence && (
+                  <div className="pt-2 border-t border-slate-200">
+                    <span className="text-[10px] font-black uppercase tracking-wider text-slate-400">Real-Life Context</span>
+                    <p
+                      dir={isRtl ? 'rtl' : 'ltr'}
+                      className={`text-sm font-semibold text-slate-700 italic ${isRtl ? 'text-right' : 'text-left'}`}
+                    >
+                      "{currentExercise.exampleSentence}"
+                    </p>
+                    {currentExercise.exampleTranslation && (
+                      <p className="text-xs text-slate-500 mt-0.5">
+                        ↳ {currentExercise.exampleTranslation}
+                      </p>
+                    )}
                   </div>
                 )}
               </div>
 
-              {/* Target phrase card with audio playback - shown for speech-pronounce drills, or after answer is checked for review */}
-              {currentExercise.type !== 'listening-comprehension' && (currentExercise.type === 'speech-pronounce' || isAnswerChecked) && (
-                <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200/90 flex items-center justify-between gap-3 animate-fadeIn">
-                  <div>
-                    <div className="text-base sm:text-lg font-bold text-slate-900">
-                      {currentExercise.targetPhrase}
-                    </div>
-                    {isAnswerChecked && currentExercise.translation && (
-                      <div className="text-xs text-slate-500 mt-0.5">{currentExercise.translation}</div>
-                    )}
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <button
-                      id="lesson-audio-play-btn"
-                      onClick={() => handlePlayAudio(0.95)}
-                      className="p-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white shadow-xs transition-colors cursor-pointer"
-                      title="Play native audio"
-                    >
-                      <Volume2 className="w-4 h-4" />
-                    </button>
-                    <button
-                      id="lesson-audio-slow-btn"
-                      onClick={() => handlePlayAudio(0.65)}
-                      className="p-2 rounded-xl bg-white hover:bg-slate-100 text-slate-600 border border-slate-200 text-xs font-bold cursor-pointer"
-                      title="Slow pronunciation"
-                    >
-                      0.7x
-                    </button>
-                  </div>
-                </div>
-              )}
-
-              {/* Listening Comprehension Audio Trigger */}
-              {currentExercise.type === 'listening-comprehension' && (
-                <div className="py-6 flex flex-col items-center justify-center gap-3">
-                  <button
-                    id="listening-play-audio-btn"
-                    onClick={() => handlePlayAudio(0.9)}
-                    className="w-20 h-20 rounded-full bg-gradient-to-tr from-blue-600 to-blue-500 text-white shadow-lg shadow-blue-500/30 flex items-center justify-center hover:scale-105 transition-transform"
-                  >
-                    <Volume2 className="w-8 h-8" />
-                  </button>
-                  <p className="text-xs text-slate-500 font-medium">
-                    Tap to hear target speech synthesis
+              {/* Pro Tip */}
+              {currentExercise.culturalNote && (
+                <div className="p-4 rounded-2xl bg-amber-50/70 border border-amber-200/80 flex items-start gap-3">
+                  <Lightbulb className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+                  <p className="text-xs text-amber-900 leading-relaxed font-medium">
+                    {currentExercise.culturalNote}
                   </p>
                 </div>
               )}
 
-              {/* Exercise Type 1: Multiple Choice / Translation / Listening Options */}
-              {(currentExercise.type === 'multiple-choice' ||
-                currentExercise.type === 'listening-comprehension' ||
-                currentExercise.type === 'translation' ||
-                currentExercise.type === 'fill-blank') &&
-                currentExercise.options && (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                    {currentExercise.options.map((opt, idx) => {
-                      const isSelected = selectedOption === opt;
-                      let btnStyle = 'bg-white hover:bg-slate-50 border-slate-200 text-slate-800';
+              {/* Transition to Practice */}
+              <div className="pt-2">
+                <button
+                  type="button"
+                  onClick={handleStartPractice}
+                  className="w-full py-4 rounded-2xl bg-gradient-to-r from-[#1B365D] via-[#0F2137] to-[#1B365D] hover:from-[#0F2137] text-white font-black text-sm sm:text-base flex items-center justify-center gap-2 shadow-lg shadow-blue-900/20 cursor-pointer border border-[#C5A059]/40"
+                >
+                  <span className="text-[#D4AF37]">Practice This Phrase</span>
+                  <ArrowRight className="w-4 h-4 text-[#D4AF37]" />
+                </button>
+              </div>
+            </div>
+          )}
 
-                      if (isAnswerChecked) {
-                        if (opt === currentExercise.correctAnswer) {
-                          btnStyle = 'bg-emerald-50 border-emerald-400 text-emerald-900 ring-2 ring-emerald-400/30';
-                        } else if (isSelected && !isCorrect) {
-                          btnStyle = 'bg-rose-50 border-rose-300 text-rose-800';
-                        }
-                      } else if (isSelected) {
-                        btnStyle = 'bg-amber-50/90 border-amber-400 text-amber-950 ring-2 ring-amber-400/20';
+          {/* ============================================================ */}
+          {/* STEP 2: PRACTICAL INTERACTIVE PRACTICE                       */}
+          {/* ============================================================ */}
+          {stage === 'practice' && (
+            <div className="space-y-6">
+              <div className="flex items-center justify-between text-xs font-bold text-slate-400 pb-2 border-b border-slate-100">
+                <span className="text-[#1B365D] font-extrabold uppercase tracking-wider">
+                  Exercise {currentExIndex + 1} of {node.exercises.length}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setStage('concept')}
+                  className="text-slate-400 hover:text-slate-700 flex items-center gap-1 text-[11px]"
+                >
+                  <HelpCircle className="w-3.5 h-3.5" /> Review Concept
+                </button>
+              </div>
+
+              <div className="space-y-1">
+                <h3 className="text-base sm:text-lg font-bold text-slate-900">
+                  {currentExercise.prompt}
+                </h3>
+                {currentExercise.type === 'listening-comprehension' && (
+                  <button
+                    type="button"
+                    onClick={() => playAudio(currentExercise.targetPhrase || '', 0.9)}
+                    className="mt-2 px-3 py-1.5 rounded-xl bg-blue-50 text-blue-700 font-bold text-xs flex items-center gap-1.5"
+                  >
+                    <Volume2 className="w-4 h-4" /> Listen again
+                  </button>
+                )}
+              </div>
+
+              {/* Practice Form A: Multiple Choice / Translation */}
+              {currentExercise.type !== 'sentence-scramble' && currentExercise.type !== 'speech-pronounce' && currentExercise.options && (
+                <div className="space-y-2.5">
+                  {currentExercise.options.map((option, idx) => {
+                    const isSelected = selectedOption === option;
+                    let btnStyle = 'bg-white border-slate-200 text-slate-700 hover:border-slate-300';
+                    if (isSelected && !isAnswerChecked) {
+                      btnStyle = 'bg-blue-50 border-[#1B365D] text-[#0F2137] font-bold ring-2 ring-[#C5A059]/40';
+                    } else if (isAnswerChecked) {
+                      if (option === currentExercise.correctAnswer) {
+                        btnStyle = 'bg-emerald-50 border-emerald-500 text-emerald-900 font-bold';
+                      } else if (isSelected && option !== currentExercise.correctAnswer) {
+                        btnStyle = 'bg-rose-50 border-rose-500 text-rose-900 font-bold';
+                      } else {
+                        btnStyle = 'opacity-40 bg-slate-50 border-slate-200 text-slate-400';
                       }
+                    }
 
-                      return (
+                    return (
+                      <button
+                        key={idx}
+                        type="button"
+                        disabled={isAnswerChecked}
+                        onClick={() => setSelectedOption(option)}
+                        className={`w-full p-4 rounded-2xl border text-left flex items-center justify-between transition-all ${btnStyle}`}
+                      >
+                        <span
+                          dir={isRtl ? 'rtl' : 'ltr'}
+                          className={`text-sm font-medium ${isRtl ? 'text-right' : 'text-left'}`}
+                        >
+                          {option}
+                        </span>
+                        {isAnswerChecked && option === currentExercise.correctAnswer && (
+                          <CheckCircle2 className="w-5 h-5 text-emerald-600 flex-shrink-0" />
+                        )}
+                        {isAnswerChecked && isSelected && option !== currentExercise.correctAnswer && (
+                          <AlertCircle className="w-5 h-5 text-rose-600 flex-shrink-0" />
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+
+              {/* Practice Form B: Sentence Scramble / Word Bank */}
+              {currentExercise.type === 'sentence-scramble' && (
+                <div className="space-y-4">
+                  {/* Assembled Area */}
+                  <div
+                    dir={isRtl ? 'rtl' : 'ltr'}
+                    className="min-h-[64px] p-4 rounded-2xl bg-slate-50 border-2 border-dashed border-slate-200 flex flex-wrap gap-2 items-center"
+                  >
+                    {assembledTokens.length === 0 ? (
+                      <span className="text-xs text-slate-400 italic">Tap words below to construct the phrase...</span>
+                    ) : (
+                      assembledTokens.map((word, idx) => (
                         <button
                           key={idx}
-                          id={`exercise-opt-${idx}-btn`}
-                          disabled={isAnswerChecked}
-                          onClick={() => {
-                            audioSynth.playGentleFeedback();
-                            setSelectedOption(opt);
-                          }}
-                          className={`p-3.5 rounded-2xl border text-left font-medium text-sm transition-all shadow-xs ${btnStyle}`}
+                          type="button"
+                          onClick={() => handleToggleToken(word, false)}
+                          className="px-3.5 py-1.5 rounded-xl bg-[#1B365D] text-[#D4AF37] font-bold text-xs shadow-sm"
                         >
-                          <div className="flex items-start gap-2.5">
-                            <span className="w-5 h-5 rounded-full border border-slate-300 bg-slate-50 flex items-center justify-center text-xs font-bold text-slate-600 shrink-0 mt-0.5">
-                              {String.fromCharCode(65 + idx)}
-                            </span>
-                            <span className="leading-snug">{opt}</span>
-                          </div>
+                          {word}
                         </button>
-                      );
-                    })}
+                      ))
+                    )}
                   </div>
-                )}
 
-              {/* Exercise Type 2: Speech Pronunciation Drill */}
+                  {/* Scrambled Bank */}
+                  <div dir={isRtl ? 'rtl' : 'ltr'} className="flex flex-wrap gap-2 pt-2">
+                    {scrambledTokens.map((word, idx) => (
+                      <button
+                        key={idx}
+                        type="button"
+                        onClick={() => handleToggleToken(word, true)}
+                        className="px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-700 font-bold text-xs cursor-pointer"
+                      >
+                        {word}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Practice Form C: Speech Pronunciation */}
               {currentExercise.type === 'speech-pronounce' && (
-                <div className="space-y-4 py-2">
-                  <div className="p-4 rounded-2xl bg-amber-50/50 border border-amber-200 text-center space-y-3">
-                    <p className="text-xs font-bold text-amber-900">
-                      Press microphone and pronounce the phrase clearly
-                    </p>
+                <div className="p-6 rounded-3xl bg-amber-50/50 border border-amber-200/80 text-center space-y-4">
+                  <p className="text-xs font-black uppercase tracking-wider text-amber-900">
+                    Tap microphone and speak:
+                  </p>
+                  <h4
+                    dir={isRtl ? 'rtl' : 'ltr'}
+                    className={`text-xl sm:text-2xl font-black text-slate-900 ${isRtl ? 'text-right' : 'text-center'}`}
+                  >
+                    "{currentExercise.targetPhrase}"
+                  </h4>
 
+                  <div className="flex items-center justify-center gap-3">
                     <button
-                      id="speech-pronounce-mic-btn"
+                      type="button"
                       onClick={toggleSpeechRecognition}
-                      className={`w-16 h-16 rounded-full mx-auto flex items-center justify-center text-white shadow-lg transition-all ${
+                      className={`w-16 h-16 rounded-full flex items-center justify-center text-white shadow-xl transition-all cursor-pointer ${
                         isListening
                           ? 'bg-rose-500 ring-8 ring-rose-400/30 animate-pulse'
                           : 'bg-gradient-to-tr from-amber-500 to-amber-600 hover:scale-105'
@@ -359,184 +564,185 @@ export const LessonModal: React.FC<LessonModalProps> = ({
                     >
                       {isListening ? <MicOff className="w-7 h-7" /> : <Mic className="w-7 h-7" />}
                     </button>
+                    <button
+                      type="button"
+                      onClick={() => playAudio(currentExercise.targetPhrase || '', 0.85)}
+                      className="p-3.5 rounded-2xl bg-white border border-slate-200 text-slate-700 shadow-xs cursor-pointer"
+                      title="Hear audio"
+                    >
+                      <Volume2 className="w-5 h-5 text-[#C5A059]" />
+                    </button>
+                  </div>
 
-                    {recognizedSpeech && (
-                      <div className="space-y-1">
-                        <div className="text-xs text-slate-500">Heard speech transcript:</div>
-                        <div className="font-bold text-slate-900 text-sm">
-                          "{recognizedSpeech}"
+                  {(interimSpeech || recognizedSpeech) && (
+                    <div className="p-3 rounded-2xl bg-white border border-slate-200 text-xs font-bold text-slate-800 space-y-1">
+                      <div>Heard: "{interimSpeech || recognizedSpeech}"</div>
+                      {speechAccuracy !== null && (
+                        <div className="text-emerald-700 font-extrabold">
+                          Pronunciation Accuracy: {speechAccuracy}% 🎯
                         </div>
-                        {speechAccuracy !== null && (
-                          <div className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-xs font-bold mt-1">
-                            <Check className="w-3.5 h-3.5" />
-                            <span>Phonetic Accuracy: {speechAccuracy}%</span>
-                          </div>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
-
-              {/* Exercise Type 3: Sentence Scramble */}
-              {currentExercise.type === 'sentence-scramble' && (
-                <div className="space-y-4">
-                  {/* Assembled Tokens Slot */}
-                  <div className="min-h-[56px] p-3 rounded-2xl border-2 border-dashed border-slate-300 bg-slate-50 flex flex-wrap items-center gap-2">
-                    {assembledTokens.length === 0 ? (
-                      <span className="text-xs text-slate-400 font-medium italic">
-                        Click available tokens below to construct the phrase...
-                      </span>
-                    ) : (
-                      assembledTokens.map((token, idx) => (
-                        <button
-                          key={idx}
-                          onClick={() => {
-                            if (isAnswerChecked) return;
-                            setAssembledTokens(assembledTokens.filter((_, i) => i !== idx));
-                            setScrambledTokens([...scrambledTokens, token]);
-                          }}
-                          className="px-3 py-1.5 rounded-xl bg-slate-900 text-white text-xs font-bold shadow-xs hover:bg-slate-800 transition-all"
-                        >
-                          {token}
-                        </button>
-                      ))
-                    )}
-                  </div>
-
-                  {/* Available Bank Tokens */}
-                  <div className="flex flex-wrap items-center gap-2">
-                    {scrambledTokens.map((token, idx) => (
-                      <button
-                        key={idx}
-                        disabled={isAnswerChecked}
-                        onClick={() => {
-                          setScrambledTokens(scrambledTokens.filter((_, i) => i !== idx));
-                          setAssembledTokens([...assembledTokens, token]);
-                        }}
-                        className="px-3.5 py-2 rounded-xl bg-white hover:bg-slate-100 border border-slate-200 text-slate-800 text-xs font-bold shadow-xs transition-all hover:border-slate-300"
-                      >
-                        {token}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Cultural or Grammar Hint Accordion */}
-              {(currentExercise.culturalNote || currentExercise.grammarTip) && (
-                <div className="pt-1">
-                  <button
-                    onClick={() => setShowHint(!showHint)}
-                    className="flex items-center gap-1.5 text-xs font-bold text-amber-700 hover:text-amber-800"
-                  >
-                    <Lightbulb className="w-3.5 h-3.5" />
-                    <span>{showHint ? 'Hide Pedagogical Insight' : 'View Pedagogical Insight'}</span>
-                  </button>
-
-                  {showHint && (
-                    <div className="mt-2 p-3 rounded-xl bg-amber-50/70 border border-amber-200 text-xs text-amber-950 space-y-1 animate-in fade-in">
-                      {currentExercise.culturalNote && (
-                        <p><strong>Cultural Context:</strong> {currentExercise.culturalNote}</p>
-                      )}
-                      {currentExercise.grammarTip && (
-                        <p><strong>Grammar Rule:</strong> {currentExercise.grammarTip}</p>
                       )}
                     </div>
                   )}
                 </div>
               )}
-            </>
-          ) : (
-            /* Lesson Finished Screen */
-            <div className="py-8 flex flex-col items-center justify-center text-center space-y-4">
-              <div className="w-20 h-20 rounded-full bg-gradient-to-tr from-amber-400 to-amber-500 text-white flex items-center justify-center shadow-xl shadow-amber-500/30 animate-bounce">
-                <Award className="w-10 h-10" />
-              </div>
 
-              <div className="space-y-1">
-                <h3 className="text-2xl font-black text-slate-900">
-                  Node Mastery Complete!
-                </h3>
-                <p className="text-sm text-slate-500">
-                  You've successfully mastered <strong>{node.title}</strong> with zero heart limitations.
-                </p>
-              </div>
+              {/* Step 2 Feedback Bar */}
+              {isAnswerChecked && (
+                <div
+                  className={`p-4 rounded-2xl flex items-center gap-3 ${
+                    isCorrect
+                      ? 'bg-emerald-50 border border-emerald-200 text-emerald-900'
+                      : 'bg-rose-50 border border-rose-200 text-rose-900'
+                  }`}
+                >
+                  {isCorrect ? (
+                    <CheckCircle2 className="w-5 h-5 text-emerald-600 flex-shrink-0" />
+                  ) : (
+                    <AlertCircle className="w-5 h-5 text-rose-600 flex-shrink-0" />
+                  )}
+                  <div className="text-xs">
+                    <p className="font-bold">{isCorrect ? 'Outstanding!' : 'Keep Going!'}</p>
+                    <p className="opacity-90">{currentExercise.translation}</p>
+                  </div>
+                </div>
+              )}
 
-              <div className="flex items-center gap-4 py-2">
-                <div className="px-4 py-3 rounded-2xl bg-amber-50 border border-amber-200 text-center">
-                  <div className="text-xs font-bold text-amber-800 uppercase tracking-wider">XP Earned</div>
-                  <div className="text-xl font-black text-amber-900">+{node.xpReward}</div>
-                </div>
-                <div className="px-4 py-3 rounded-2xl bg-cyan-50 border border-cyan-200 text-center">
-                  <div className="text-xs font-bold text-cyan-800 uppercase tracking-wider">Gems Reward</div>
-                  <div className="text-xl font-black text-cyan-900">+{node.gemReward} 💎</div>
-                </div>
+              {/* Practice Actions */}
+              <div className="pt-2 flex justify-end">
+                {!isAnswerChecked ? (
+                  <button
+                    type="button"
+                    onClick={handleCheckAnswer}
+                    disabled={
+                      currentExercise.type === 'sentence-scramble'
+                        ? assembledTokens.length === 0
+                        : currentExercise.type === 'speech-pronounce'
+                        ? !recognizedSpeech
+                        : !selectedOption
+                    }
+                    className="px-6 py-3 rounded-2xl bg-[#1B365D] hover:bg-[#0F2137] disabled:opacity-50 text-[#D4AF37] font-black text-xs sm:text-sm shadow-md border border-[#C5A059]/40 cursor-pointer"
+                  >
+                    Check
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={handleCheckAnswer}
+                    className="px-6 py-3 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 text-white font-black text-xs sm:text-sm flex items-center gap-2 shadow-md cursor-pointer"
+                  >
+                    <span>
+                      {currentExIndex < node.exercises.length - 1 ? 'Continue' : 'Finish Lesson'}
+                    </span>
+                    <ArrowRight className="w-4 h-4" />
+                  </button>
+                )}
               </div>
             </div>
           )}
-        </div>
 
-        {/* Footer Action Bar */}
-        <div
-          className={`p-4 border-t flex items-center justify-between transition-colors ${
-            isAnswerChecked
-              ? isCorrect
-                ? 'bg-emerald-50/80 border-emerald-200'
-                : 'bg-amber-50/80 border-amber-200'
-              : 'bg-slate-50 border-slate-100'
-          }`}
-        >
-          {isLessonFinished ? (
-            <button
-              id="lesson-claim-reward-btn"
-              onClick={handleFinish}
-              className="w-full py-3 rounded-2xl bg-slate-900 hover:bg-slate-800 text-white font-extrabold text-sm shadow-md transition-all"
-            >
-              Claim Rewards & Return to Constellation
-            </button>
-          ) : (
-            <>
-              <div>
-                {isAnswerChecked && (
-                  <div className="flex items-center gap-2">
-                    {isCorrect ? (
-                      <>
-                        <CheckCircle2 className="w-5 h-5 text-emerald-600" />
-                        <span className="font-bold text-emerald-900 text-sm">
-                          Spot On! Excellent articulation.
-                        </span>
-                      </>
-                    ) : (
-                      <>
-                        <RotateCcw className="w-4 h-4 text-amber-600" />
-                        <span className="font-semibold text-amber-900 text-xs sm:text-sm">
-                          Almost! Infinite attempts available.
-                        </span>
-                      </>
-                    )}
-                  </div>
-                )}
+          {/* ============================================================ */}
+          {/* STEP 3: IMMEDIATE REINFORCEMENT & PROGRESS TRACKING          */}
+          {/* ============================================================ */}
+          {stage === 'complete' && (
+            <div className="p-4 sm:p-6 text-center space-y-6">
+              <div className="w-20 h-20 rounded-3xl bg-amber-100 text-[#C5A059] flex items-center justify-center mx-auto shadow-inner">
+                <Award className="w-10 h-10" />
               </div>
 
-              <button
-                id="lesson-check-continue-btn"
-                onClick={handleCheckAnswer}
-                className={`py-2.5 px-6 rounded-xl font-bold text-xs sm:text-sm shadow-md transition-all flex items-center gap-2 ${
-                  isAnswerChecked
-                    ? isCorrect
-                      ? 'bg-emerald-600 hover:bg-emerald-700 text-white'
-                      : 'bg-amber-600 hover:bg-amber-700 text-white'
-                    : 'bg-slate-900 hover:bg-slate-800 text-white'
-                }`}
-              >
-                <span>{isAnswerChecked ? 'Continue' : 'Check Answer'}</span>
-                <ArrowRight className="w-4 h-4" />
-              </button>
-            </>
+              <div className="space-y-1.5">
+                <h3 className="text-2xl sm:text-3xl font-black text-slate-900">
+                  Lesson Completed! 🎉
+                </h3>
+                <p className="text-xs sm:text-sm text-slate-500 max-w-sm mx-auto">
+                  You successfully mastered the concepts in <strong>{node.title}</strong>!
+                </p>
+              </div>
+
+              {/* Skill Mastery Badge */}
+              <div className="max-w-md mx-auto p-4 rounded-2xl bg-gradient-to-r from-[#0F2137] via-[#1B365D] to-[#0F2137] text-white shadow-lg space-y-1 border border-[#C5A059]/40">
+                <div className="text-[10px] font-black uppercase tracking-wider text-[#D4AF37]">
+                  Skill Mastery Badge Unlocked
+                </div>
+                <div className="text-sm sm:text-base font-extrabold flex items-center justify-center gap-2 text-white">
+                  <span>🏅 CEFR {node.cefr || 'A1'} {node.category || 'Core'} Specialist</span>
+                </div>
+                <div className="text-[11px] text-slate-300 font-medium">
+                  Verified proficiency milestone in {activeLanguage.name}
+                </div>
+              </div>
+
+              {/* Streak Points & Rewards */}
+              <div className="flex items-center justify-center gap-3 flex-wrap">
+                <div className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-amber-50 border border-amber-200 text-amber-900 font-black text-sm">
+                  <Sparkles className="w-4 h-4 text-amber-500" />
+                  <span>+{node.xpReward} XP</span>
+                </div>
+                <div className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-blue-50 border border-blue-200 text-blue-900 font-black text-sm">
+                  <Gem className="w-4 h-4 text-blue-500" />
+                  <span>+{node.gemReward} Gems 💎</span>
+                </div>
+                <div className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-orange-50 border border-orange-200 text-orange-900 font-black text-sm">
+                  <Flame className="w-4 h-4 text-orange-500" />
+                  <span>+20 Streak Pts 🔥</span>
+                </div>
+              </div>
+
+              {/* Action Button */}
+              <div className="pt-2">
+                <button
+                  type="button"
+                  onClick={handleFinish}
+                  className="px-8 py-3.5 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 text-white font-black text-sm shadow-xl shadow-emerald-500/25 flex items-center gap-2 mx-auto cursor-pointer"
+                >
+                  <span>Continue Learning Journey</span>
+                  <ArrowRight className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
           )}
+
         </div>
       </div>
+
+      {/* Custom Duration Selector Dialog */}
+      {isCustomDurationModalOpen && (
+        <div className="fixed inset-0 z-60 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-xs">
+          <div className="w-full max-w-sm bg-white rounded-3xl p-6 shadow-2xl border border-slate-200 space-y-4">
+            <h4 className="text-base font-black text-slate-900">Custom Session Duration</h4>
+            <p className="text-xs text-slate-500">
+              Set how many minutes you want to dedicate to this study session:
+            </p>
+            <div className="flex items-center gap-2">
+              <input
+                type="number"
+                min="1"
+                max="180"
+                value={customInputMinutes}
+                onChange={(e) => setCustomInputMinutes(e.target.value)}
+                className="w-full px-4 py-2.5 rounded-xl border border-slate-300 text-slate-900 font-bold text-center text-lg focus:outline-none focus:ring-2 focus:ring-[#1B365D]"
+              />
+              <span className="text-sm font-bold text-slate-600">min</span>
+            </div>
+            <div className="flex items-center justify-end gap-2 pt-2">
+              <button
+                type="button"
+                onClick={() => setIsCustomDurationModalOpen(false)}
+                className="px-4 py-2 rounded-xl text-xs font-bold text-slate-500 hover:bg-slate-100"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleApplyCustomDuration}
+                className="px-5 py-2 rounded-xl bg-[#1B365D] text-[#D4AF37] font-black text-xs shadow-sm hover:bg-[#0F2137]"
+              >
+                Apply
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

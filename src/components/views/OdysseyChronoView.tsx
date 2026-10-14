@@ -10,7 +10,7 @@ import {
   BookOpen 
 } from 'lucide-react';
 import { LearningNode, CefrLevel, UserProfile, Language } from '../../types';
-import { SAMPLE_CURRICULUM_NODES } from '../../data/curriculum';
+import { AICurriculumEngine } from '../../services/aiCurriculumService';
 import { audioSynth } from '../../services/audioSynthesizer';
 
 interface OdysseyChronoViewProps {
@@ -50,7 +50,11 @@ export const OdysseyChronoView: React.FC<OdysseyChronoViewProps> = ({
       {/* Chrono Stream Timeline */}
       <div className="relative border-l-2 border-slate-200 ml-4 sm:ml-8 pl-6 sm:pl-10 space-y-10">
         {allLevels.map((lvl) => {
-          const nodes = SAMPLE_CURRICULUM_NODES[lvl] || [];
+          const nodes = AICurriculumEngine.generateProceduralNodes(
+            activeLanguage,
+            user.nativeLanguageCode || 'en',
+            lvl
+          );
           const isCurrentLevel = activeCefr === lvl;
 
           return (

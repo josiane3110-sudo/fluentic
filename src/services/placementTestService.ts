@@ -146,65 +146,135 @@ export class PlacementAssessmentEngine {
   }
 
   /**
-   * Computes CEFR placement based on the 10-question score
+   * Group questions by CEFR tier for dynamic adaptive routing
+   */
+  public static getAdaptivePlacementBank(
+    targetLanguageCode: string,
+    targetLanguageName: string,
+    nativeLanguageCode: string = 'en',
+    variant: 'A' | 'B' | 'C' | 'D' = 'A'
+  ): Record<CefrLevel, PlacementTestQuestion[]> {
+    const test = this.getPlacementTest(targetLanguageCode, targetLanguageName, variant, nativeLanguageCode);
+    const bank: Record<CefrLevel, PlacementTestQuestion[]> = {
+      A1: [],
+      A2: [],
+      A3: [],
+      B1: [],
+      B2: [],
+      B3: [],
+      C1: [],
+      C2: [],
+      C3: []
+    };
+
+    for (const q of test.questions) {
+      const lvl = (q.level || 'A1').toUpperCase() as CefrLevel;
+      if (bank[lvl]) {
+        bank[lvl].push(q);
+      } else {
+        bank['A1'].push(q);
+      }
+    }
+
+    return bank;
+  }
+
+  /**
+   * Computes CEFR placement based on adaptive/standard performance
+   * Produces an official diagnostic score: e.g. "Verified Level: B1 - Intermediate"
+   * Without academic grammar jargon or meta-linguistic terminology.
    */
   public static calculateCefrPlacement(
     score: number,
-    nativeCode: string = 'en'
+    nativeCode: string = 'en',
+    assessedTier?: CefrLevel
   ): {
     level: CefrLevel;
     score: number;
+    officialScoreText: string;
+    competencyLabel: string;
     unlockedLevels: CefrLevel[];
     diagnosis: string;
   } {
     let level: CefrLevel = 'A1';
     let unlockedLevels: CefrLevel[] = ['A1'];
     let diagnosis = '';
+    let competencyLabel = '';
+    let officialScoreText = '';
     const isDutch = nativeCode === 'nl';
 
-    if (score >= 10) {
-      level = 'C2';
-      unlockedLevels = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
-      diagnosis = isDutch
-        ? 'Volledige taalbeheersing (C2) — Uitzonderlijke moedertaalbeheersing en idiomatische perfectie.'
-        : 'Mastery (C2) — Full native-level operational proficiency and idiomatic precision.';
-    } else if (score >= 8) {
-      level = 'C1';
-      unlockedLevels = ['A1', 'A2', 'B1', 'B2', 'C1'];
-      diagnosis = isDutch
-        ? 'Gevorderde taalgebruiker (C1) — Uitstekende beheersing van complexe grammatica, conjunctief en nuance.'
-        : 'Advanced User (C1) — Excellent grasp of complex grammar, nuance, and advanced registers.';
-    } else if (score >= 6) {
-      level = 'B2';
-      unlockedLevels = ['A1', 'A2', 'B1', 'B2'];
-      diagnosis = isDutch
-        ? 'Zelfstandige taalgebruiker (B2) — Vloeiende communicatie, hypothetische zinnen en passieve constructies.'
-        : 'Independent User (B2) — Fluent conversation, conditionals, and spontaneous interaction.';
-    } else if (score >= 4) {
-      level = 'B1';
-      unlockedLevels = ['A1', 'A2', 'B1'];
-      diagnosis = isDutch
-        ? 'Drempelniveau (B1) — Voldoende voor alledaagse gesprekken, verleden tijden en reissituaties.'
-        : 'Threshold Level (B1) — Capable in daily conversations, past tenses, and travel contexts.';
-    } else if (score >= 2) {
-      level = 'A2';
-      unlockedLevels = ['A1', 'A2'];
-      diagnosis = isDutch
-        ? 'Basisgebruiker (A2) — Goede basis van tegenwoordige tijd, basiszinsbouw en dagelijkse behoeften.'
-        : 'Waystage User (A2) — Solid understanding of present tense routine verbs and daily needs.';
+    // If an adaptive tier was directly evaluated
+    if (assessedTier) {
+      level = assessedTier;
     } else {
-      level = 'A1';
-      unlockedLevels = ['A1'];
-      diagnosis = isDutch
-        ? 'Beginner (A1) — Ideaal startpunt: uitspraak, basisbegroetingen en overlevingsfrasen.'
-        : 'Breakthrough (A1) — Optimal starting point: foundational pronunciation, survival phrases, and greetings.';
+      if (score >= 10) level = 'C2';
+      else if (score >= 8) level = 'C1';
+      else if (score >= 6) level = 'B2';
+      else if (score >= 4) level = 'B1';
+      else if (score >= 2) level = 'A2';
+      else level = 'A1';
+    }
+
+    switch (level) {
+      case 'C2':
+        unlockedLevels = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
+        competencyLabel = isDutch ? 'Volledige Beheersing (Mastery)' : 'Mastery & Native Nuance';
+        officialScoreText = isDutch ? 'Geverifieerd Niveau: C2 - Vloeiende Beheersing' : 'Verified Level: C2 - Mastery';
+        diagnosis = isDutch
+          ? 'Je begrijpt moeiteloos subtiele humor, culturele spreekwoorden, diepgaande gesprekken en complexe beeldspraak in elke alledaagse context.'
+          : 'You effortlessly comprehend subtle humor, cultural proverbs, in-depth discussion, and practical idiomatic nuance in any everyday situation.';
+        break;
+      case 'C1':
+        unlockedLevels = ['A1', 'A2', 'B1', 'B2', 'C1'];
+        competencyLabel = isDutch ? 'Vergevorderd (Advanced)' : 'Advanced Professional';
+        officialScoreText = isDutch ? 'Geverifieerd Niveau: C1 - Gevorderd' : 'Verified Level: C1 - Advanced';
+        diagnosis = isDutch
+          ? 'Je communiceert spontaan en effectief over complexe werksituaties, sociale afspraken, gedetailleerde plannen en genuanceerde standpunten.'
+          : 'You express ideas fluently and flexibly in social, academic, and workplace situations without awkward hesitation.';
+        break;
+      case 'B2':
+        unlockedLevels = ['A1', 'A2', 'B1', 'B2'];
+        competencyLabel = isDutch ? 'Zelfstandig Gevorderd (Upper Intermediate)' : 'Upper Intermediate';
+        officialScoreText = isDutch ? 'Geverifieerd Niveau: B2 - Gevorderd Zelfstandig' : 'Verified Level: B2 - Upper Intermediate';
+        diagnosis = isDutch
+          ? 'Je kunt deelnemen aan levendige discussies, meningen beargumenteren, advies geven en vlot communiceren met moedertaalsprekers.'
+          : 'You can actively participate in conversations, share opinions, explain viewpoints, and interact with native speakers with a high degree of spontaneity.';
+        break;
+      case 'B1':
+        unlockedLevels = ['A1', 'A2', 'B1'];
+        competencyLabel = isDutch ? 'Zelfstandig Drempel (Intermediate)' : 'Intermediate';
+        officialScoreText = isDutch ? 'Geverifieerd Niveau: B1 - Zelfstandig' : 'Verified Level: B1 - Intermediate';
+        diagnosis = isDutch
+          ? 'Je redt je uitstekend in reissituaties, vertelt over eerdere ervaringen en plannen, en begrijpt de hoofdlijnen van duidelijke dagelijkse gesprekken.'
+          : 'You can handle most travel situations, describe experiences, events, dreams, and hopes, and follow the main points of everyday conversations.';
+        break;
+      case 'A2':
+        unlockedLevels = ['A1', 'A2'];
+        competencyLabel = isDutch ? 'Basisgebruiker (Elementary)' : 'Elementary';
+        officialScoreText = isDutch ? 'Geverifieerd Niveau: A2 - Basisgebruiker' : 'Verified Level: A2 - Elementary';
+        diagnosis = isDutch
+          ? 'Je begrijpt zinnen over directe behoeften zoals de weg vragen, boodschappen doen, cafés bezoeken en eenvoudige dagelijkse gewoonten beschrijven.'
+          : 'You can navigate essential everyday tasks, ask for directions, shop, order food, and converse about simple and routine matters.';
+        break;
+      case 'A1':
+      default:
+        unlockedLevels = ['A1'];
+        competencyLabel = isDutch ? 'Beginner (Breakthrough)' : 'Beginner';
+        officialScoreText = isDutch ? 'Geverifieerd Niveau: A1 - Beginner' : 'Verified Level: A1 - Beginner';
+        diagnosis = isDutch
+          ? 'Je start bij de essentiële overlevingsfrasen, begroetingen, beleefde beleefdheidsvormen en de basisklanken van de taal.'
+          : 'You will build your foundation with essential survival phrases, warm greetings, polite interactions, and core everyday sounds.';
+        break;
     }
 
     return {
       level,
       score,
+      officialScoreText,
+      competencyLabel,
       unlockedLevels,
       diagnosis
     };
   }
 }
+

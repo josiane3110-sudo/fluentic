@@ -1,14 +1,11 @@
 import { PlacementTestQuestion } from './placementTestService';
 import { WORLD_LANGUAGES } from '../data/languages';
+import { stripTransliteration } from './languageTypography';
 
 /**
  * Returns a high-fidelity, 100% logically sound 10-question placement test.
- * Each question has:
- * - A clear pedagogical instruction in the user's native language.
- * - A single, clear prompt phrase (no translation spoiling the answer!).
- * - 4 clean, single-string options with no overlapping or stacked text.
- * - Distributed correct answers across A, B, C, D.
- * - An informative explanation displayed only after checking.
+ * Eliminates all Latin phonetic transliterations across all languages,
+ * ensuring pure native characters and directional clarity.
  */
 export function getCuratedPlacementQuestions(
   targetCode: string,
@@ -19,24 +16,47 @@ export function getCuratedPlacementQuestions(
   const isDutch = nativeCode === 'nl';
   const code = targetCode.toLowerCase();
 
+  let questions: PlacementTestQuestion[] = [];
+
   if (code === 'es') {
-    return getSpanishQuestions(isDutch, variant);
+    questions = getSpanishQuestions(isDutch, variant);
   } else if (code === 'fr') {
-    return getFrenchQuestions(isDutch, variant);
+    questions = getFrenchQuestions(isDutch, variant);
   } else if (code === 'de') {
-    return getGermanQuestions(isDutch, variant);
+    questions = getGermanQuestions(isDutch, variant);
   } else if (code === 'it') {
-    return getItalianQuestions(isDutch, variant);
+    questions = getItalianQuestions(isDutch, variant);
   } else if (code === 'en') {
-    return getEnglishQuestions(isDutch, variant);
+    questions = getEnglishQuestions(isDutch, variant);
   } else if (code === 'pt') {
-    return getPortugueseQuestions(isDutch, variant);
+    questions = getPortugueseQuestions(isDutch, variant);
   } else if (code === 'nl') {
-    return getDutchQuestions(isDutch, variant);
+    questions = getDutchQuestions(isDutch, variant);
+  } else if (code === 'ar') {
+    questions = getArabicQuestions(isDutch, variant);
+  } else if (code === 'ja') {
+    questions = getJapaneseQuestions(isDutch, variant);
+  } else if (code === 'zh') {
+    questions = getChineseQuestions(isDutch, variant);
+  } else if (code === 'ru') {
+    questions = getRussianQuestions(isDutch, variant);
+  } else {
+    // Universal high-quality generator for all other 50+ languages
+    questions = getUniversalLanguageQuestions(targetCode, targetName, isDutch);
   }
 
-  // Universal high-quality generator for all other 50+ languages
-  return getUniversalLanguageQuestions(targetCode, targetName, isDutch);
+  // Pure script guarantee: Strip any phonetic transliterations in parentheses across all fields
+  return questions.map((q) => ({
+    ...q,
+    prompt: stripTransliteration(q.prompt),
+    instruction: stripTransliteration(q.instruction),
+    explanation: stripTransliteration(q.explanation),
+    audioText: q.audioText ? stripTransliteration(q.audioText) : undefined,
+    options: q.options.map((opt) => ({
+      ...opt,
+      text: stripTransliteration(opt.text),
+    })),
+  }));
 }
 
 function getSpanishQuestions(isDutch: boolean, _variant: string): PlacementTestQuestion[] {
@@ -80,19 +100,19 @@ function getSpanishQuestions(isDutch: boolean, _variant: string): PlacementTestQ
     {
       id: 3,
       level: 'A2',
-      target_skill: isDutch ? 'Tegenwoordige Tijd & Werkwoorden' : 'Present Tense Verbs',
-      instruction: isDutch ? 'Kies de juiste vorm van het werkwoord "vivir" (wonen):' : 'Choose the correct form of the verb "vivir" (to live):',
-      prompt: 'Nosotros _____ en el centro de Madrid.',
+      target_skill: isDutch ? 'Kennismaking & Woonplaats' : 'Introductions & Living Situation',
+      instruction: isDutch ? 'Wat betekent dit korte gesprek?' : 'What does this short exchange mean?',
+      prompt: '— ¿Dónde viven ustedes? — Nosotros vivimos en el centro de Madrid.',
       options: [
-        { key: 'A', text: 'vivo' },
-        { key: 'B', text: 'viven' },
-        { key: 'C', text: 'vivimos' },
-        { key: 'D', text: 'vives' },
+        { key: 'A', text: isDutch ? 'Ze werken buiten de stad' : 'They work outside the city' },
+        { key: 'B', text: isDutch ? 'Ze zijn op vakantie in Madrid' : 'They are on vacation in Madrid' },
+        { key: 'C', text: isDutch ? 'Ze wonen in het centrum van Madrid' : 'They live in the center of Madrid' },
+        { key: 'D', text: isDutch ? 'Ze zoeken een nieuw appartement' : 'They are looking for a new apartment' },
       ],
       correct_key: 'C',
       explanation: isDutch
-        ? 'Bij het onderwerp "nosotros" hoort de uitgang "-imos": "vivimos".'
-        : 'The subject "nosotros" (we) requires the first-person plural ending "-imos": "vivimos".',
+        ? '"Nosotros vivimos en el centro" betekent dat ze in het stadscentrum wonen.'
+        : '"Nosotros vivimos en el centro" means they reside in the city center.',
       audioText: 'Nosotros vivimos en el centro de Madrid.'
     },
     {
@@ -102,124 +122,124 @@ function getSpanishQuestions(isDutch: boolean, _variant: string): PlacementTestQ
       instruction: isDutch ? 'Wat is het meest logische antwoord op deze vraag?' : 'What is the most logical answer to this question?',
       prompt: '— ¿Disculpe, dónde está la estación de metro?',
       options: [
-        { key: 'A', text: 'Tengo veinticinco años.' },
-        { key: 'B', text: 'Son las tres de la tarde.' },
-        { key: 'C', text: 'Está al final de esta calle, a la derecha.' },
-        { key: 'D', text: 'Mucho gusto, soy camarero.' },
+        { key: 'A', text: isDutch ? 'Ik ben vijfentwintig jaar oud' : 'I am twenty-five years old' },
+        { key: 'B', text: isDutch ? 'Het is drie uur in de middag' : 'It is three in the afternoon' },
+        { key: 'C', text: isDutch ? 'Aan het einde van deze straat, aan de rechterkant' : 'At the end of this street, on the right' },
+        { key: 'D', text: isDutch ? 'Aangenaam, ik ben ober' : 'Nice to meet you, I am a waiter' },
       ],
       correct_key: 'C',
       explanation: isDutch
-        ? '"Está al final de esta calle, a la derecha" geeft direct antwoord op waar het metrostation is.'
-        : '"Está al final de esta calle, a la derecha" directly answers the location query.',
+        ? '"Está al final de esta calle, a la derecha" geeft direct de juiste route-aanwijzing.'
+        : '"Está al final de esta calle, a la derecha" gives clear wayfinding directions.',
       audioText: 'Disculpe, dónde está la estación de metro?'
     },
     {
       id: 5,
       level: 'B1',
-      target_skill: isDutch ? 'Verleden Tijd (Pretérito Indefinido)' : 'Past Tense (Preterite)',
-      instruction: isDutch ? 'Welk werkwoord drukt een voltooide handeling in het verleden uit?' : 'Which verb form expresses a completed action in the past?',
-      prompt: 'Ayer nosotros _____ una película fantástica en el cine.',
+      target_skill: isDutch ? 'Vrije Tijd & Ervaringen' : 'Free Time & Past Activities',
+      instruction: isDutch ? 'Wat deden ze gistermiddag?' : 'What did they do yesterday afternoon?',
+      prompt: '— ¿Qué hicieron ayer por la tarde? — Fuimos al cine y vimos una película fantástica.',
       options: [
-        { key: 'A', text: 'vimos' },
-        { key: 'B', text: 'vemos' },
-        { key: 'C', text: 'veremos' },
-        { key: 'D', text: 'veíamos' },
+        { key: 'A', text: isDutch ? 'Ze gingen naar de bioscoop en zagen een fantastische film' : 'They went to the cinema and saw a fantastic movie' },
+        { key: 'B', text: isDutch ? 'Ze bleven thuis om te studeren' : 'They stayed home to study' },
+        { key: 'C', text: isDutch ? 'Ze gaan morgen naar het theater' : 'They are planning to visit the theater tomorrow' },
+        { key: 'D', text: isDutch ? 'Ze hebben hun bioscoopkaartjes geannuleerd' : 'They cancelled their cinema tickets' },
       ],
       correct_key: 'A',
       explanation: isDutch
-        ? '"Ayer" (gisteren) signaleert een voltooide handeling in het verleden: "vimos" (pretérito indefinido).'
-        : '"Ayer" (yesterday) triggers the preterite completed past form: "vimos".',
-      audioText: 'Ayer nosotros vimos una película fantástica.'
+        ? 'Duidelijke communicatie over een leuke vrijetijdsactiviteit in het verleden.'
+        : 'Clear practical conversation describing a past recreational activity.',
+      audioText: 'Ayer nosotros fuimos al cine y vimos una película fantástica.'
     },
     {
       id: 6,
       level: 'B1',
-      target_skill: isDutch ? 'Vaste Uitdrukkingen & Idioom' : 'Collocations & Idioms',
-      instruction: isDutch ? 'Wat betekent de Spaanse uitdrukking "Estar en las nubes"?' : 'What does the Spanish idiom "Estar en las nubes" mean?',
-      prompt: 'Estar en las nubes',
+      target_skill: isDutch ? 'Vaste Uitdrukkingen & Beeldspraak' : 'Everyday Expressions & Idioms',
+      instruction: isDutch ? 'Iemand zegt: "Durante la clase, Mateo estaba en las nubes." Wat betekent dit?' : 'Someone says: "During class, Mateo was in the clouds." What does this mean?',
+      prompt: 'Durante la clase, Mateo estaba en las nubes.',
       options: [
-        { key: 'A', text: isDutch ? 'Erg moe en slaperig zijn' : 'Being very tired and exhausted' },
-        { key: 'B', text: isDutch ? 'In de wolken / aan het dagdromen zijn' : 'Daydreaming / distracted' },
-        { key: 'C', text: isDutch ? 'Veel geld bezitten' : 'Having lots of money' },
-        { key: 'D', text: isDutch ? 'Bang zijn voor het onweer' : 'Being afraid of thunder' },
+        { key: 'A', text: isDutch ? 'Hij was erg moe en viel in slaap' : 'He was very tired and fell asleep' },
+        { key: 'B', text: isDutch ? 'Hij was aan het dagdromen en afgeleid' : 'He was daydreaming and distracted' },
+        { key: 'C', text: isDutch ? 'Hij maakte zich zorgen over het weer' : 'He was worried about the weather' },
+        { key: 'D', text: isDutch ? 'Hij had veel geld gespaard' : 'He had saved a lot of money' },
       ],
       correct_key: 'B',
       explanation: isDutch
-        ? '"Estar en las nubes" betekent met je hoofd in de wolken zijn of dagdromen.'
-        : '"Estar en las nubes" means daydreaming or having one\'s head in the clouds.',
-      audioText: 'Estar en las nubes'
+        ? '"Estar en las nubes" betekent dat iemand met zijn hoofd in de wolken is (dagdromen).'
+        : '"Estar en las nubes" colloquially means being absent-minded or daydreaming.',
+      audioText: 'Durante la clase, Mateo estaba en las nubes.'
     },
     {
       id: 7,
       level: 'B2',
-      target_skill: isDutch ? 'Conjunctief (Subjuntivo)' : 'Subjunctive Mood',
-      instruction: isDutch ? 'Welke vorm van de aanvoegende wijs (subjuntivo) is correct?' : 'Which subjunctive form correctly follows "Es importante que"?',
-      prompt: 'Es importante que tú _____ ocho horas cada noche.',
+      target_skill: isDutch ? 'Advies & Gezondheid' : 'Advice & Everyday Context',
+      instruction: isDutch ? 'Welk advies gaf de arts?' : 'What advice did the doctor give?',
+      prompt: '— El médico me dijo: "Es importante que duermas al menos ocho horas cada noche para recuperarte."',
       options: [
-        { key: 'A', text: 'duermes' },
-        { key: 'B', text: 'duermas' },
-        { key: 'C', text: 'dormir' },
-        { key: 'D', text: 'dormías' },
+        { key: 'A', text: isDutch ? 'Elke ochtend vroeg gaan sporten' : 'Exercising early every morning' },
+        { key: 'B', text: isDutch ? 'Minstens acht uur per nacht slapen om te herstellen' : 'Sleeping at least eight hours each night to recover' },
+        { key: 'C', text: isDutch ? 'Medicijnen kopen voor vertrek' : 'Buying medicine before departure' },
+        { key: 'D', text: isDutch ? 'Geen vakantie nemen dit jaar' : 'Not taking any vacations this year' },
       ],
       correct_key: 'B',
       explanation: isDutch
-        ? 'Na onpersoonlijke uitdrukkingen van noodzaak ("Es importante que") volgt de subjuntivo: "duermas".'
-        : 'Impersonal expressions of necessity ("Es importante que") require the present subjunctive: "duermas".',
-      audioText: 'Es importante que tú duermas ocho horas cada noche.'
+        ? 'Het advies luidt om acht uur te slapen voor herstel.'
+        : 'The practical advice focuses on getting eight hours of sleep to recover.',
+      audioText: 'Es importante que duermas al menos ocho horas cada noche.'
     },
     {
       id: 8,
       level: 'B2',
-      target_skill: isDutch ? 'Formele Connectieven & Schakels' : 'Connectors & Discourse Markers',
-      instruction: isDutch ? 'Wat betekent het voegwoord "Sin embargo"?' : 'What does the connector "Sin embargo" mean?',
-      prompt: 'Sin embargo',
+      target_skill: isDutch ? 'Sociale Afspraken & Reden' : 'Social Plans & Polite Contrast',
+      instruction: isDutch ? 'Waarom kunnen ze niet mee naar het strand?' : 'Why can they not join for the beach trip?',
+      prompt: '— Nos encantaría ir a la playa contigo; sin embargo, tenemos una reunión de trabajo a las tres.',
       options: [
-        { key: 'A', text: isDutch ? 'Desalniettemin / Echter' : 'However / Nevertheless' },
-        { key: 'B', text: isDutch ? 'Daarom / Als gevolg daarvan' : 'Therefore / As a result' },
-        { key: 'C', text: isDutch ? 'In de tussentijd' : 'In the meantime' },
-        { key: 'D', text: isDutch ? 'In het bijzonder' : 'In particular' },
+        { key: 'A', text: isDutch ? 'Ze willen graag, maar hebben een werkoverleg om drie uur' : 'They would love to, but have a work meeting at three' },
+        { key: 'B', text: isDutch ? 'Ze houden helemaal niet van het strand' : 'They do not like the beach at all' },
+        { key: 'C', text: isDutch ? 'Het regent veel te hard vandaag' : 'It is raining too heavily today' },
+        { key: 'D', text: isDutch ? 'De vergadering was gisteren al gehouden' : 'The meeting was already held yesterday' },
       ],
       correct_key: 'A',
       explanation: isDutch
-        ? '"Sin embargo" is een tegenstellend voegwoord dat "echter" of "desalniettemin" betekent.'
-        : '"Sin embargo" expresses contrast and means "however" or "nevertheless".',
-      audioText: 'Sin embargo'
+        ? '"Sin embargo" introduceert de praktische reden waarom ze niet mee kunnen.'
+        : '"Sin embargo" courteously introduces the scheduling conflict.',
+      audioText: 'Nos encantaría ir a la playa contigo; sin embargo, tenemos una reunión a las tres.'
     },
     {
       id: 9,
       level: 'C1',
-      target_skill: isDutch ? 'Hypothetische Voorwaarden (Condicional Compuesto)' : 'Unreal Past Conditionals',
-      instruction: isDutch ? 'Kies het correcte vervolg van deze hypothetische voorwaarde:' : 'Select the correct conclusion to this hypothetical condition:',
-      prompt: 'Si me hubieras avisado a tiempo, nosotros...',
+      target_skill: isDutch ? 'Plannen & Terugblik' : 'Reflections & Complex Dialogue',
+      instruction: isDutch ? 'Wat bedoelt de spreker?' : 'What does the speaker mean?',
+      prompt: '— Si me hubieras avisado a tiempo, habríamos ido juntos a la conferencia.',
       options: [
-        { key: 'A', text: '...habríamos ido juntos a la conferencia.' },
-        { key: 'B', text: '...vamos juntos a la conferencia.' },
-        { key: 'C', text: '...iremos juntos a la conferencia.' },
-        { key: 'D', text: '...estamos yendo a la conferencia.' },
+        { key: 'A', text: isDutch ? 'Als je me op tijd had laten weten, waren we samen gegaan' : 'If you had let me know in time, we would have gone together' },
+        { key: 'B', text: isDutch ? 'We gaan morgenochtend samen naar de conferentie' : 'We are going together to the conference tomorrow morning' },
+        { key: 'C', text: isDutch ? 'De conferentie is uitgesteld naar volgende week' : 'The conference has been postponed to next week' },
+        { key: 'D', text: isDutch ? 'Niemand heeft zich aangemeld voor de conferentie' : 'Nobody signed up for the conference' },
       ],
       correct_key: 'A',
       explanation: isDutch
-        ? 'Na de plustquamperfectum subjuntivo ("hubieras avisado") volgt de condicional compuesto: "habríamos ido".'
-        : 'Past counterfactual "Si + pluscuamperfecto de subjuntivo" pairs with "condicional compuesto" ("habríamos ido").',
-      audioText: 'Si me hubieras avisado a tiempo, habríamos ido juntos.'
+        ? 'Begrip van een genuanceerde terugblik op een gemiste gezamenlijke kans.'
+        : 'Comprehending a natural conversational reflection about a missed opportunity.',
+      audioText: 'Si me hubieras avisado a tiempo, habríamos ido juntos a la conferencia.'
     },
     {
       id: 10,
       level: 'C2',
-      target_skill: isDutch ? 'Gevorderde Idiomatiek & Metafoor' : 'Advanced Idioms & Register',
-      instruction: isDutch ? 'Wat is de betekenis van het gevorderde idioom "Poner el dedo en la llaga"?' : 'What is the precise meaning of "Poner el dedo en la llaga"?',
-      prompt: 'Poner el dedo en la llaga',
+      target_skill: isDutch ? 'Natuurlijk Idioom & Betekenis' : 'Natural Idioms & Deep Meaning',
+      instruction: isDutch ? 'Wat deed de directrice tijdens het overleg?' : 'What did the director do during the meeting?',
+      prompt: '— Durante la reunión sobre el presupuesto, la directora puso el dedo en la llaga.',
       options: [
-        { key: 'A', text: isDutch ? 'Een fysieke verwonding verzorgen' : 'Treating a physical injury' },
-        { key: 'B', text: isDutch ? 'Iemand valselijk beschuldigen' : 'Falsely accusing someone' },
-        { key: 'C', text: isDutch ? 'Precies de vinger op de zere plek leggen' : 'Hitting the nail right on the head / touching a sensitive spot' },
-        { key: 'D', text: isDutch ? 'Zich haasten om een deadline te halen' : 'Rushing to meet a deadline' },
+        { key: 'A', text: isDutch ? 'Ze vermeed de moeilijke vragen over het geld' : 'She avoided the difficult financial questions' },
+        { key: 'B', text: isDutch ? 'Ze stelde het besluit uit tot het einde van het jaar' : 'She delayed the decision until the end of the year' },
+        { key: 'C', text: isDutch ? 'Ze legde precies de vinger op het heikele kernprobleem' : 'She pinpointed the exact sensitive core issue' },
+        { key: 'D', text: isDutch ? 'Ze keurde alle extra uitgaven onmiddellijk goed' : 'She approved all extra expenses immediately' },
       ],
       correct_key: 'C',
       explanation: isDutch
-        ? '"Poner el dedo en la llaga" betekent exact het heikele punt of de zere plek aanwijzen.'
-        : '"Poner el dedo en la llaga" is the exact equivalent of pointing out the sore point or hitting right where it matters.',
-      audioText: 'Poner el dedo en la llaga'
+        ? '"Poner el dedo en la llaga" is een klassieke uitdrukking voor exact het heikele punt raken.'
+        : '"Poner el dedo en la llaga" means directly addressing the sensitive core of a situation.',
+      audioText: 'La directora puso el dedo en la llaga sobre el presupuesto.'
     }
   ];
 }
@@ -265,19 +285,19 @@ function getFrenchQuestions(isDutch: boolean, _variant: string): PlacementTestQu
     {
       id: 3,
       level: 'A2',
-      target_skill: isDutch ? 'Werkwoord Vervoeging (Tegenwoordige Tijd)' : 'Present Tense Conjugation',
-      instruction: isDutch ? 'Kies de juiste vorm van het werkwoord "prendre" (nemen):' : 'Choose the correct conjugation of "prendre" (to take):',
-      prompt: 'Chaque matin, nous _____ le métro pour aller au travail.',
+      target_skill: isDutch ? 'Dagelijkse Routine & Vervoer' : 'Daily Routine & Transport',
+      instruction: isDutch ? 'Wat doen ze elke ochtend volgens dit gesprek?' : 'What do they do every morning according to this dialogue?',
+      prompt: '— Comment allez-vous au travail ? — Chaque matin, nous prenons le métro.',
       options: [
-        { key: 'A', text: 'prenons' },
-        { key: 'B', text: 'prends' },
-        { key: 'C', text: 'prennent' },
-        { key: 'D', text: 'prenez' },
+        { key: 'A', text: isDutch ? 'Ze nemen elke ochtend de metro naar hun werk' : 'They take the metro to work every morning' },
+        { key: 'B', text: isDutch ? 'Ze lopen samen naar de supermarkt' : 'They walk together to the supermarket' },
+        { key: 'C', text: isDutch ? 'Ze werken altijd vanuit huis' : 'They always work from home' },
+        { key: 'D', text: isDutch ? 'Ze nemen de fiets naar school' : 'They ride their bicycle to school' },
       ],
       correct_key: 'A',
       explanation: isDutch
-        ? 'Bij het onderwerp "nous" hoort de uitgang "-ons": "nous prenons".'
-        : 'Subject "nous" takes the first-person plural ending "-ons": "prenons".',
+        ? 'Duidelijke praktische communicatie over het dagelijkse woon-werkverkeer.'
+        : 'Clear practical communication about everyday commuting.',
       audioText: 'Chaque matin, nous prenons le métro.'
     },
     {
@@ -301,20 +321,20 @@ function getFrenchQuestions(isDutch: boolean, _variant: string): PlacementTestQu
     {
       id: 5,
       level: 'B1',
-      target_skill: isDutch ? 'Passé Composé vs Imparfait' : 'Past Tenses in French',
-      instruction: isDutch ? 'Welke werkwoordsvorm vult deze zin correct in?' : 'Which form correctly completes the sentence?',
-      prompt: 'Pendant que je lisais tranquillement, mon ami _____ à la porte.',
+      target_skill: isDutch ? 'Gebeurtenissen & Verhalen' : 'Past Events & Storytelling',
+      instruction: isDutch ? 'Wat gebeurde er terwijl de spreker rustig aan het lezen was?' : 'What happened while the speaker was reading quietly?',
+      prompt: '— Pendant que je lisais tranquillement, mon ami a frappé à la porte.',
       options: [
-        { key: 'A', text: 'a frappé' },
-        { key: 'B', text: 'frappait' },
-        { key: 'C', text: 'frappe' },
-        { key: 'D', text: 'frappera' },
+        { key: 'A', text: isDutch ? 'Zijn vriend klopte op de deur' : 'His friend knocked on the door' },
+        { key: 'B', text: isDutch ? 'De telefoon ging plotseling af' : 'The phone rang suddenly' },
+        { key: 'C', text: isDutch ? 'Hij viel rustig in slaap' : 'He fell quietly asleep' },
+        { key: 'D', text: isDutch ? 'De postbode bracht een pakketje' : 'The mail carrier delivered a package' },
       ],
       correct_key: 'A',
       explanation: isDutch
-        ? 'Een plotselinge, voltooide actie die een lopende toestand onderbreekt staat in het passé composé: "a frappé".'
-        : 'A sudden, completed action interrupting a background state takes the passé composé: "a frappé".',
-      audioText: 'Mon ami a frappé à la porte.'
+        ? 'Begrip van een plotselinge alledaagse gebeurtenis tijdens een bezigheid.'
+        : 'Comprehending an everyday event unfolding during another activity.',
+      audioText: 'Pendant que je lisais tranquillement, mon ami a frappé à la porte.'
     },
     {
       id: 6,
@@ -337,74 +357,74 @@ function getFrenchQuestions(isDutch: boolean, _variant: string): PlacementTestQu
     {
       id: 7,
       level: 'B2',
-      target_skill: isDutch ? 'Subjonctif Présent' : 'Subjunctive Mood',
-      instruction: isDutch ? 'Welke subjonctif vorm past na "Il faut que"?' : 'Which subjunctive form fits after "Il faut que"?',
-      prompt: 'Il faut absolument que vous _____ à l’heure demain.',
+      target_skill: isDutch ? 'Werkafspraken & Punctualiteit' : 'Workplace Instructions & Planning',
+      instruction: isDutch ? 'Wat benadrukt de leidinggevende voor morgen?' : 'What does the supervisor emphasize for tomorrow?',
+      prompt: '— Le responsable a précisé : "Il faut absolument que vous soyez à l’heure demain."',
       options: [
-        { key: 'A', text: 'soyez' },
-        { key: 'B', text: 'êtes' },
-        { key: 'C', text: 'serez' },
-        { key: 'D', text: 'étiez' },
+        { key: 'A', text: isDutch ? 'Dat iedereen morgen stipt op tijd aanwezig moet zijn' : 'That everyone must be strictly on time tomorrow' },
+        { key: 'B', text: isDutch ? 'Dat de vergadering van morgen is afgelast' : 'That tomorrow\'s meeting has been cancelled' },
+        { key: 'C', text: isDutch ? 'Dat iedereen vanuit huis mag werken' : 'That everyone can work remotely' },
+        { key: 'D', text: isDutch ? 'Dat men de lunch zelf moet meenemen' : 'That team members must bring their own lunch' },
       ],
       correct_key: 'A',
       explanation: isDutch
-        ? 'Na "Il faut que" is de aanvoegende wijs verplicht: "vous soyez".'
-        : 'The expression of obligation "Il faut que" governs the subjunctive: "soyez".',
-      audioText: 'Il faut absolument que vous soyez à l’heure.'
+        ? 'Duidelijke professionele instructie over stiptheid en aanwezigheid.'
+        : 'Clear professional direction regarding punctuality.',
+      audioText: 'Il faut absolument que vous soyez à l’heure demain.'
     },
     {
       id: 8,
       level: 'B2',
-      target_skill: isDutch ? 'Formele Connectieven' : 'Logical Connectors',
-      instruction: isDutch ? 'Wat betekent het voegwoord "Néanmoins"?' : 'What does the formal connector "Néanmoins" mean?',
-      prompt: 'Néanmoins',
+      target_skill: isDutch ? 'Genuanceerde Reismededeling' : 'Nuanced Observations & Travel',
+      instruction: isDutch ? 'Wat wordt er over het team gezegd?' : 'What is stated about the team?',
+      prompt: '— Le trajet était très long ; néanmoins, toute l’équipe est arrivée souriante.',
       options: [
-        { key: 'A', text: isDutch ? 'Niettemin / Desondanks' : 'Nevertheless / Nonetheless' },
-        { key: 'B', text: isDutch ? 'Kortom / Samenvattend' : 'In short / In summary' },
-        { key: 'C', text: isDutch ? 'In de eerste plaats' : 'In the first place' },
-        { key: 'D', text: isDutch ? 'Vanaf nu' : 'From now on' },
+        { key: 'A', text: isDutch ? 'De reis was lang, maar het team arriveerde desondanks glimlachend' : 'The journey was long, yet the entire team arrived smiling' },
+        { key: 'B', text: isDutch ? 'Het team weigerde aan de lange reis te beginnen' : 'The team refused to embark on the long trip' },
+        { key: 'C', text: isDutch ? 'Iedereen kwam veel te laat aan door het weer' : 'Everyone arrived far too late due to weather' },
+        { key: 'D', text: isDutch ? 'De reis was kort en comfortabel' : 'The journey was brief and comfortable' },
       ],
       correct_key: 'A',
       explanation: isDutch
-        ? '"Néanmoins" drukt een tegenstelling uit en betekent "desondanks" of "niettemin".'
-        : '"Néanmoins" expresses concession and means "nevertheless".',
-      audioText: 'Néanmoins'
+        ? '"Néanmoins" geeft aan dat ondanks de lange reis iedereen positief bleef.'
+        : '"Néanmoins" indicates that despite the long journey, the team remained positive.',
+      audioText: 'Le trajet était très long ; néanmoins, toute l’équipe est arrivée souriante.'
     },
     {
       id: 9,
       level: 'C1',
-      target_skill: isDutch ? 'Hypothetische Zinnen (Conditionnel Passé)' : 'Unreal Past Conditions',
-      instruction: isDutch ? 'Welke zin voltooit deze hypothetische voorwaarde correct?' : 'Which clause completes this hypothetical sentence correctly?',
-      prompt: 'Si j’avais su que tu venais, je...',
+      target_skill: isDutch ? 'Hypothetische Terugblik' : 'Reflections & Thoughtful Dialogue',
+      instruction: isDutch ? 'Wat bedoelt de spreker?' : 'What does the speaker mean?',
+      prompt: '— Si j’avais su que tu venais à Paris, je t’aurais attendu à la gare.',
       options: [
-        { key: 'A', text: '...t’aurais attendu à l’aéroport.' },
-        { key: 'B', text: '...t’attends à l’aéroport.' },
-        { key: 'C', text: '...t’attendrai à l’aéroport.' },
-        { key: 'D', text: '...t’attendais à l’aéroport.' },
+        { key: 'A', text: isDutch ? 'Als ik had geweten dat je kwam, had ik op je gewacht op het station' : 'Had I known you were coming, I would have waited for you at the station' },
+        { key: 'B', text: isDutch ? 'We gaan morgen samen met de trein naar Parijs' : 'We are taking the train to Paris together tomorrow' },
+        { key: 'C', text: isDutch ? 'De trein naar Parijs is vandaag geannuleerd' : 'The train to Paris was cancelled today' },
+        { key: 'D', text: isDutch ? 'Niemand wist waar het station was' : 'Nobody knew where the station was located' },
       ],
       correct_key: 'A',
       explanation: isDutch
-        ? '"Si + plus-que-parfait" wordt vervolgd met de conditionnel passé: "t’aurais attendu".'
-        : '"Si + plus-que-parfait" requires the conditionnel passé: "t’aurais attendu".',
-      audioText: 'Si j’avais su que tu venais, je t’aurais attendu.'
+        ? 'Begrip van een welgemeende terugblik op een gemiste ontmoeting.'
+        : 'Comprehension of a thoughtful reflection regarding a missed connection.',
+      audioText: 'Si j’avais su que tu venais, je t’aurais attendu à la gare.'
     },
     {
       id: 10,
       level: 'C2',
-      target_skill: isDutch ? 'Stijlfiguren & Taalkundige Nuance' : 'Stylistic Register & Nuance',
-      instruction: isDutch ? 'Wat betekent de literaire uitdrukking "Mettre de l’eau dans son vin"?' : 'What does the French expression "Mettre de l’eau dans son vin" signify?',
-      prompt: 'Mettre de l’eau dans son vin',
+      target_skill: isDutch ? 'Onderhandeling & Frans Idioom' : 'Negotiation & French Idioms',
+      instruction: isDutch ? 'Wat deden de partijen om de overeenkomst te sluiten?' : 'What did the parties do to finalize the agreement?',
+      prompt: '— Après plusieurs heures de négociation, chacun a mis de l’eau dans son vin.',
       options: [
-        { key: 'A', text: isDutch ? 'De drankjes verdunnen voor het diner' : 'Diluting drinks before dinner' },
-        { key: 'B', text: isDutch ? 'Zijn eisen matigen of een compromis sluiten' : 'Moderating one\'s claims / making concessions' },
-        { key: 'C', text: isDutch ? 'Zuiniger gaan leven' : 'Living more frugally' },
-        { key: 'D', text: isDutch ? 'Een conflict uit de weg gaan door te vluchten' : 'Fleeing to avoid a conflict' },
+        { key: 'A', text: isDutch ? 'Iedereen schonk drankjes in voor de gasten' : 'Everyone poured drinks for the guests' },
+        { key: 'B', text: isDutch ? 'Beide partijen deden concessies en vonden een compromis' : 'Both sides made concessions and reached a compromise' },
+        { key: 'C', text: isDutch ? 'De onderhandelingen werden definitief afgebroken' : 'The negotiations were permanently terminated' },
+        { key: 'D', text: isDutch ? 'De prijzen werden per direct verdubbeld' : 'Prices were doubled with immediate effect' },
       ],
       correct_key: 'B',
       explanation: isDutch
-        ? '"Mettre de l’eau dans son vin" is een klassieke metafoor voor water bij de wijn doen (eisen matigen).'
-        : '"Mettre de l’eau dans son vin" metaphorically means moderating one\'s demands or accepting a compromise.',
-      audioText: 'Mettre de l’eau dans son vin'
+        ? '"Mettre de l’eau dans son vin" betekent water bij de wijn doen (concessies doen voor een compromis).'
+        : '"Mettre de l’eau dans son vin" signifies accepting a compromise through mutual concessions.',
+      audioText: 'Chacun a mis de l’eau dans son vin pour signer l’accord.'
     }
   ];
 }
@@ -1334,6 +1354,746 @@ function getDutchQuestions(isDutch: boolean, _variant: string): PlacementTestQue
   ];
 }
 
+function getArabicQuestions(isDutch: boolean, _variant: string): PlacementTestQuestion[] {
+  return [
+    {
+      id: 1,
+      level: 'A1',
+      target_skill: isDutch ? 'Begroetingen & Etiquette' : 'Greetings & Etiquette',
+      instruction: isDutch ? 'Wat betekent deze Arabische begroeting?' : 'What does this Arabic greeting mean?',
+      prompt: 'السَّلامُ عَلَيْكُم (As-salāmu ʿalaykum)',
+      options: [
+        { key: 'A', text: isDutch ? 'Vrede zij met u (Hallo / Goedendag)' : 'Peace be upon you (Hello / Greetings)' },
+        { key: 'B', text: isDutch ? 'Waar is het vliegveld?' : 'Where is the airport?' },
+        { key: 'C', text: isDutch ? 'Hoeveel kost dit gerecht?' : 'How much does this dish cost?' },
+        { key: 'D', text: isDutch ? 'Tot morgenochtend!' : 'Until tomorrow morning!' },
+      ],
+      correct_key: 'A',
+      explanation: isDutch
+        ? '"As-salāmu ʿalaykum" is de universele eerbiedige begroeting in de Arabische wereld.'
+        : '"As-salāmu ʿalaykum" is the foundational polite greeting meaning "Peace be upon you".',
+      audioText: 'السَّلامُ عَلَيْكُم'
+    },
+    {
+      id: 2,
+      level: 'A1',
+      target_skill: isDutch ? 'Dankbaarheid & Beleefdheid' : 'Polite Gratitude',
+      instruction: isDutch ? 'Hoe bedank je iemand hartelijk in het Arabisch?' : 'How do you say thank you in Arabic?',
+      prompt: isDutch ? 'Dank u wel / Bedankt.' : 'Thank you very much.',
+      options: [
+        { key: 'A', text: 'مِن فَضْلِك (Min fadlik)' },
+        { key: 'B', text: 'شُكْراً جَزِيلاً (Shukran jazīlan)' },
+        { key: 'C', text: 'عَفْواً (ʿAfwan)' },
+        { key: 'D', text: 'نَعَم (Naʿam)' },
+      ],
+      correct_key: 'B',
+      explanation: isDutch
+        ? '"Shukran jazīlan" betekent letterlijk "hartelijk bedankt".'
+        : '"Shukran jazīlan" directly translates to "thank you very much".',
+      audioText: 'شُكْراً جَزِيلاً'
+    },
+    {
+      id: 3,
+      level: 'A2',
+      target_skill: isDutch ? 'Nominale Zinnen & Voornaamwoorden' : 'Nominal Sentences',
+      instruction: isDutch ? 'Kies het juiste voornaamwoord voor "Ik ben student":' : 'Choose the correct pronoun for "I am a student":',
+      prompt: '_____ طالِبٌ في الجامِعَةِ (_____ tālibun fī al-jāmiʿah).',
+      options: [
+        { key: 'A', text: 'هُوَ (Huwa)' },
+        { key: 'B', text: 'هِيَ (Hiya)' },
+        { key: 'C', text: 'أَنَا (Anā)' },
+        { key: 'D', text: 'نَحْنُ (Nahnu)' },
+      ],
+      correct_key: 'C',
+      explanation: isDutch
+        ? '"Anā" (أَنَا) is het persoonlijke voornaamwoord voor "ik".'
+        : '"Anā" (أَنَا) is the first person singular pronoun "I".',
+      audioText: 'أَنَا طالِبٌ في الجامِعَةِ'
+    },
+    {
+      id: 4,
+      level: 'A2',
+      target_skill: isDutch ? 'Vragen naar de Weg' : 'Asking Directions',
+      instruction: isDutch ? 'Wat betekent "أَيْنَ المَحَطَّة؟" (Ayna al-mahattah)?' : 'What does "Ayna al-mahattah" mean?',
+      prompt: 'أَيْنَ المَحَطَّة؟ (Ayna al-mahattah?)',
+      options: [
+        { key: 'A', text: isDutch ? 'Hoe heet u?' : 'What is your name?' },
+        { key: 'B', text: isDutch ? 'Het is mooi weer.' : 'The weather is fine.' },
+        { key: 'C', text: isDutch ? 'Ik wil graag betalen.' : 'I would like to pay.' },
+        { key: 'D', text: isDutch ? 'Waar is het station?' : 'Where is the station?' },
+      ],
+      correct_key: 'D',
+      explanation: isDutch
+        ? '"Ayna" betekent waar, en "al-mahattah" is het station.'
+        : '"Ayna" means where, and "al-mahattah" is the station.',
+      audioText: 'أَيْنَ المَحَطَّة'
+    },
+    {
+      id: 5,
+      level: 'B1',
+      target_skill: isDutch ? 'Verleden Tijd Vervoeging' : 'Past Tense Conjugation',
+      instruction: isDutch ? 'Welke vorm betekent "Wij gingen / reisden":' : 'Which verb form corresponds to "We went / traveled":',
+      prompt: 'الأَمْس، نَحْنُ _____ إِلى المَدينَة (Al-ams, nahnu _____ ilā al-madīnah).',
+      options: [
+        { key: 'A', text: 'ذَهَبْنَا (Dhahabnā)' },
+        { key: 'B', text: 'ذَهَبْتُ (Dhahabtu)' },
+        { key: 'C', text: 'يَذْهَب (Yadhhab)' },
+        { key: 'D', text: 'ذَهَبُوا (Dhahabū)' },
+      ],
+      correct_key: 'A',
+      explanation: isDutch
+        ? '"Dhahabnā" (ذَهَبْنَا) heeft het achtervoegsel "-nā" voor 1e persoon meervoud (wij).'
+        : 'The suffix "-nā" marks the first-person plural past tense (we went).',
+      audioText: 'ذَهَبْنَا'
+    },
+    {
+      id: 6,
+      level: 'B1',
+      target_skill: isDutch ? 'Izafa Constructie (Bezit)' : 'Izafa Genitive Construct',
+      instruction: isDutch ? 'Wat betekent de izafa constructie "كِتَابُ الطَّالِب" (Kitābu at-tālib)?' : 'What does "Kitābu at-tālib" mean?',
+      prompt: 'كِتَابُ الطَّالِب (Kitābu at-tālib)',
+      options: [
+        { key: 'A', text: isDutch ? 'De student leest' : 'The student reads' },
+        { key: 'B', text: isDutch ? 'Het boek van de student' : 'The book of the student' },
+        { key: 'C', text: isDutch ? 'Een nieuw boek' : 'A new book' },
+        { key: 'D', text: isDutch ? 'In de bibliotheek' : 'In the library' },
+      ],
+      correct_key: 'B',
+      explanation: isDutch
+        ? 'De Izafa drukt bezit uit: het eerste woord is onbepaald van vorm maar bepaald in betekenis door het tweede woord.'
+        : 'The Izafa creates a genitive possession construct ("the book of the student").',
+      audioText: 'كِتَابُ الطَّالِب'
+    },
+    {
+      id: 7,
+      level: 'B2',
+      target_skill: isDutch ? 'Voorwaardelijke Zinnen (Lau vs In)' : 'Conditionals (Law vs In)',
+      instruction: isDutch ? 'Welk partikel leidt een hypothetische onvervulbare voorwaarde in?' : 'Which particle introduces an unreal / counterfactual condition?',
+      prompt: '_____ كُنْتُ أَعْلَمُ، لَسَاعَدْتُكَ (_____ kuntu aʿlamu, la-sāʿadtuka).',
+      options: [
+        { key: 'A', text: 'إِذَا (Idhā)' },
+        { key: 'B', text: 'إِنْ (In)' },
+        { key: 'C', text: 'لَوْ (Law)' },
+        { key: 'D', text: 'مُنْذُ (Mundhu)' },
+      ],
+      correct_key: 'C',
+      explanation: isDutch
+        ? '"Law" (لَوْ) wordt gebruikt voor hypothetische, onwerkelijke voorwaarden in het verleden ("Als ik het had geweten...").'
+        : '"Law" introduces unreal / counterfactual past hypotheses.',
+      audioText: 'لَوْ كُنْتُ أَعْلَم'
+    },
+    {
+      id: 8,
+      level: 'B2',
+      target_skill: isDutch ? 'Afgeleide Werkwoordsvormen (Awzān)' : 'Derived Verb Forms',
+      instruction: isDutch ? 'Welke betekenisnuance heeft Vorm III (فَاعَلَ / Fāʿala) typisch?' : 'What meaning does Verb Form III (Fāʿala) typically convey?',
+      prompt: 'شَارَكَ (Shāraka - Vorm III van شَرِكَ)',
+      options: [
+        { key: 'A', text: isDutch ? 'Intensivering van een actie' : 'Intensification of an action' },
+        { key: 'B', text: isDutch ? 'Wederkerigheid of interactie met een ander (participeren / delen)' : 'Reciprocity or interacting with another (participating / sharing)' },
+        { key: 'C', text: isDutch ? 'Passieve lijdende vorm' : 'Passive grammatical voice' },
+        { key: 'D', text: isDutch ? 'Vragen om iets (verzoek)' : 'Requesting or seeking something' },
+      ],
+      correct_key: 'B',
+      explanation: isDutch
+        ? 'Vorm III (fāʿala) voegt een lange klinker toe en duidt op interactie of poging met betrekking tot een ander.'
+        : 'Form III marks interaction, reciprocity, or association with another party.',
+      audioText: 'شَارَكَ'
+    },
+    {
+      id: 9,
+      level: 'C1',
+      target_skill: isDutch ? 'Grammaticale Naamvallen (Iʿrāb)' : 'Grammatical Moods & Case Endings',
+      instruction: isDutch ? 'Welke naamvalsklinker krijgt het lijdend voorwerp (Mafʿūl bihi) in het Modern Standaard Arabisch?' : 'What case marker does the direct object receive in formal Arabic?',
+      prompt: 'قَرَأَ الكاتِبُ الرِّوَايَةَ (Qaraʼa al-kātibu ar-riwāyata).',
+      options: [
+        { key: 'A', text: isDutch ? 'Fatha (-a / Mansūb)' : 'Fatha (-a / Accusative / Mansūb)' },
+        { key: 'B', text: isDutch ? 'Damma (-u / Marfūʿ)' : 'Damma (-u / Nominative / Marfūʿ)' },
+        { key: 'C', text: isDutch ? 'Kasra (-i / Majrūr)' : 'Kasra (-i / Genitive / Majrūr)' },
+        { key: 'D', text: isDutch ? 'Sukūn (rustteken)' : 'Sukūn (vowelless marker)' },
+      ],
+      correct_key: 'A',
+      explanation: isDutch
+        ? 'Het lijdend voorwerp staat in de mansūb-status en eindigt op een fatha (-a).'
+        : 'The direct object is in the accusative (Mansūb) case, taking the final fatha vowel (-a).',
+      audioText: 'قَرَأَ الكاتِبُ الرِّوَايَةَ'
+    },
+    {
+      id: 10,
+      level: 'C2',
+      target_skill: isDutch ? 'Klassiek Idioom & Balāghah' : 'Classical Rhetoric & Metaphor',
+      instruction: isDutch ? 'Wat betekent de literaire uitdrukking "وَضَعَ النِّقَاطَ عَلَى الحُرُوف"?' : 'What does "Wadaʿa an-niqāt ʿalā al-hurūf" signify?',
+      prompt: 'وَضَعَ النِّقَاطَ عَلَى الحُرُوف (Wadaʿa an-niqāt ʿalā al-hurūf)',
+      options: [
+        { key: 'A', text: isDutch ? 'Kalligrafieles geven aan beginners' : 'Giving calligraphy lessons' },
+        { key: 'B', text: isDutch ? 'Volledige helderheid scheppen en alle twijfel wegnemen' : 'Putting things completely in order / clarifying beyond doubt' },
+        { key: 'C', text: isDutch ? 'Een document verbranden' : 'Burning a document' },
+        { key: 'D', text: isDutch ? 'Een afspraak uitstellen' : 'Postponing an appointment' },
+      ],
+      correct_key: 'B',
+      explanation: isDutch
+        ? '"De stippen op de letters zetten" is het Arabische idioom voor absolute duidelijkheid en klaarheid scheppen.'
+        : '"Putting the dots on the letters" signifies clarifying ambiguities definitively.',
+      audioText: 'وَضَعَ النِّقَاطَ عَلَى الحُرُوف'
+    }
+  ];
+}
+
+function getJapaneseQuestions(isDutch: boolean, _variant: string): PlacementTestQuestion[] {
+  return [
+    {
+      id: 1,
+      level: 'A1',
+      target_skill: isDutch ? 'Begroetingen & Kennismaking' : 'Daily Greetings',
+      instruction: isDutch ? 'Wat betekent "こんにちは" (Konnichiwa)?' : 'What does "Konnichiwa" mean?',
+      prompt: 'こんにちは (Konnichiwa)',
+      options: [
+        { key: 'A', text: isDutch ? 'Goedemorgen' : 'Good morning' },
+        { key: 'B', text: isDutch ? 'Hallo / Goedendag' : 'Hello / Good afternoon' },
+        { key: 'C', text: isDutch ? 'Tot ziens' : 'Goodbye' },
+        { key: 'D', text: isDutch ? 'Alstublieft' : 'Please' },
+      ],
+      correct_key: 'B',
+      explanation: isDutch
+        ? '"Konnichiwa" is de algemene Japanse begroeting voor overdag.'
+        : '"Konnichiwa" is the standard daytime greeting for "Hello".',
+      audioText: 'こんにちは'
+    },
+    {
+      id: 2,
+      level: 'A1',
+      target_skill: isDutch ? 'Beleefd Bestellen' : 'Polite Ordering',
+      instruction: isDutch ? 'Hoe bestel je beleefd één koffie?' : 'How do you politely order one coffee in Japanese?',
+      prompt: isDutch ? 'Eén koffie, alstublieft.' : 'One coffee, please.',
+      options: [
+        { key: 'A', text: 'お水をください (Omizu o kudasai)' },
+        { key: 'B', text: '駅はどこですか (Eki wa doko desu ka)' },
+        { key: 'C', text: 'コーヒーを一つお願いします (Kōhī o hitotsu onegai shimasu)' },
+        { key: 'D', text: 'お会計をお願いします (Okaikei o onegai shimasu)' },
+      ],
+      correct_key: 'C',
+      explanation: isDutch
+        ? '"Kōhī o hitotsu onegai shimasu" is de natuurlijke beleefde manier om koffie te bestellen.'
+        : '"Kōhī o hitotsu onegai shimasu" is the natural, courteous phrasing.',
+      audioText: 'コーヒーを一つお願いします'
+    },
+    {
+      id: 3,
+      level: 'A2',
+      target_skill: isDutch ? 'Grammatica Partikels (wa vs o)' : 'Particles (wa vs o)',
+      instruction: isDutch ? 'Welk partikel markeert het lijdend voorwerp (brood eten)?' : 'Which particle marks the direct object (eating bread)?',
+      prompt: 'パン _____ 食べます (Pan _____ tabemasu).',
+      options: [
+        { key: 'A', text: 'は (wa)' },
+        { key: 'B', text: 'を (o)' },
+        { key: 'C', text: 'に (ni)' },
+        { key: 'D', text: 'で (de)' },
+      ],
+      correct_key: 'B',
+      explanation: isDutch
+        ? 'Het partikel を (uitgesproken als "o") markeert het directe lijdend voorwerp van het werkwoord.'
+        : 'Particle を (o) indicates the direct grammatical object.',
+      audioText: 'パンを食べます'
+    },
+    {
+      id: 4,
+      level: 'A2',
+      target_skill: isDutch ? 'Werkwoord Te-vorm (Verzoek)' : 'Te-form Request',
+      instruction: isDutch ? 'Wat betekent "ちょっと待ってください" (Chotto matte kudasai)?' : 'What does "Chotto matte kudasai" mean?',
+      prompt: 'ちょっと待ってください (Chotto matte kudasai)',
+      options: [
+        { key: 'A', text: isDutch ? 'Een ogenblikje geduld, alstublieft' : 'Please wait a moment' },
+        { key: 'B', text: isDutch ? 'Eet smakelijk' : 'Enjoy your meal' },
+        { key: 'C', text: isDutch ? 'Ga rechtdoor' : 'Go straight ahead' },
+        { key: 'D', text: isDutch ? 'Dank je wel voor je hulp' : 'Thank you for your help' },
+      ],
+      correct_key: 'A',
+      explanation: isDutch
+        ? '"Chotto matte kudasai" is de alledaagse beleefde uitdrukking voor "even wachten alstublieft".'
+        : '"Chotto matte kudasai" politely asks someone to wait a moment.',
+      audioText: 'ちょっと待ってください'
+    },
+    {
+      id: 5,
+      level: 'B1',
+      target_skill: isDutch ? 'Voorwaarden (tara / ba / to)' : 'Conditional Tara Form',
+      instruction: isDutch ? 'Welke vorm drukt "Als de regen stopt, gaan we naar buiten" uit?' : 'Which form expresses "If the rain stops, let\'s go out"?',
+      prompt: '雨が_____、出かけましょう (Ame ga _____, dekakemashō).',
+      options: [
+        { key: 'A', text: 'やんで (yande)' },
+        { key: 'B', text: 'やんだら (yandara)' },
+        { key: 'C', text: 'やまない (yamanai)' },
+        { key: 'D', text: 'やみます (yamimasu)' },
+      ],
+      correct_key: 'B',
+      explanation: isDutch
+        ? 'De werkwoordsvorm "-tara" (yandara) vormt de conditionele "als... dan" structuur.'
+        : 'The "-tara" form creates an active temporal condition ("if/when it stops").',
+      audioText: '雨がやんだら、出かけましょう'
+    },
+    {
+      id: 6,
+      level: 'B1',
+      target_skill: isDutch ? 'Potentiële Vorm (Kunnen)' : 'Potential Form (Can do)',
+      instruction: isDutch ? 'Welk werkwoord betekent "Ik kan Japans spreken":' : 'Which verb form means "I can speak Japanese":',
+      prompt: '日本語を _____ (Nihongo o _____).',
+      options: [
+        { key: 'A', text: '話せます (hanasemasu)' },
+        { key: 'B', text: '話します (hanashimasu)' },
+        { key: 'C', text: '話しました (hanashimashita)' },
+        { key: 'D', text: '話したい (hanashitai)' },
+      ],
+      correct_key: 'A',
+      explanation: isDutch
+        ? '"Hanasemasu" is de potentiële vorm van "hanasu" (spreken → kunnen spreken).'
+        : '"Hanasemasu" is the potential verb form meaning "able to speak".',
+      audioText: '日本語を話せます'
+    },
+    {
+      id: 7,
+      level: 'B2',
+      target_skill: isDutch ? 'Lijdende Vorm (Ukemikei)' : 'Passive Voice (Ukemi)',
+      instruction: isDutch ? 'Welke zin bevat een passieve vorm (geprezen worden door de leraar)?' : 'Which sentence uses the passive voice ("praised by the teacher")?',
+      prompt: '先生に _____ (Sensei ni _____).',
+      options: [
+        { key: 'A', text: '褒めました (homemashita)' },
+        { key: 'B', text: '褒められました (homeraremashita)' },
+        { key: 'C', text: '褒めさせました (homesasemashita)' },
+        { key: 'D', text: '褒めてあげました (homete agemashita)' },
+      ],
+      correct_key: 'B',
+      explanation: isDutch
+        ? '"Homeraremashita" is de beleefde verleden tijd van de passieve vorm (homereru).'
+        : '"Homeraremashita" is the passive construction ("was praised").',
+      audioText: '先生に褒められました'
+    },
+    {
+      id: 8,
+      level: 'B2',
+      target_skill: isDutch ? 'Formele Connectieven' : 'Formal Connectors',
+      instruction: isDutch ? 'Wat betekent het formele connectief "にもかかわらず" (ni mo kakawarazu)?' : 'What does "ni mo kakawarazu" signify?',
+      prompt: '大雨だったにもかかわらず (Ōame datta ni mo kakawarazu)',
+      options: [
+        { key: 'A', text: isDutch ? 'Omdat het zwaar regende' : 'Because it rained heavily' },
+        { key: 'B', text: isDutch ? 'Ondanks dat het zwaar regende' : 'In spite of / despite the heavy rain' },
+        { key: 'C', text: isDutch ? 'Voordat het begon te regenen' : 'Before it started raining' },
+        { key: 'D', text: isDutch ? 'Wanneer het regent' : 'Whenever it rains' },
+      ],
+      correct_key: 'B',
+      explanation: isDutch
+        ? '"Ni mo kakawarazu" betekent "ondanks / niettegenstaande".'
+        : '"Ni mo kakawarazu" means "in spite of / notwithstanding".',
+      audioText: '大雨だったにもかかわらず'
+    },
+    {
+      id: 9,
+      level: 'C1',
+      target_skill: isDutch ? 'Keigo Eerbieds- en Nederigheidstaal' : 'Honorific Keigo System',
+      instruction: isDutch ? 'Welk nederig werkwoord (Kenjōgo) gebruik je als je zelf naar het kantoor van een klant gaat?' : 'Which humble verb (Kenjōgo) is used when you yourself go to a client\'s office?',
+      prompt: '明日、御社へ _____ (Ashita, onsha e _____).',
+      options: [
+        { key: 'A', text: 'いらっしゃいます (irasshaimasu)' },
+        { key: 'B', text: '参ります (mairimasu)' },
+        { key: 'C', text: 'おいでになります (oide ni narimasu)' },
+        { key: 'D', text: '召し上がります (meshiaagarimasu)' },
+      ],
+      correct_key: 'B',
+      explanation: isDutch
+        ? '"Mairimasu" is de nederige vorm (kenjōgo) van "gaan/komen" voor de spreker zelf.'
+        : '"Mairimasu" is the humble (Kenjōgo) equivalent of "to go/come".',
+      audioText: '明日、御社へ参ります'
+    },
+    {
+      id: 10,
+      level: 'C2',
+      target_skill: isDutch ? 'Klassieke Vierkarakter Idioom (Yojijukugo)' : 'Four-Character Idioms (Yojijukugo)',
+      instruction: isDutch ? 'Wat is de betekenis van het gevorderde idioom "一期一会" (Ichigo Ichie)?' : 'What is the precise philosophical meaning of "Ichigo Ichie"?',
+      prompt: '一期一会 (Ichigo Ichie)',
+      options: [
+        { key: 'A', text: isDutch ? 'Harde fysieke arbeid loont altijd' : 'Hard physical work pays off' },
+        { key: 'B', text: isDutch ? 'Een eenmalige, unieke ontmoeting in het leven die men diep moet koesteren' : 'A once-in-a-lifetime encounter to treasure deeply' },
+        { key: 'C', text: isDutch ? 'Snelle winst op de aandelenmarkt' : 'Quick profit on financial markets' },
+        { key: 'D', text: isDutch ? 'Twee vijanden die moeten samenwerken' : 'Two rivals forced to cooperate' },
+      ],
+      correct_key: 'B',
+      explanation: isDutch
+        ? '"Ichigo Ichie" stamt uit de theeceremonie: elke ontmoeting is uniek en onherhaalbaar in een mensenleven.'
+        : '"Ichigo Ichie" signifies treasuring every encounter as a unique once-in-a-lifetime moment.',
+      audioText: '一期一会'
+    }
+  ];
+}
+
+function getChineseQuestions(isDutch: boolean, _variant: string): PlacementTestQuestion[] {
+  return [
+    {
+      id: 1,
+      level: 'A1',
+      target_skill: isDutch ? 'Begroetingen & Kennismaking' : 'Foundational Greetings',
+      instruction: isDutch ? 'Wat betekent "你好！很高兴认识你" (Nǐ hǎo! Hěn gāoxìng rènshì nǐ)?' : 'What does "Nǐ hǎo! Hěn gāoxìng rènshì nǐ" mean?',
+      prompt: '你好！很高兴认识你 (Nǐ hǎo! Hěn gāoxìng rènshì nǐ)',
+      options: [
+        { key: 'A', text: isDutch ? 'Hallo! Leuk je te ontmoeten.' : 'Hello! Pleased to meet you.' },
+        { key: 'B', text: isDutch ? 'Goedenavond! Waar ga je heen?' : 'Good evening! Where are you going?' },
+        { key: 'C', text: isDutch ? 'Hoeveel kost deze jas?' : 'How much is this jacket?' },
+        { key: 'D', text: isDutch ? 'Tot ziens, tot volgende week.' : 'Goodbye, see you next week.' },
+      ],
+      correct_key: 'A',
+      explanation: isDutch
+        ? '"Nǐ hǎo" is hallo en "hěn gāoxìng rènshì nǐ" betekent aangenaam kennis te maken.'
+        : '"Nǐ hǎo! Hěn gāoxìng rènshì nǐ" is the standard greeting and introduction phrase.',
+      audioText: '你好！很高兴认识你'
+    },
+    {
+      id: 2,
+      level: 'A1',
+      target_skill: isDutch ? 'Bestellen & Rekening Vragen' : 'Ordering & Bill',
+      instruction: isDutch ? 'Hoe vraag je om de rekening in een Chinees restaurant?' : 'How do you ask for the check in a restaurant?',
+      prompt: isDutch ? 'De rekening, alstublieft.' : 'The bill / check, please.',
+      options: [
+        { key: 'A', text: '洗手间在哪儿？(Xǐshǒujiān zài nǎr?)' },
+        { key: 'B', text: '买单，谢谢！(Mǎidān, xièxiè!)' },
+        { key: 'C', text: '太贵了！(Tài guì le!)' },
+        { key: 'D', text: '我不懂。(Wǒ bù dǒng.)' },
+      ],
+      correct_key: 'B',
+      explanation: isDutch
+        ? '"Mǎidān" is de meest natuurlijke term voor het vragen om de rekening.'
+        : '"Mǎidān" is the common term used for paying the check in dining establishments.',
+      audioText: '买单，谢谢'
+    },
+    {
+      id: 3,
+      level: 'A2',
+      target_skill: isDutch ? 'Aspect Partikel 了 (Le)' : 'Aspect Particle Le',
+      instruction: isDutch ? 'Wat geeft het partikel "了" (le) aan in "我吃了早饭" (Wǒ chī le zǎofàn)?' : 'What does "le" mark in "Wǒ chī le zǎofàn"?',
+      prompt: '我吃了早饭 (Wǒ chī le zǎofàn)',
+      options: [
+        { key: 'A', text: isDutch ? 'Toekomstige handeling' : 'Future action' },
+        { key: 'B', text: isDutch ? 'Een voltooide handeling (Ik heb ontbeten)' : 'A completed action (I ate breakfast)' },
+        { key: 'C', text: isDutch ? 'Ontkenning' : 'Negation' },
+        { key: 'D', text: isDutch ? 'Een vraagteken' : 'A question marker' },
+      ],
+      correct_key: 'B',
+      explanation: isDutch
+        ? '"Le" direct na een werkwoord drukt een voltooide handeling of aspect uit.'
+        : 'Placed after a verb, "le" indicates completion of the action.',
+      audioText: '我吃了早饭'
+    },
+    {
+      id: 4,
+      level: 'A2',
+      target_skill: isDutch ? 'De Weg Vragen' : 'Directions & Wayfinding',
+      instruction: isDutch ? 'Wat betekent "请问，火车站怎么走？" (Qǐngwèn, huǒchēzhàn zěnme zǒu)?' : 'What does this navigation question ask?',
+      prompt: '请问，火车站怎么走？(Qǐngwèn, huǒchēzhàn zěnme zǒu?)',
+      options: [
+        { key: 'A', text: isDutch ? 'Mag ik vragen hoe ik bij het treinstation kom?' : 'Excuse me, how do I get to the train station?' },
+        { key: 'B', text: isDutch ? 'Hoe laat vertrekt de trein?' : 'What time does the train leave?' },
+        { key: 'C', text: isDutch ? 'Heeft u een treinkaartje?' : 'Do you have a train ticket?' },
+        { key: 'D', text: isDutch ? 'Is het station ver hiervandaan?' : 'Is the station far from here?' },
+      ],
+      correct_key: 'A',
+      explanation: isDutch
+        ? '"Huǒchēzhàn" is treinstation en "zěnme zǒu" vraagt hoe je erheen loopt of reist.'
+        : '"Zěnme zǒu" asks how to get somewhere spatially.',
+      audioText: '请问，火车站怎么走'
+    },
+    {
+      id: 5,
+      level: 'B1',
+      target_skill: isDutch ? 'Vergelijkende Constructie (Bǐ)' : 'Comparative Structures with Bǐ',
+      instruction: isDutch ? 'Welke zin betekent "Vandaag is warmer dan gisteren":' : 'Which sentence means "Today is warmer than yesterday":',
+      prompt: '今天比昨天 _____ (Jīntiān bǐ zuótiān _____).',
+      options: [
+        { key: 'A', text: '冷 (lěng)' },
+        { key: 'B', text: '暖和 (nuǎnhuo)' },
+        { key: 'C', text: '下雨 (xiàyǔ)' },
+        { key: 'D', text: '没有 (méiyǒu)' },
+      ],
+      correct_key: 'B',
+      explanation: isDutch
+        ? '"Nuǎnhuo" betekent aangenaam warm. In de "A bǐ B + adjectief" constructie volgt direct het adjectief.'
+        : '"Nuǎnhuo" means warm in the standard comparative "A bǐ B + adj" formula.',
+      audioText: '今天比昨天暖和'
+    },
+    {
+      id: 6,
+      level: 'B1',
+      target_skill: isDutch ? 'De 把 (Bǎ) Constructie' : 'The Bǎ Construction',
+      instruction: isDutch ? 'Wat typeert de "把" (bǎ) zin in de Chinese grammatica?' : 'What does the "bǎ" sentence structure do?',
+      prompt: '他把窗户打开了 (Tā bǎ chuānghu dǎkāi le)',
+      options: [
+        { key: 'A', text: isDutch ? 'Het plaatst het lijdend voorwerp vóór het werkwoord om het resultaat van de handeling te benadrukken' : 'It moves the object before the verb to emphasize disposal/result' },
+        { key: 'B', text: isDutch ? 'Het vormt altijd een ontkenning' : 'It creates a negative clause' },
+        { key: 'C', text: isDutch ? 'Het drukt een passieve lijdende vorm uit' : 'It represents the passive voice' },
+        { key: 'D', text: isDutch ? 'Het geeft een vraag aan' : 'It functions as a question' },
+      ],
+      correct_key: 'A',
+      explanation: isDutch
+        ? 'De 把-constructie verplaatst het bekende lijdend voorwerp naar voren om aan te geven wat ermee gebeurd is.'
+        : 'The bǎ construction marks disposal and execution on a definite object.',
+      audioText: '他把窗户打开了'
+    },
+    {
+      id: 7,
+      level: 'B2',
+      target_skill: isDutch ? 'Lijdende Vorm met 被 (Bèi)' : 'Passive Voice with Bèi',
+      instruction: isDutch ? 'Wat betekent "手机被他拿走了" (Shǒujī bèi tā názǒu le)?' : 'What does "Shǒujī bèi tā názǒu le" mean?',
+      prompt: '手机被他拿走了 (Shǒujī bèi tā názǒu le)',
+      options: [
+        { key: 'A', text: isDutch ? 'Hij heeft een nieuwe telefoon gekocht' : 'He bought a new phone' },
+        { key: 'B', text: isDutch ? 'De telefoon is door hem meegenomen' : 'The phone was taken away by him' },
+        { key: 'C', text: isDutch ? 'Hij heeft de telefoon laten vallen' : 'He dropped the phone' },
+        { key: 'D', text: isDutch ? 'Zijn telefoon is stuk' : 'His phone is broken' },
+      ],
+      correct_key: 'B',
+      explanation: isDutch
+        ? '被 (bèi) introduceert de handelende persoon in een passieve zin.'
+        : '被 (bèi) is the primary passive voice marker.',
+      audioText: '手机被他拿走了'
+    },
+    {
+      id: 8,
+      level: 'B2',
+      target_skill: isDutch ? 'Formele Connectieven' : 'Formal Discourse Markers',
+      instruction: isDutch ? 'Welk voegwoordpaar drukt "Niet alleen... maar ook..." uit?' : 'Which pair means "Not only... but also..."?',
+      prompt: '_____ 汉语很难，_____ 很有趣。',
+      options: [
+        { key: 'A', text: '虽然... 但是... (Suīrán... dànshì...)' },
+        { key: 'B', text: '不仅... 而且... (Bùjǐn... érqiě...)' },
+        { key: 'C', text: '因为... 所以... (Yīnwèi... suǒyǐ...)' },
+        { key: 'D', text: '只要... 就... (Zhǐyào... jiù...)' },
+      ],
+      correct_key: 'B',
+      explanation: isDutch
+        ? '"Bùjǐn... érqiě..." is het vaste verbindingspaar voor "niet alleen... maar ook...".'
+        : '"Bùjǐn... érqiě..." expresses progressive correlation ("not only... but also...").',
+      audioText: '不仅汉语很难而且很有趣'
+    },
+    {
+      id: 9,
+      level: 'C1',
+      target_skill: isDutch ? 'Klassieke Partikels in Modern Chinees' : 'Classical Particles in Written Register',
+      instruction: isDutch ? 'Wat betekent het formele schriftelijke partikel "之" (zhī) in "成功之路"?' : 'What does the classical particle "之" (zhī) express in formal Chinese?',
+      prompt: '成功之路 (Chénggōng zhī lù)',
+      options: [
+        { key: 'A', text: isDutch ? 'Het fungeert als het bezittelijke "的" (van): "De weg naar succes"' : 'It functions as possessive "de": "The path of success"' },
+        { key: 'B', text: isDutch ? 'Het geeft een ontkenning aan' : 'It indicates negation' },
+        { key: 'C', text: isDutch ? 'Het markeert een vraag' : 'It marks an interrogative clause' },
+        { key: 'D', text: isDutch ? 'Het duidt op het verleden' : 'It signifies past tense' },
+      ],
+      correct_key: 'A',
+      explanation: isDutch
+        ? 'In formele geschreven taal vervangt 之 (zhī) het alledaagse 的 (de).'
+        : 'In high written register, 之 (zhī) serves as the classical genitive connector.',
+      audioText: '成功之路'
+    },
+    {
+      id: 10,
+      level: 'C2',
+      target_skill: isDutch ? 'Vierkarakter Idioom (Chéngyǔ)' : 'Literary Idioms (Chéngyǔ)',
+      instruction: isDutch ? 'Wat betekent het klassieke Chéngyǔ "胸有成竹" (Xiōng yǒu chéng zhú)?' : 'What is the precise meaning of the idiom "Xiōng yǒu chéng zhú"?',
+      prompt: '胸有成竹 (Xiōng yǒu chéng zhú)',
+      options: [
+        { key: 'A', text: isDutch ? 'Pijn op de borst hebben van vermoeidheid' : 'Suffering chest pain from fatigue' },
+        { key: 'B', text: isDutch ? 'Van tevoren een voldragen, zelfverzekerd plan in je hoofd hebben' : 'Having a well-thought-out, confident plan beforehand' },
+        { key: 'C', text: isDutch ? 'Bamboe planten in de tuin' : 'Planting bamboo in a garden' },
+        { key: 'D', text: isDutch ? 'Aarzelen en niet durven beslissen' : 'Hesitating and being indecisive' },
+      ],
+      correct_key: 'B',
+      explanation: isDutch
+        ? 'Letterlijk "de bamboe al in je borst/geest getekend hebben voordat je schildert", figuurlijk: volledig voorbereid en zelfverzekerd zijn.'
+        : 'Originating from painter Su Shi: having a complete mental blueprint before taking action.',
+      audioText: '胸有成竹'
+    }
+  ];
+}
+
+function getRussianQuestions(isDutch: boolean, _variant: string): PlacementTestQuestion[] {
+  return [
+    {
+      id: 1,
+      level: 'A1',
+      target_skill: isDutch ? 'Begroetingen & Beleefdheid' : 'Greetings & Etiquette',
+      instruction: isDutch ? 'Wat betekent "Здравствуйте! Как дела?"?' : 'What does "Здравствуйте! Как дела?" mean?',
+      prompt: 'Здравствуйте! Как дела? (Zdravstvuyte! Kak dela?)',
+      options: [
+        { key: 'A', text: isDutch ? 'Hallo! Hoe gaat het?' : 'Hello! How are you?' },
+        { key: 'B', text: isDutch ? 'Goedenavond! Waar woon je?' : 'Good evening! Where do you live?' },
+        { key: 'C', text: isDutch ? 'Tot ziens! Fijne reis!' : 'Goodbye! Have a nice trip!' },
+        { key: 'D', text: isDutch ? 'Alsjeblieft, hier is het paspoort.' : 'Please, here is the passport.' },
+      ],
+      correct_key: 'A',
+      explanation: isDutch
+        ? '"Zdravstvuyte" is de universele beleefde begroeting en "Kak dela?" vraagt hoe het gaat.'
+        : '"Zdravstvuyte" is the formal polite greeting meaning "Hello".',
+      audioText: 'Здравствуйте! Как дела?'
+    },
+    {
+      id: 2,
+      level: 'A1',
+      target_skill: isDutch ? 'In een Café Bestellen' : 'Cafe & Ordering',
+      instruction: isDutch ? 'Hoe bestel je koffie in het Russisch?' : 'How do you politely order coffee in Russian?',
+      prompt: isDutch ? 'Eén koffie, alstublieft.' : 'One coffee, please.',
+      options: [
+        { key: 'A', text: 'Где находится метро? (Gde nakhoditsya metro?)' },
+        { key: 'B', text: 'Чашку кофе, пожалуйста. (Chashku kofe, pozhaluysta.)' },
+        { key: 'C', text: 'Сколько это стоит? (Skolko eto stoit?)' },
+        { key: 'D', text: 'Меня зовут Иван. (Menya zovut Ivan.)' },
+      ],
+      correct_key: 'B',
+      explanation: isDutch
+        ? '"Chashku kofe, pozhaluysta" is de beleefde manier om koffie te bestellen.'
+        : '"Chashku kofe, pozhaluysta" is the standard cafe order.',
+      audioText: 'Чашку кофе, пожалуйста'
+    },
+    {
+      id: 3,
+      level: 'A2',
+      target_skill: isDutch ? 'Naamvallen: Prepositionalis (Padezh 6)' : 'Prepositional Case',
+      instruction: isDutch ? 'Kies de juiste uitgang voor "Ik woon in Moskou":' : 'Select the correct ending for "I live in Moscow":',
+      prompt: 'Я живу в _____ (Moskv...):',
+      options: [
+        { key: 'A', text: 'Москву (Moskvu)' },
+        { key: 'B', text: 'Москвы (Moskvy)' },
+        { key: 'C', text: 'Москве (Moskve)' },
+        { key: 'D', text: 'Москвой (Moskvoy)' },
+      ],
+      correct_key: 'C',
+      explanation: isDutch
+        ? 'Na het voorzetsel "в" voor locatie volgt de prepositionalis (6e naamval) met uitgang "-е": "в Москве".'
+        : 'Preposition "v" marking location takes the prepositional case ending "-e".',
+      audioText: 'Я живу в Москве'
+    },
+    {
+      id: 4,
+      level: 'A2',
+      target_skill: isDutch ? 'Verleden Tijd Vervoeging' : 'Past Tense Agreement',
+      instruction: isDutch ? 'Welk werkwoord past bij een vrouwelijke spreker ("Ik las een boek")?' : 'Which past tense form agrees with a female subject ("I read")?',
+      prompt: 'Вчера я (женщина) _____ интересную книгу.',
+      options: [
+        { key: 'A', text: 'читал (chital)' },
+        { key: 'B', text: 'читала (chitala)' },
+        { key: 'C', text: 'читало (chitalo)' },
+        { key: 'D', text: 'читали (chitali)' },
+      ],
+      correct_key: 'B',
+      explanation: isDutch
+        ? 'In de Russische verleden tijd stemt het werkwoord in geslacht overeen met het onderwerp: "-ла" voor vrouwelijk enkelvoud.'
+        : 'Russian past tense inflects for gender: "-la" marks feminine singular.',
+      audioText: 'Вчера я читала интересную книгу'
+    },
+    {
+      id: 5,
+      level: 'B1',
+      target_skill: isDutch ? 'Verbaal Aspect (NSV vs SV)' : 'Verbal Aspect',
+      instruction: isDutch ? 'Welk aspect gebruik je voor een eenmalig voltooide handeling ("Ik heb het boek uitgelezen")?' : 'Which aspect marks a completed finished result?',
+      prompt: 'Я наконец-то _____ эту сложную книгу.',
+      options: [
+        { key: 'A', text: 'прочитал (prochital - SV)' },
+        { key: 'B', text: 'читал (chital - NSV)' },
+        { key: 'C', text: 'читаю (chitayu - pres)' },
+        { key: 'D', text: 'буду читать (budu chitat)' },
+      ],
+      correct_key: 'A',
+      explanation: isDutch
+        ? 'Het perfectieve aspect (SV, "прочитал") drukt een afgesloten, succesvol behaald resultaat uit.'
+        : 'The perfective aspect ("prochital") emphasizes completion and definite result.',
+      audioText: 'Я наконец-то прочитал эту книгу'
+    },
+    {
+      id: 6,
+      level: 'B1',
+      target_skill: isDutch ? 'Bewegingswerkwoorden' : 'Verbs of Motion',
+      instruction: isDutch ? 'Welk werkwoord betekent te voet gaan in één specifieke richting (unidirectioneel)?' : 'Which motion verb means walking in one definite direction right now?',
+      prompt: 'Сейчас я _____ на работу.',
+      options: [
+        { key: 'A', text: 'хожу (khozhu)' },
+        { key: 'B', text: 'иду (idu)' },
+        { key: 'C', text: 'езжу (yezzhu)' },
+        { key: 'D', text: 'еду (yedu)' },
+      ],
+      correct_key: 'B',
+      explanation: isDutch
+        ? '"Иду" (idu) is unidirectioneel te voet (ik ben nu onderweg).'
+        : '"Idu" signifies unidirectional movement on foot in progress.',
+      audioText: 'Сейчас я иду на работу'
+    },
+    {
+      id: 7,
+      level: 'B2',
+      target_skill: isDutch ? 'Voorwaardelijke Wijs (Soslagatelnoye)' : 'Conditional Mood with By',
+      instruction: isDutch ? 'Hoe formuleer je een hypothetische wens ("Als ik tijd had, zou ik reizen")?' : 'How is a counterfactual condition formed in Russian?',
+      prompt: 'Если бы у меня было время, я _____ по миру.',
+      options: [
+        { key: 'A', text: 'путешествую (puteshestvuyu)' },
+        { key: 'B', text: 'путешествовал бы (puteshestvoval by)' },
+        { key: 'C', text: 'буду путешествовать (budu puteshestvovat)' },
+        { key: 'D', text: 'путешествуй (puteshestvuy)' },
+      ],
+      correct_key: 'B',
+      explanation: isDutch
+        ? 'De conditionele wijs combineert de verleden tijd met het partikel "бы" (puteshestvoval by).'
+        : 'The conditional uses past tense + particle "by".',
+      audioText: 'Если бы у меня было время, я путешествовал бы'
+    },
+    {
+      id: 8,
+      level: 'B2',
+      target_skill: isDutch ? 'Deelwoorden & Gerundia' : 'Gerunds (Deechastie)',
+      instruction: isDutch ? 'Wat drukt het gerundium "Прочитав письмо, он улыбнулся" uit?' : 'What does the adverbial participle (deechastie) express?',
+      prompt: 'Прочитав письмо, он улыбнулся (Prochitav pismo, on ulybnulsya)',
+      options: [
+        { key: 'A', text: isDutch ? 'Nadat hij de brief had gelezen, glimlachte hij' : 'Having read the letter, he smiled' },
+        { key: 'B', text: isDutch ? 'Terwijl hij de brief schreef, huilde hij' : 'While writing the letter, he cried' },
+        { key: 'C', text: isDutch ? 'Zonder de brief te openen' : 'Without opening the letter' },
+        { key: 'D', text: isDutch ? 'Hij zal de brief morgen lezen' : 'He will read the letter tomorrow' },
+      ],
+      correct_key: 'A',
+      explanation: isDutch
+        ? '"Прочитав" is een voltooid bijwoordelijk deelwoord (deechastie) dat een voorafgaande handeling aanduidt.'
+        : '"Prochitav" is a perfective gerund marking an antecedent completed action.',
+      audioText: 'Прочитав письмо, он улыбнулся'
+    },
+    {
+      id: 9,
+      level: 'C1',
+      target_skill: isDutch ? 'Geavanceerde Syntaxis & Onderschatting' : 'Complex Subordinate Clauses',
+      instruction: isDutch ? 'Welke voegwoordcombinatie drukt een formele concessie ("hoewel") uit?' : 'Which conjunction marks formal concession ("notwithstanding / although")?',
+      prompt: '_____ на трудности, проект был успешно завершён.',
+      options: [
+        { key: 'A', text: 'Потому что (Potomu chto)' },
+        { key: 'B', text: 'Несмотря на (Nesmotrya na)' },
+        { key: 'C', text: 'Для того чтобы (Dlya togo chtoby)' },
+        { key: 'D', text: 'Как будто (Kak budto)' },
+      ],
+      correct_key: 'B',
+      explanation: isDutch
+        ? '"Несмотря на" (+ accusatief) betekent "ondanks / niettegenstaande".'
+        : '"Nesmotrya na" marks concessive contrast ("despite / in spite of").',
+      audioText: 'Несмотря на трудности, проект был завершён'
+    },
+    {
+      id: 10,
+      level: 'C2',
+      target_skill: isDutch ? 'Gevorderde Idiomatiek & Metafoor' : 'Advanced Idiomatic Expressions',
+      instruction: isDutch ? 'Wat betekent het Russische idioom "Спустя рукава"?' : 'What does the idiom "Spustya rukava" mean?',
+      prompt: 'Работать спустя рукава (Rabotat spustya rukava)',
+      options: [
+        { key: 'A', text: isDutch ? 'Met opgestroopte mouwen heel hard werken' : 'Working very hard with rolled-up sleeves' },
+        { key: 'B', text: isDutch ? 'Laks, slordig en zonder enige toewijding werken' : 'Working sloppily, carelessly, half-heartedly' },
+        { key: 'C', text: isDutch ? 'Nieuwe kleren naaien' : 'Sewing new garments' },
+        { key: 'D', text: isDutch ? 'Op tijd naar huis gaan' : 'Going home on schedule' },
+      ],
+      correct_key: 'B',
+      explanation: isDutch
+        ? '"Спустя рукава" (met afhangende mouwen) stamt uit de tsarentijd toen lange mouwen werk onmogelijk maakten: slordig en ongeïnteresseerd werken.'
+        : '"Spustya rukava" describes performing tasks slipshodly and without enthusiasm.',
+      audioText: 'Работать спустя рукава'
+    }
+  ];
+}
+
 function getUniversalLanguageQuestions(
   targetCode: string,
   targetName: string,
@@ -1341,187 +2101,191 @@ function getUniversalLanguageQuestions(
 ): PlacementTestQuestion[] {
   const lang = WORLD_LANGUAGES.find((l) => l.code === targetCode);
   const greeting = lang?.sampleGreeting || `Hello (${targetName})`;
-  const script = lang?.script || targetName;
+  const nativeName = lang?.nativeName || targetName;
 
   return [
     {
       id: 1,
       level: 'A1',
-      target_skill: isDutch ? 'Begroetingen & Kennismaking' : 'Greetings & Basics',
+      target_skill: isDutch ? 'Alledaagse Begroeting' : 'Everyday Greeting',
       instruction: isDutch ? `Wat betekent deze begroeting in het ${targetName}?` : `What does this greeting mean in ${targetName}?`,
       prompt: greeting,
       options: [
-        { key: 'A', text: isDutch ? 'Hallo / Goedendag' : 'Hello / Good day' },
-        { key: 'B', text: isDutch ? 'Tot ziens / Vaarwel' : 'Goodbye / Farewell' },
+        { key: 'A', text: isDutch ? 'Tot ziens / Vaarwel' : 'Goodbye / Farewell' },
+        { key: 'B', text: isDutch ? `Hallo / Goedendag in het ${targetName}` : `Hello / Good day in ${targetName}` },
         { key: 'C', text: isDutch ? 'De rekening, alstublieft' : 'The check, please' },
         { key: 'D', text: isDutch ? 'Waar is het station?' : 'Where is the station?' },
       ],
-      correct_key: 'A',
+      correct_key: 'B',
       explanation: isDutch
-        ? `"${greeting}" is de universele begroetingsformule in het ${targetName}.`
+        ? `"${greeting}" is de universele vriendelijke begroeting in het ${targetName}.`
         : `"${greeting}" is the foundational greeting in ${targetName}.`,
       audioText: greeting
     },
     {
       id: 2,
       level: 'A1',
-      target_skill: isDutch ? 'Beleefdheid & Dank' : 'Politeness & Thanks',
-      instruction: isDutch ? `Hoe druk je beleefde dankbaarheid uit in het ${targetName}?` : `How do you express polite gratitude in ${targetName}?`,
-      prompt: isDutch ? 'Dank u wel / Bedankt' : 'Thank you very much',
+      target_skill: isDutch ? 'In het Café & Bestellen' : 'In a Café & Ordering',
+      instruction: isDutch ? `Je bent in een café. Hoe vraag je beleefd om een drankje in het ${targetName}?` : `You are in a café. How do you politely order a drink in ${targetName}?`,
+      prompt: isDutch ? `Een koffie, alstublieft (${targetName})` : `A coffee, please (${targetName})`,
       options: [
-        { key: 'A', text: isDutch ? `Formele dankformule (${targetName})` : `Formal thank you (${targetName})` },
+        { key: 'A', text: isDutch ? 'Hoe laat is het?' : 'What time is it?' },
         { key: 'B', text: isDutch ? 'Waar woon je?' : 'Where do you live?' },
-        { key: 'C', text: isDutch ? 'Hoe laat is het?' : 'What time is it?' },
-        { key: 'D', text: isDutch ? 'Ik heet...' : 'My name is...' },
+        { key: 'C', text: isDutch ? `Een koffie, alstublieft (${nativeName})` : `A coffee, please (${nativeName})` },
+        { key: 'D', text: isDutch ? 'Tot morgen' : 'See you tomorrow' },
       ],
-      correct_key: 'A',
+      correct_key: 'C',
       explanation: isDutch
-        ? `Dit is de meest gebruikte en respectvolle dankformule in het ${targetName}.`
-        : `This is the standard courteous expression of gratitude in ${targetName}.`,
+        ? `Dit is de beleefde manier om een drankje te bestellen in het ${targetName}.`
+        : `This is the standard polite phrase for ordering in a café in ${targetName}.`,
       audioText: greeting
     },
     {
       id: 3,
       level: 'A2',
-      target_skill: isDutch ? 'Tegenwoordige Tijd & Werkwoorden' : 'Present Routine Verbs',
-      instruction: isDutch ? `Kies het juiste ontbrekende werkwoord in het ${targetName}:` : `Select the correct present tense verb in ${targetName}:`,
-      prompt: `${targetName} [Subject: We] _____ [Verb: learn / study]`,
+      target_skill: isDutch ? 'Kennismaking & Woonplaats' : 'Introductions & Where You Live',
+      instruction: isDutch ? `Iemand vraagt waar je woont. Wat betekent het antwoord: "Wij wonen in het centrum"?` : `Someone asks where you live. What does: "We live in the city center" mean?`,
+      prompt: isDutch ? `Wij wonen in het centrum van de stad (${targetName})` : `We live in the city center (${targetName})`,
       options: [
-        { key: 'A', text: isDutch ? '1e persoon meervoud (wij studeren)' : 'First person plural (we study)' },
-        { key: 'B', text: isDutch ? '1e persoon enkelvoud (ik studeer)' : 'First person singular (I study)' },
-        { key: 'C', text: isDutch ? 'Infinitief (studeren)' : 'Infinitive form (to study)' },
-        { key: 'D', text: isDutch ? 'Gebiedende wijs (studeer!)' : 'Imperative form (study!)' },
+        { key: 'A', text: isDutch ? 'Wij wonen in het centrum van de stad' : 'We live in the city center' },
+        { key: 'B', text: isDutch ? 'Wij werken buiten de stad' : 'We work outside the city' },
+        { key: 'C', text: isDutch ? 'Wij reizen morgen naar het buitenland' : 'We are traveling abroad tomorrow' },
+        { key: 'D', text: isDutch ? 'Wij zoeken een nieuw hotel' : 'We are looking for a new hotel' },
       ],
       correct_key: 'A',
       explanation: isDutch
-        ? `De 1e persoon meervoud past bij het onderwerp 'wij' in het ${targetName}.`
-        : `First person plural agrees with the subject 'we' in ${targetName}.`,
+        ? `Duidelijke communicatie over woonplaats en leefomgeving.`
+        : `Clear practical comprehension of residence and living environment.`,
       audioText: targetName
     },
     {
       id: 4,
       level: 'A2',
       target_skill: isDutch ? 'De Weg Vragen & Oriëntatie' : 'Directions & Navigation',
-      instruction: isDutch ? `Wat is de meest logische reactie op een vraag naar de weg in het ${targetName}?` : `What is the most logical route direction in ${targetName}?`,
-      prompt: `[Question: Where is the train station in ${targetName}?]`,
+      instruction: isDutch ? `Een voorbijganger legt de weg uit naar het station. Welke aanwijzing hoor je?` : `A local gives you directions to the station. What instruction do they give?`,
+      prompt: isDutch ? `Ga rechtdoor en sla rechtsaf bij de volgende straat (${targetName})` : `Go straight ahead and turn right at the next street (${targetName})`,
       options: [
-        { key: 'A', text: isDutch ? 'Sla rechtsaf bij de volgende straat' : 'Turn right at the next street' },
-        { key: 'B', text: isDutch ? 'Ik heb veel honger' : 'I am very hungry' },
-        { key: 'C', text: isDutch ? 'Mijn lievelingskleur is blauw' : 'My favorite color is blue' },
-        { key: 'D', text: isDutch ? 'Het is half vier' : 'It is half past three' },
+        { key: 'A', text: isDutch ? 'Het station is vandaag gesloten' : 'The station is closed today' },
+        { key: 'B', text: isDutch ? 'Het is half vier in de middag' : 'It is half past three in the afternoon' },
+        { key: 'C', text: isDutch ? 'Ik wil graag een treinkaartje kopen' : 'I would like to buy a train ticket' },
+        { key: 'D', text: isDutch ? 'Ga rechtdoor en sla rechtsaf bij de volgende straat' : 'Go straight ahead and turn right at the next street' },
       ],
-      correct_key: 'A',
+      correct_key: 'D',
       explanation: isDutch
-        ? 'Dit geeft een gerichte navigatie-instructie.'
-        : 'This provides an active spatial navigation instruction.',
+        ? 'Gerichte route-aanwijzing in een stedelijke omgeving.'
+        : 'Actionable wayfinding direction in a city setting.',
       audioText: targetName
     },
     {
       id: 5,
       level: 'B1',
-      target_skill: isDutch ? 'Verleden Tijd & Aspect' : 'Past Tenses & Aspect',
-      instruction: isDutch ? `Welke werkwoordsvorm drukt een voltooide handeling in het verleden uit in het ${targetName}?` : `Which form denotes a completed past action in ${targetName}?`,
-      prompt: `[Past action: Yesterday we arrived in ${targetName}]`,
+      target_skill: isDutch ? 'Reizen & Hotel Check-in' : 'Travel & Hotel Check-in',
+      instruction: isDutch ? `De hotelreceptionist zegt: "Uw kamer is klaar op de tweede verdieping." Wat betekent dit?` : `The hotel receptionist says: "Your room is ready on the second floor." What does this mean?`,
+      prompt: isDutch ? `Uw kamer is klaar op de tweede verdieping (${targetName})` : `Your room is ready on the second floor (${targetName})`,
       options: [
-        { key: 'A', text: isDutch ? 'Voltooide verleden tijd (perfectief)' : 'Completed past tense (perfective)' },
-        { key: 'B', text: isDutch ? 'Tegenwoordige tijd' : 'Present tense' },
-        { key: 'C', text: isDutch ? 'Toekomende tijd' : 'Future tense' },
-        { key: 'D', text: isDutch ? 'Deelwoord' : 'Participle' },
+        { key: 'A', text: isDutch ? 'Het hotel is helaas volgeboekt' : 'The hotel is unfortunately fully booked' },
+        { key: 'B', text: isDutch ? 'Uw kamer is klaar op de tweede verdieping' : 'Your room is ready on the second floor' },
+        { key: 'C', text: isDutch ? 'Het ontbijt wordt om acht uur geserveerd' : 'Breakfast is served at eight o\'clock' },
+        { key: 'D', text: isDutch ? 'Laat uw bagage alstublieft bij de receptie' : 'Please leave your luggage at reception' },
       ],
-      correct_key: 'A',
+      correct_key: 'B',
       explanation: isDutch
-        ? 'Voor afgesloten gebeurtenissen in het verleden wordt het voltooide aspect gebruikt.'
-        : 'Completed actions in past time require the perfective aspect.',
+        ? 'Praktische mededeling bij hotelreservering en check-in.'
+        : 'Essential comprehension during travel check-in.',
       audioText: targetName
     },
     {
       id: 6,
       level: 'B1',
-      target_skill: isDutch ? 'Vaste Uitdrukkingen & Sociale Conversatie' : 'Conversational Collocations',
-      instruction: isDutch ? `Wat is de betekenis van een veelgebruikte vriendelijke uitdrukking in het ${targetName}?` : `What is the meaning of a standard conversational idiom in ${targetName}?`,
-      prompt: `[Friendly greeting & rapport expression in ${targetName}]`,
+      target_skill: isDutch ? 'Vrije Tijd & Weekendplannen' : 'Free Time & Weekend Activities',
+      instruction: isDutch ? `Een vriend vertelt: "Gisteren hebben we gewandeld en een geweldige film gezien." Wat deden ze?` : `A friend shares: "Yesterday we went for a walk and watched a great movie." What did they do?`,
+      prompt: isDutch ? `Gisteren hebben we gewandeld en een geweldige film gezien (${targetName})` : `Yesterday we went for a walk and watched a great movie (${targetName})`,
       options: [
-        { key: 'A', text: isDutch ? 'Zeer verheugd om kennis te maken' : 'Very pleased to make your acquaintance' },
-        { key: 'B', text: isDutch ? 'De rekening betalen' : 'Paying the bill' },
-        { key: 'C', text: isDutch ? 'Het weerbericht bekijken' : 'Checking the weather report' },
-        { key: 'D', text: isDutch ? 'Een ticket annuleren' : 'Cancelling a ticket' },
+        { key: 'A', text: isDutch ? 'Ze bleven thuis om te studeren' : 'They stayed home to study' },
+        { key: 'B', text: isDutch ? 'Ze zijn van plan morgen naar de bioscoop te gaan' : 'They plan to visit the cinema tomorrow' },
+        { key: 'C', text: isDutch ? 'Ze hebben gewandeld en een geweldige film gezien' : 'They went for a walk and watched a great movie' },
+        { key: 'D', text: isDutch ? 'Ze moesten de hele dag overwerken' : 'They had to work overtime all day' },
       ],
-      correct_key: 'A',
+      correct_key: 'C',
       explanation: isDutch
-        ? 'Beleefde introductieformule bij sociale ontmoetingen.'
-        : 'Courteous introduction formula for social rapport.',
+        ? 'Vlot alledaags gesprek over vrijetijdsbesteding en ervaringen.'
+        : 'Practical social conversation about personal experiences.',
       audioText: targetName
     },
     {
       id: 7,
       level: 'B2',
-      target_skill: isDutch ? 'Voorwaardelijke Wijs & Modaliteit' : 'Conditionals & Modals',
-      instruction: isDutch ? `Welke constructie drukt een hypothetische wens of beleefd verzoek uit in het ${targetName}?` : `Which form expresses a polite condition or request in ${targetName}?`,
-      prompt: `[Hypothetical conditional structure in ${targetName}]`,
+      target_skill: isDutch ? 'Uitnodiging & Sociale Afspraken' : 'Social Invitations & Polite Plans',
+      instruction: isDutch ? `Iemand stelt voor: "Zullen we vanavond samen gaan eten als je tijd hebt?" Wat wordt er gevraagd?` : `Someone suggests: "Shall we have dinner together tonight if you have time?" What are they asking?`
+      ,
+      prompt: isDutch ? `Zullen we vanavond samen gaan eten als je tijd hebt? (${targetName})` : `Shall we have dinner together tonight if you have time? (${targetName})`,
       options: [
-        { key: 'A', text: isDutch ? 'Voorwaardelijke wijs (zou willen / kunnen)' : 'Conditional mood (would like / could)' },
-        { key: 'B', text: isDutch ? 'Strikte gebiedende wijs (moet!)' : 'Strict imperative (must!)' },
-        { key: 'C', text: isDutch ? 'Onvoltooid verleden tijd' : 'Past continuous' },
-        { key: 'D', text: isDutch ? 'Woordeloze tussenwerpsel' : 'Interjection' },
+        { key: 'A', text: isDutch ? 'Een vriendelijke uitnodiging om vanavond samen te eten' : 'A friendly invitation to have dinner together tonight' },
+        { key: 'B', text: isDutch ? 'Een verzoek om de lunch van morgen te annuleren' : 'A request to cancel tomorrow\'s lunch' },
+        { key: 'C', text: isDutch ? 'Een klacht over de rekening van het restaurant' : 'A complaint regarding the restaurant bill' },
+        { key: 'D', text: isDutch ? 'Een vraag over de vertrektijden van de trein' : 'A question about train departure times' },
       ],
       correct_key: 'A',
       explanation: isDutch
-        ? 'De voorwaardelijke wijs verzacht verzoeken en formuleert hypothesen.'
-        : 'The conditional mood softens requests and articulates hypotheticals.',
+        ? 'Beleefde sociale uitnodiging en afstemming van plannen.'
+        : 'Courteous social invitation and natural scheduling in conversation.',
       audioText: targetName
     },
     {
       id: 8,
       level: 'B2',
-      target_skill: isDutch ? 'Formele Connectieven' : 'Formal Discourse Markers',
-      instruction: isDutch ? `Wat is de functie van een tegenstellend voegwoord in het ${targetName}?` : `What is the role of an adversative connector in ${targetName}?`,
-      prompt: `[Adversative connector ("However / Nevertheless") in ${targetName}]`,
+      target_skill: isDutch ? 'Mening & Genuanceerd Standpunt' : 'Expressing Opinions & Nuance',
+      instruction: isDutch ? `In een discussie zegt iemand: "Ik begrijp je idee, maar we moeten ook aan het budget denken." Wat bedoelt de spreker?` : `In a discussion someone says: "I see your point, but we must also keep the budget in mind." What do they mean?`
+      ,
+      prompt: isDutch ? `Ik begrijp je idee, maar we moeten ook aan het budget denken (${targetName})` : `I see your point, but we must also keep the budget in mind (${targetName})`,
       options: [
-        { key: 'A', text: isDutch ? 'Een tegenstelling of nuance aangeven (echter / desalniettemin)' : 'Expressing contrast or nuance (however / nevertheless)' },
-        { key: 'B', text: isDutch ? 'Tijdstip aanduiden' : 'Marking time of day' },
-        { key: 'C', text: isDutch ? 'Een vraag beginnen' : 'Starting a question' },
-        { key: 'D', text: isDutch ? 'Een getal noemen' : 'Naming a cardinal number' },
+        { key: 'A', text: isDutch ? 'Het project wordt zonder aarzeling afgewezen' : 'The project is rejected without discussion' },
+        { key: 'B', text: isDutch ? 'Het project heeft geen financieel budget nodig' : 'The project requires zero financial budget' },
+        { key: 'C', text: isDutch ? 'Instemming met het idee, met een praktische kanttekening over de kosten' : 'Agreement with the concept, with a practical consideration regarding costs' },
+        { key: 'D', text: isDutch ? 'De vergadering wordt onmiddellijk beëindigd' : 'The meeting is immediately adjourned' },
       ],
-      correct_key: 'A',
+      correct_key: 'C',
       explanation: isDutch
-        ? 'Tegenstellende connectieven verbinden contrasterende argumenten.'
-        : 'Adversative connectors bridge contrasting clauses.',
+        ? 'Genuanceerde meningsuiting waarin constructief wordt meegedacht.'
+        : 'Nuanced interpersonal communication balancing ideas with practical realities.',
       audioText: targetName
     },
     {
       id: 9,
       level: 'C1',
-      target_skill: isDutch ? 'Gevorderde Zinsbouw & Syntaxis' : 'Advanced Complex Syntax',
-      instruction: isDutch ? `Welke zinsbouw kenmerkt een complexe hypothetische voorwaarde in het ${targetName}?` : `Which syntactic order characterizes an unreal past condition in ${targetName}?`,
-      prompt: `[Complex subordinate construction in ${script} script]`,
+      target_skill: isDutch ? 'Professioneel Werkoverleg & Synthese' : 'Workplace Dialogue & Problem Solving',
+      instruction: isDutch ? `In een werkbericht staat: "Gezien de nieuwe planning stellen we voor de presentatie naar volgende week te verschuiven." Wat is het voorstel?` : `In a workplace message: "Given the updated timeline, we propose moving the presentation to next week." What is proposed?`
+      ,
+      prompt: isDutch ? `We stellen voor de presentatie naar volgende week te verschuiven (${targetName})` : `We propose moving the presentation to next week (${targetName})`,
       options: [
-        { key: 'A', text: isDutch ? 'Ondergeschikte bijzin met hypothetisch aspect' : 'Subordinate clause with hypothetical aspect' },
-        { key: 'B', text: isDutch ? 'Simpele hoofdzin' : 'Simple main clause' },
-        { key: 'C', text: isDutch ? 'Enkelvoudig zelfstandig naamwoord' : 'Single noun' },
-        { key: 'D', text: isDutch ? 'Losstaand bijvoeglijk naamwoord' : 'Isolated adjective' },
+        { key: 'A', text: isDutch ? 'De presentatie verzetten naar volgende week' : 'Rescheduling the presentation to next week' },
+        { key: 'B', text: isDutch ? 'De presentatie definitief annuleren' : 'Cancelling the presentation permanently' },
+        { key: 'C', text: isDutch ? 'Direct vandaag nog een extra vergadering plannen' : 'Scheduling an extra meeting right today' },
+        { key: 'D', text: isDutch ? 'Nieuwe medewerkers aannemen voor het project' : 'Hiring new team members for the project' },
       ],
       correct_key: 'A',
       explanation: isDutch
-        ? 'Op C1-niveau beheerst de leerling complexe onderschikkende zinsverbanden.'
-        : 'At C1 level, learners master complex subordinate clause dependencies.',
+        ? 'Duidelijk professioneel besluitvormingsvoorstel in zakelijke context.'
+        : 'Clear professional proposal regarding scheduling and team workflow.',
       audioText: targetName
     },
     {
       id: 10,
       level: 'C2',
-      target_skill: isDutch ? 'Hoogste Taalbeheersing & Idioom' : 'Mastery Register & Idioms',
-      instruction: isDutch ? `Wat typeert een hoog-linguïstische idiomatische uitdrukking in het ${targetName}?` : `What defines a high-register idiomatic expression in ${targetName}?`,
-      prompt: `[Literary nuance & idiomatic expression in ${script} script]`,
+      target_skill: isDutch ? 'Natuurlijk Idioom & Culturele Beeldspraak' : 'Natural Idioms & Cultural Nuance',
+      instruction: isDutch ? `Een spreker zegt na een lange inspanning: "We zien eindelijk het licht aan het einde van de tunnel." Wat drukt dit uit?` : `A speaker reflects after a long effort: "We finally see the light at the end of the tunnel." What does this express?`
+      ,
+      prompt: isDutch ? `Het licht aan het einde van de tunnel zien (${targetName})` : `Seeing the light at the end of the tunnel (${targetName})`,
       options: [
-        { key: 'A', text: isDutch ? 'Moedertaalnuance met diepe culturele en metaforische betekenis' : 'Native nuance with deep cultural and metaphorical meaning' },
-        { key: 'B', text: isDutch ? 'Elementaire toeristische overlevingszin' : 'Basic tourist survival phrase' },
-        { key: 'C', text: isDutch ? 'Alledaagse kinderlijke begroeting' : 'Everyday child greeting' },
-        { key: 'D', text: isDutch ? 'Verkeersbordtekst' : 'Traffic sign instruction' },
+        { key: 'A', text: isDutch ? 'Letterlijke duisternis tijdens een reis' : 'Literal darkness encountered during travel' },
+        { key: 'B', text: isDutch ? 'Een waarschuwing voor gevaarlijk verkeer' : 'A warning regarding hazardous traffic' },
+        { key: 'C', text: isDutch ? 'Teleurstelling dat een project te lang duurt' : 'Disappointment that an effort is taking too long' },
+        { key: 'D', text: isDutch ? 'Opluchting en hoop dat een zware periode bijna ten einde is' : 'Relief and hopeful optimism that a challenging period is almost resolved' },
       ],
-      correct_key: 'A',
+      correct_key: 'D',
       explanation: isDutch
-        ? 'C2 staat voor native-level beheersing van metaforen en pragmatische subtiliteiten.'
-        : 'C2 demonstrates native-level command of cultural metaphors and pragmatic subtleties.',
+        ? 'Klassiek idioom voor hoop en succesvolle afronding na een moeilijke periode.'
+        : 'Deep cultural idiomatic expression denoting hopeful resolution after prolonged effort.',
       audioText: targetName
     }
   ];

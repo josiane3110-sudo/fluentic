@@ -1,303 +1,480 @@
 import React, { useState, useEffect } from 'react';
 import { 
-  BookOpen, 
-  Dumbbell, 
-  Sparkles, 
-  Globe, 
-  LogOut, 
-  User as UserIcon, 
-  RefreshCw 
-} from 'lucide-react';
-
-import { SignInView } from './components/SignInView';
-import { CustomTranslatorView } from './components/CustomTranslatorView';
-import { OnboardingPlacementView as PlacementTestView } from './components/OnboardingPlacementView';
-import { FluenticLogo } from './components/FluenticLogo';
+  NavigationTab, 
+  SpatialViewMode, 
+  CefrLevel, 
+  Language, 
+  UserProfile, 
+  LearningNode 
+} from './types';
 import { WORLD_LANGUAGES } from './data/languages';
+import { CryptoStorage, STORAGE_KEY_PROFILE, STORAGE_KEY_CARDS } from './services/cryptoStorage';
 import { audioSynth } from './services/audioSynthesizer';
+import { AccountDatabase, STORAGE_KEY_ACCOUNTS_DB } from './services/accountDatabase';
 
-export interface UserSession {
-  name: string;
-  email: string;
-  nativeLanguageCode: string;
-  targetLanguageCode: string;
-  isGuest: boolean;
-  cefrLevel?: string;
-  placementCompleted?: boolean;
-}
+import { Sparkles } from 'lucide-react';
 
-export default function App() {
-  const [session, setSession] = useState<UserSession | null>(null);
-  const [activeTab, setActiveTab] = useState<'learn' | 'practice' | 'translator'>('learn');
-  const [isPlacementActive, setIsPlacementActive] = useState<boolean>(false);
+// Core Canvas & Navigation
+import { AmbientCanvas } from './components/AmbientCanvas';
+import { TopHorizonDeck } from './components/TopHorizonDeck';
+import { OrbitDock } from './components/OrbitDock';
+import { CommandSpotlight } from './components/CommandSpotlight';
+import { AuthModal } from './components/AuthModal';
+import { LessonModal } from './components/LessonModal';
+import { OnboardingPlacementView } from './components/OnboardingPlacementView';
+import { SignInView } from './components/SignInView';
+import { AITutorModal } from './components/AITutorModal';
 
+// Views
+import { HomeView } from './components/views/HomeView';
+import { DuolingoPathView } from './components/views/DuolingoPathView';
+import { DialogueTheatreView } from './components/views/DialogueTheatreView';
+import { DailyDisciplinesView } from './components/views/DailyDisciplinesView';
+import { ProStudioView } from './components/views/ProStudioView';
+import { GrammarModuleView } from './components/views/GrammarModuleView';
+import { AITranslatorView } from './components/views/AITranslatorView';
+
+const DEFAULT_USER: UserProfile = {
+  id: 'usr-fresh-001',
+  name: '',
+  email: '',
+  avatar: 'FL',
+  isGuest: true,
+  isPro: false,
+  hasCompletedOnboarding: true,
+  nativeLanguageCode: 'en',
+  targetPace: 'dedicated',
+  placementScore: 0,
+  xp: 0,
+  level: 1,
+  gems: 0,
+  streakDays: 0,
+  speakingPunctuation: 0,
+  speakingScore: 0,
+  totalPracticeMinutes: 0,
+  streakShields: 0,
+  streakProtected: false,
+  activeLanguageCode: 'en',
+  activeCefr: 'A1',
+  completedNodeIds: [],
+  nodeCrowns: {},
+  dailyGoalMinutes: 15,
+  dailyGoalCompleted: false,
+  weeklyActivity: [0, 0, 0, 0, 0, 0, 0],
+  unlockedAchievements: [],
+  claimedAchievements: [],
+  isSignedIn: false,
+  dailyQuests: [],
+};
+
+export function App() {
+  // Never load previous information (name, practices, progress) from persistent storage
+  const [user, setUser] = useState<UserProfile>(DEFAULT_USER);
+
+  // Always show the main entry login page on load
+  const [isSignedIn, setIsSignedIn] = useState<boolean>(false);
+
+  // Hard wipe of all previous records on application mount to guarantee strictly ephemeral session
   useEffect(() => {
     try {
-      const savedSession = sessionStorage.getItem('fluentic_session');
-      if (savedSession) {
-        const parsed = JSON.parse(savedSession);
-        setSession(parsed);
-        if (!parsed.placementCompleted && !parsed.cefrLevel) {
-          setIsPlacementActive(true);
-        }
-      }
-    } catch (e) {
-      console.error('Failed to restore session from storage:', e);
+      localStorage.clear();
+      sessionStorage.clear();
+      AccountDatabase.clearDatabase();
+    } catch {
+      // Ignore storage errors
     }
   }, []);
 
-  const updateSession = (newSession: UserSession | null) => {
-    setSession(newSession);
-    if (newSession) {
-      sessionStorage.setItem('fluentic_session', JSON.stringify(newSession));
-    } else {
-      sessionStorage.removeItem('fluentic_session');
-    }
+  const [activeLanguage, setActiveLanguage] = useState<Language>(() => {
+    return (
+      WORLD_LANGUAGES.find((l) => l.code === user.activeLanguageCode) ||
+      WORLD_LANGUAGES[0]
+    );
+  });
+
+  const [activeCefr, setActiveCefr] = useState<CefrLevel>(user.activeCefr || 'A1');
+  const [activeDialect, setActiveDialect] = useState<string>('');
+  const [spatialMode, setSpatialMode] = useState<SpatialViewMode>('chrono');
+  const [activeTab, setActiveTab] = useState<NavigationTab>('home');
+  const [soundscapeMode, setSoundscapeMode] = useState<'alpha' | 'cosmic' | 'rain' | 'mute'>('mute');
+  const [isRetakingPlacement, setIsRetakingPlacement] = useState(false);
+
+  // Modals
+  const [isSpotlightOpen, setIsSpotlightOpen] = useState(false);
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [isAITutorOpen, setIsAITutorOpen] = useState(false);
+  const [activeLessonNode, setActiveLessonNode] = useState<LearningNode | null>(null);
+
+  // In-memory state only: do NOT save previous information, name, or practices to disk
+  const handleUpdateUser = (updated: UserProfile) => {
+    setUser(updated);
   };
 
-  const handleSignIn = (
-    name: string, 
-    email: string, 
-    nativeLanguageCode: string, 
-    targetLanguageCode: string
+  const handleSelectLanguage = (lang: Language) => {
+    setActiveLanguage(lang);
+    setActiveDialect(lang.dialects && lang.dialects.length > 0 ? lang.dialects[0] : '');
+    handleUpdateUser({
+      ...user,
+      activeLanguageCode: lang.code,
+      activeLanguage: lang.name,
+    });
+  };
+
+  const handleSelectCefr = (cefr: CefrLevel) => {
+    setActiveCefr(cefr);
+    handleUpdateUser({
+      ...user,
+      activeCefr: cefr,
+    });
+  };
+
+  // Handler when completing onboarding & placement
+  const handleOnboardingComplete = (
+    finalProfile: UserProfile,
+    chosenTargetLanguage: Language,
+    assessedCefr: CefrLevel
   ) => {
-    const newSession: UserSession = {
-      name,
-      email,
-      nativeLanguageCode,
-      targetLanguageCode,
-      isGuest: false,
-      placementCompleted: false,
-    };
-    updateSession(newSession);
-    setIsPlacementActive(true);
+    setUser(finalProfile);
+    setActiveLanguage(chosenTargetLanguage);
+    setActiveCefr(assessedCefr);
+    setActiveDialect(
+      chosenTargetLanguage.dialects && chosenTargetLanguage.dialects.length > 0
+        ? chosenTargetLanguage.dialects[0]
+        : ''
+    );
+    setActiveTab('home');
+    setIsRetakingPlacement(false);
   };
 
-  const handleContinueGuest = (nativeLanguageCode: string, targetLanguageCode: string) => {
-    const newSession: UserSession = {
-      name: 'Guest Learner',
-      email: 'guest@fluentic.local',
-      nativeLanguageCode,
-      targetLanguageCode,
-      isGuest: true,
-      placementCompleted: false,
-    };
-    updateSession(newSession);
-    setIsPlacementActive(true);
-  };
+  // Complete a lesson node
+  const handleLessonComplete = (xpEarned: number, gemsEarned: number) => {
+    if (!activeLessonNode) return;
+    const nodeId = activeLessonNode.id;
+    const currentCrown = user.nodeCrowns?.[nodeId] || 0;
+    const newCrown = Math.min(currentCrown + 1, 5);
 
-  const handleSkipTest = (
-    nativeLanguageCode: string, 
-    targetLanguageCode: string, 
-    name?: string
-  ) => {
-    const newSession: UserSession = {
-      name: name?.trim() || 'Learner',
-      email: 'learner@fluentic.local',
-      nativeLanguageCode,
-      targetLanguageCode,
-      isGuest: !name?.trim(),
-      cefrLevel: 'A1',
-      placementCompleted: true,
-    };
-    updateSession(newSession);
-    setIsPlacementActive(false);
-  };
+    const completedIds = user.completedNodeIds.includes(nodeId)
+      ? user.completedNodeIds
+      : [...user.completedNodeIds, nodeId];
 
-  const handlePlacementComplete = (calibratedLevel: string) => {
-    if (!session) return;
-    const updated = {
-      ...session,
-      cefrLevel: calibratedLevel,
-      placementCompleted: true,
-    };
-    updateSession(updated);
-    setIsPlacementActive(false);
+    // Increment streak if not yet practiced today
+    const nextStreak = user.streakDays === 0 ? 1 : user.streakDays;
+    const addedMinutes = activeLessonNode.targetDurationMinutes || 5;
+    const nextPracticeMinutes = (user.totalPracticeMinutes || 0) + addedMinutes;
+
+    handleUpdateUser({
+      ...user,
+      xp: user.xp + xpEarned,
+      gems: user.gems + gemsEarned,
+      streakDays: nextStreak,
+      totalPracticeMinutes: nextPracticeMinutes,
+      completedNodeIds: completedIds,
+      nodeCrowns: {
+        ...(user.nodeCrowns || {}),
+        [nodeId]: newCrown,
+      },
+    });
+
+    setActiveLessonNode(null);
   };
 
   const handleSignOut = () => {
     audioSynth.playGentleFeedback();
-    updateSession(null);
-    setIsPlacementActive(false);
-    setActiveTab('learn');
+    setUser(DEFAULT_USER);
+    setIsSignedIn(false);
+    try {
+      localStorage.clear();
+      sessionStorage.clear();
+      AccountDatabase.clearDatabase();
+    } catch {
+      // Ignore
+    }
   };
 
-  if (!session) {
+  // If user is not signed in, ALWAYS show the dedicated clean main entry login page!
+  if (!isSignedIn) {
     return (
-      <SignInView
-        onSignIn={handleSignIn}
-        onContinueGuest={handleContinueGuest}
-        onSkipTest={handleSkipTest}
-      />
+      <div className="relative min-h-screen bg-[#f0f4f9] text-slate-900 font-sans selection:bg-blue-200 selection:text-blue-900 antialiased overflow-x-hidden">
+        {/* Living moving background */}
+        <AmbientCanvas />
+
+        {/* Dedicated Main Entry Login Page with Language Configuration & Mandatory Placement Test */}
+        <SignInView
+          initialName=""
+          initialEmail=""
+          initialNativeLanguageCode={user.nativeLanguageCode || 'nl'}
+          initialTargetLanguageCode={activeLanguage?.code || 'es'}
+          onSignIn={(name, email, nativeLangCode, targetLangCode) => {
+            const targetLang = WORLD_LANGUAGES.find((l) => l.code === targetLangCode) || activeLanguage;
+            setActiveLanguage(targetLang);
+            // Fresh in-memory session only - never persisted to disk
+            // MANDATORY PLACEMENT TEST: hasCompletedOnboarding is set to false!
+            const brandNew: UserProfile = {
+              ...DEFAULT_USER,
+              id: `usr-${Date.now()}`,
+              name: name.trim() || 'Explorer',
+              email: email.trim() || `${name.trim().toLowerCase().replace(/\s+/g, '.')}@fluentic.local`,
+              avatar: (name.trim() || 'EX').slice(0, 2).toUpperCase(),
+              nativeLanguageCode: nativeLangCode,
+              activeLanguageCode: targetLang.code,
+              activeLanguage: targetLang.name,
+              isGuest: false,
+              isSignedIn: true,
+              hasCompletedOnboarding: false, // NO ONE ENTERS WITHOUT PLACEMENT TEST!
+              totalPracticeMinutes: 0,
+              xp: 0,
+              gems: 0,
+              streakDays: 0,
+              speakingPunctuation: 0,
+              speakingScore: 0,
+            };
+            setUser(brandNew);
+            setIsSignedIn(true);
+          }}
+          onContinueGuest={(nativeLangCode, targetLangCode) => {
+            const targetLang = WORLD_LANGUAGES.find((l) => l.code === targetLangCode) || activeLanguage;
+            setActiveLanguage(targetLang);
+            const guestProfile: UserProfile = {
+              ...DEFAULT_USER,
+              id: `usr-guest-${Date.now()}`,
+              name: nativeLangCode === 'nl' ? 'Gastgebruiker' : 'Guest Explorer',
+              email: 'guest@fluentic.local',
+              avatar: 'GE',
+              nativeLanguageCode: nativeLangCode,
+              activeLanguageCode: targetLang.code,
+              activeLanguage: targetLang.name,
+              isGuest: true,
+              isSignedIn: true,
+              hasCompletedOnboarding: false, // NO ONE ENTERS WITHOUT PLACEMENT TEST!
+              totalPracticeMinutes: 0,
+              xp: 0,
+              gems: 0,
+              streakDays: 0,
+              speakingPunctuation: 0,
+              speakingScore: 0,
+            };
+            setUser(guestProfile);
+            setIsSignedIn(true);
+          }}
+          onSkipTest={(nativeLangCode, targetLangCode, customName) => {
+            const targetLang = WORLD_LANGUAGES.find((l) => l.code === targetLangCode) || activeLanguage;
+            setActiveLanguage(targetLang);
+            setActiveCefr('A1');
+            const skipProfile: UserProfile = {
+              ...DEFAULT_USER,
+              id: `usr-${Date.now()}`,
+              name: customName?.trim() || (nativeLangCode === 'nl' ? 'Taalstudent' : 'Explorer'),
+              email: 'explorer@fluentic.local',
+              avatar: ((customName?.trim() || 'EX')).slice(0, 2).toUpperCase(),
+              nativeLanguageCode: nativeLangCode,
+              activeLanguageCode: targetLang.code,
+              activeLanguage: targetLang.name,
+              isGuest: true,
+              isSignedIn: true,
+              hasCompletedOnboarding: true,
+              placementScore: 0,
+              speakingPunctuation: 0,
+              speakingScore: 0,
+              placementDiagnosis: nativeLangCode === 'nl'
+                ? 'Niveautest overgeslagen. Je start direct bij ERK-niveau A1 (Beginner).'
+                : 'Placement test skipped. Starting directly at CEFR level A1 (Beginner).',
+              totalPracticeMinutes: 0,
+              xp: 0,
+              gems: 0,
+              streakDays: 0,
+              streakShields: 0,
+              streakProtected: false,
+              weeklyActivity: [0, 0, 0, 0, 0, 0, 0],
+              unlockedAchievements: [],
+              claimedAchievements: [],
+              completedNodeIds: [],
+              nodeCrowns: {},
+            };
+            setUser(skipProfile);
+            setIsSignedIn(true);
+          }}
+        />
+      </div>
     );
   }
 
-  if (isPlacementActive && !session.placementCompleted) {
+  // If user has not completed onboarding or clicked retake, show the entry page & placement screen
+  if (!user.hasCompletedOnboarding || isRetakingPlacement) {
     return (
-      <PlacementTestView
-        nativeLanguageCode={session.nativeLanguageCode}
-        targetLanguageCode={session.targetLanguageCode}
-        onComplete={handlePlacementComplete}
-        onCancel={() => {
-          handlePlacementComplete('A1');
-        }}
-      />
+      <div className="relative min-h-screen bg-[#f0f4f9] text-slate-900 font-sans selection:bg-blue-200 selection:text-blue-900 antialiased overflow-x-hidden">
+        {/* Living moving background */}
+        <AmbientCanvas />
+
+        {/* Onboarding & Placement Screen */}
+        <OnboardingPlacementView
+          initialProfile={user}
+          onComplete={handleOnboardingComplete}
+        />
+      </div>
     );
   }
-
-  const nativeLang = WORLD_LANGUAGES.find((l) => l.code === session.nativeLanguageCode) || WORLD_LANGUAGES[0];
-  const targetLang = WORLD_LANGUAGES.find((l) => l.code === session.targetLanguageCode) || WORLD_LANGUAGES[1];
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 font-sans antialiased flex flex-col">
-      <header className="bg-white/90 backdrop-blur-md border-b border-slate-200 sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
-          
-          <div className="flex items-center gap-3 shrink-0">
-            <FluenticLogo size={36} />
-            <h1 className="text-xl font-black tracking-tight text-slate-900">
-              Fluentic
-            </h1>
-          </div>
+    <div className="relative min-h-screen bg-[#f0f4f9] text-slate-900 font-sans selection:bg-blue-200 selection:text-blue-900 antialiased overflow-x-hidden">
+      {/* Dynamic Living Waves Canvas */}
+      <AmbientCanvas />
 
-          <nav className="flex items-center gap-1 sm:gap-2 bg-slate-100/80 p-1.5 rounded-2xl border border-slate-200/60">
-            <button
-              onClick={() => {
-                audioSynth.playGentleFeedback();
-                setActiveTab('learn');
-              }}
-              className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-extrabold transition-all cursor-pointer ${
-                activeTab === 'learn'
-                  ? 'bg-white text-blue-600 shadow-xs'
-                  : 'text-slate-600 hover:text-slate-900'
-              }`}
-            >
-              <BookOpen className="w-4 h-4" />
-              <span className="hidden sm:inline">Learn</span>
-            </button>
+      {/* Top Horizon Deck */}
+      <TopHorizonDeck
+        user={user}
+        activeLanguage={activeLanguage}
+        onSelectLanguage={handleSelectLanguage}
+        activeCefr={activeCefr}
+        onSelectCefr={handleSelectCefr}
+        activeDialect={activeDialect}
+        onSelectDialect={setActiveDialect}
+        spatialMode={spatialMode}
+        onSelectSpatialMode={setSpatialMode}
+        soundscapeMode={soundscapeMode}
+        onSelectSoundscape={setSoundscapeMode}
+        onOpenSpotlight={() => setIsSpotlightOpen(true)}
+        onOpenAuthModal={() => setIsAuthModalOpen(true)}
+        onOpenProModal={() => setActiveTab('pro-studio')}
+        onOpenAITutor={() => setIsAITutorOpen(true)}
+        onRetakePlacement={() => setIsRetakingPlacement(true)}
+        onSignOut={handleSignOut}
+        onSelectNativeLanguage={(code) => handleUpdateUser({ ...user, nativeLanguageCode: code })}
+      />
 
-            <button
-              onClick={() => {
-                audioSynth.playGentleFeedback();
-                setActiveTab('practice');
-              }}
-              className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-extrabold transition-all cursor-pointer ${
-                activeTab === 'practice'
-                  ? 'bg-white text-blue-600 shadow-xs'
-                  : 'text-slate-600 hover:text-slate-900'
-              }`}
-            >
-              <Dumbbell className="w-4 h-4" />
-              <span className="hidden sm:inline">Practice</span>
-            </button>
-
-            <button
-              onClick={() => {
-                audioSynth.playGentleFeedback();
-                setActiveTab('translator');
-              }}
-              className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-extrabold transition-all cursor-pointer ${
-                activeTab === 'translator'
-                  ? 'bg-blue-600 text-white shadow-xs'
-                  : 'text-slate-600 hover:text-slate-900'
-              }`}
-            >
-              <Sparkles className="w-4 h-4" />
-              <span>AI Translator</span>
-            </button>
-          </nav>
-
-          <div className="flex items-center gap-2 shrink-0">
-            <div className="hidden md:flex items-center gap-2 bg-slate-50 px-3 py-1.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-700">
-              <Globe className="w-3.5 h-3.5 text-blue-600" />
-              <span>{nativeLang.flag} {nativeLang.code.toUpperCase()}</span>
-              <span className="text-slate-300">→</span>
-              <span>{targetLang.flag} {targetLang.code.toUpperCase()}</span>
-              {session.cefrLevel && (
-                <span className="ml-1 px-1.5 py-0.5 rounded-md bg-blue-100 text-blue-700 text-[10px] font-black">
-                  {session.cefrLevel}
-                </span>
-              )}
-            </div>
-
-            <div className="flex items-center gap-1.5 bg-slate-100 px-2.5 py-1.5 rounded-xl text-xs font-bold text-slate-800">
-              <UserIcon className="w-3.5 h-3.5 text-slate-500" />
-              <span className="max-w-[80px] sm:max-w-[120px] truncate">{session.name}</span>
-            </div>
-
-            <button
-              onClick={handleSignOut}
-              title="Sign Out / Switch User"
-              className="p-2 rounded-xl border border-slate-200 hover:bg-rose-50 hover:border-rose-200 text-slate-500 hover:text-rose-600 transition-all cursor-pointer"
-            >
-              <LogOut className="w-4 h-4" />
-            </button>
-          </div>
-
-        </div>
-      </header>
-
-      <main className="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8">
-        {activeTab === 'learn' && (
-          <div className="space-y-6">
-            <div className="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200/80 shadow-xs flex flex-col md:flex-row items-center justify-between gap-6">
-              <div className="space-y-2 text-center md:text-left">
-                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 border border-blue-100 text-blue-700 text-xs font-bold">
-                  <span>Current Level: {session.cefrLevel || 'A1'}</span>
-                </div>
-                <h2 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
-                  Welcome back, {session.name}!
-                </h2>
-                <p className="text-slate-500 text-sm max-w-lg">
-                  You are learning <span className="font-bold text-slate-800">{targetLang.name}</span> with instructions in <span className="font-bold text-slate-800">{nativeLang.name}</span>.
-                </p>
-              </div>
-
-              <button
-                onClick={() => setIsPlacementActive(true)}
-                className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition-all cursor-pointer shrink-0"
-              >
-                <RefreshCw className="w-3.5 h-3.5" />
-                <span>Retake Placement Test</span>
-              </button>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="bg-white p-6 rounded-3xl border border-slate-200/80 space-y-3">
-                <div className="w-10 h-10 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center font-black">1</div>
-                <h3 className="font-bold text-slate-900">Foundational Expressions</h3>
-                <p className="text-xs text-slate-500 leading-relaxed">Master high-frequency vocabulary and daily conversation starters.</p>
-              </div>
-
-              <div className="bg-white p-6 rounded-3xl border border-slate-200/80 space-y-3">
-                <div className="w-10 h-10 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center font-black">2</div>
-                <h3 className="font-bold text-slate-900">Grammar & Mechanics</h3>
-                <p className="text-xs text-slate-500 leading-relaxed">Understand essential sentence structures and verb conjugations.</p>
-              </div>
-
-              <div className="bg-white p-6 rounded-3xl border border-slate-200/80 space-y-3">
-                <div className="w-10 h-10 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center font-black">3</div>
-                <h3 className="font-bold text-slate-900">Real-World Dialogues</h3>
-                <p className="text-xs text-slate-500 leading-relaxed">Practice interactive scenarios and improve conversational fluency.</p>
-              </div>
-            </div>
-          </div>
+      {/* Main View Area */}
+      <main className="relative z-10 w-full">
+        {activeTab === 'home' && (
+          <HomeView
+            user={user}
+            activeLanguage={activeLanguage}
+            onNavigate={(tab) => setActiveTab(tab)}
+            onStartNextLesson={() => setActiveTab('syllabus')}
+            onUpdateUser={handleUpdateUser}
+          />
         )}
 
-        {activeTab === 'practice' && (
-          <div className="bg-white p-8 rounded-3xl border border-slate-200/80 shadow-xs text-center max-w-xl mx-auto space-y-4">
-            <div className="w-12 h-12 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center mx-auto">
-              <Dumbbell className="w-6 h-6" />
-            </div>
-            <h2 className="text-2xl font-black text-slate-900">Practice Hub</h2>
-            <p className="text-slate-500 text-sm">
-              Interactive speaking drills, flashcards, and audio exercises tailored for level {session.cefrLevel || 'A1'}.
-            </p>
-          </div>
+        {activeTab === 'syllabus' && (
+          <DuolingoPathView
+            user={user}
+            activeLanguage={activeLanguage}
+            onSelectNode={(node) => setActiveLessonNode(node)}
+            onClaimMilestone={(rewardGems) => {
+              handleUpdateUser({
+                ...user,
+                gems: user.gems + rewardGems,
+              });
+            }}
+          />
         )}
 
-        {activeTab === 'translator' && <CustomTranslatorView />}
+        {activeTab === 'dialogue-theatre' && (
+          <DialogueTheatreView
+            activeLanguage={activeLanguage}
+            user={user}
+          />
+        )}
+
+        {activeTab === 'daily-disciplines' && (
+          <DailyDisciplinesView
+            user={user}
+            activeLanguage={activeLanguage}
+            onToggleShield={() => {
+              if (user.streakProtected) return;
+              if (user.gems >= 50) {
+                audioSynth.playSuccessChime();
+                handleUpdateUser({
+                  ...user,
+                  gems: user.gems - 50,
+                  streakProtected: true,
+                });
+              } else {
+                alert('Insufficient gems. Complete lessons to earn gems!');
+              }
+            }}
+          />
+        )}
+
+        {activeTab === 'grammar-module' && (
+          <GrammarModuleView
+            activeLanguage={activeLanguage}
+            user={user}
+          />
+        )}
+
+        {activeTab === 'ai-translator' && (
+          <AITranslatorView
+            activeLanguage={activeLanguage}
+            nativeLanguageCode={user.nativeLanguageCode}
+          />
+        )}
+
+        {activeTab === 'pro-studio' && (
+          <ProStudioView
+            activeLanguage={activeLanguage}
+            user={user}
+            onUpdateUser={handleUpdateUser}
+          />
+        )}
       </main>
+
+      {/* Spatial Orbit Dock with Core Navigation and Dedicated Standalone AI Tutor Menu Button */}
+      <OrbitDock
+        activeTab={activeTab}
+        onSelectTab={setActiveTab}
+        onOpenAITutor={() => {
+          audioSynth.playGentleFeedback();
+          setIsAITutorOpen(true);
+        }}
+        isPro={user.isPro}
+        nativeLanguageCode={user.nativeLanguageCode || 'nl'}
+        soundscapeMode={soundscapeMode}
+        onToggleSoundscape={() => {
+          const nextMode = soundscapeMode === 'alpha' ? 'mute' : 'alpha';
+          setSoundscapeMode(nextMode);
+          audioSynth.startSoundscape(nextMode);
+        }}
+      />
+
+      {/* Command Spotlight Modal (Cmd+K) */}
+      <CommandSpotlight
+        isOpen={isSpotlightOpen}
+        onClose={() => setIsSpotlightOpen(false)}
+        onNavigate={setActiveTab}
+        onSelectLanguage={handleSelectLanguage}
+        onSetCefr={handleSelectCefr}
+        onSetSoundscape={setSoundscapeMode}
+        onOpenProModal={() => setActiveTab('pro-studio')}
+        activeLanguage={activeLanguage}
+      />
+
+      {/* Auth & Security Modal */}
+      <AuthModal
+        isOpen={isAuthModalOpen}
+        onClose={() => setIsAuthModalOpen(false)}
+        currentUser={user}
+        onUpdateUser={handleUpdateUser}
+      />
+
+      {/* Lesson Exercise Modal */}
+      {activeLessonNode && (
+        <LessonModal
+          node={activeLessonNode}
+          activeLanguage={activeLanguage}
+          onClose={() => setActiveLessonNode(null)}
+          onComplete={handleLessonComplete}
+        />
+      )}
+
+      {/* AI Tutor Modal */}
+      <AITutorModal
+        isOpen={isAITutorOpen}
+        onClose={() => setIsAITutorOpen(false)}
+        activeLanguage={activeLanguage}
+        activeCefr={activeCefr}
+        user={user}
+      />
     </div>
   );
 }
+
+export default App;

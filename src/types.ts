@@ -26,6 +26,8 @@ export interface Exercise {
   audioSpeed?: number;
   culturalNote?: string;
   grammarTip?: string;
+  exampleSentence?: string;
+  exampleTranslation?: string;
 }
 
 export interface LearningNode {
@@ -183,10 +185,9 @@ export type SpatialViewMode = 'units' | 'chrono' | 'constellation' | 'bento';
 export type NavigationTab = 
   | 'home'
   | 'syllabus'
-  | 'speech-lab'
   | 'dialogue-theatre'
   | 'grammar-module'
-  | 'speed-test'
+  | 'ai-translator'
   | 'fsrs-vault'
   | 'daily-disciplines'
   | 'neural-radar'
