@@ -43,6 +43,7 @@ interface TopHorizonDeckProps {
   onOpenAuthModal: () => void;
   onOpenProModal: () => void;
   onOpenAITutor?: () => void;
+  isAITutorActive?: boolean;
   onRetakePlacement?: () => void;
   onSignOut?: () => void;
   onSelectNativeLanguage?: (langCode: string) => void;
@@ -64,6 +65,7 @@ export const TopHorizonDeck: React.FC<TopHorizonDeckProps> = ({
   onOpenAuthModal,
   onOpenProModal,
   onOpenAITutor,
+  isAITutorActive = false,
   onRetakePlacement,
   onSignOut,
   onSelectNativeLanguage,
@@ -196,10 +198,16 @@ export const TopHorizonDeck: React.FC<TopHorizonDeckProps> = ({
                   audioSynth.playGentleFeedback();
                   onOpenAITutor();
                 }}
-                className="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-[#0F2137] via-[#1B365D] to-[#0F2137] text-[#D4AF37] border border-[#C5A059]/40 text-xs font-black shadow-xs hover:scale-102 active:scale-98 transition-all cursor-pointer"
+                className={`hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs transition-all cursor-pointer ${
+                  isAITutorActive
+                    ? 'bg-gradient-to-r from-[#1B365D] to-[#0F2137] text-[#D4AF37] border border-[#C5A059]/40 font-black shadow-xs scale-102'
+                    : 'bg-white hover:bg-slate-100 text-slate-700 hover:text-slate-900 border border-slate-200 font-bold shadow-2xs'
+                }`}
                 title="Open Fluentic AI Polyglot Tutor"
               >
-                <Sparkles className="w-3.5 h-3.5 text-[#D4AF37] fill-[#D4AF37]/30" />
+                <Sparkles className={`w-3.5 h-3.5 ${
+                  isAITutorActive ? 'text-[#D4AF37] fill-[#D4AF37]/30' : 'text-[#C5A059]'
+                }`} />
                 <span>AI Tutor</span>
               </button>
             )}

@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { Language, CefrLevel, UserProfile } from '../types';
 import { audioSynth } from '../services/audioSynthesizer';
+import { getBcp47Locale } from '../services/speechDetectionService';
 import { FluenticLogo } from './FluenticLogo';
 
 interface AITutorModalProps {
@@ -98,7 +99,7 @@ export const AITutorModal: React.FC<AITutorModalProps> = ({
 
     try {
       const recognition = new SpeechRecognition();
-      recognition.lang = activeLanguage.code === 'nl' ? 'nl-NL' : 'en-US';
+      recognition.lang = getBcp47Locale(activeLanguage.code);
       recognition.interimResults = false;
       recognition.maxAlternatives = 1;
 

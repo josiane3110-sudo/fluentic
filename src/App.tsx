@@ -336,6 +336,7 @@ export function App() {
         onOpenAuthModal={() => setIsAuthModalOpen(true)}
         onOpenProModal={() => setActiveTab('pro-studio')}
         onOpenAITutor={() => setIsAITutorOpen(true)}
+        isAITutorActive={isAITutorOpen}
         onRetakePlacement={() => setIsRetakingPlacement(true)}
         onSignOut={handleSignOut}
         onSelectNativeLanguage={(code) => handleUpdateUser({ ...user, nativeLanguageCode: code })}
@@ -425,6 +426,7 @@ export function App() {
           audioSynth.playGentleFeedback();
           setIsAITutorOpen(true);
         }}
+        isAITutorActive={isAITutorOpen}
         isPro={user.isPro}
         nativeLanguageCode={user.nativeLanguageCode || 'nl'}
         soundscapeMode={soundscapeMode}

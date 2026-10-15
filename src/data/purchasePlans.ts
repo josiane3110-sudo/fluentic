@@ -48,6 +48,7 @@ export const SUBSCRIPTION_PLANS: PurchasePlan[] = [
     type: 'subscription',
     duration: '1 Month',
     priceUsd: 4.99,
+    badge: 'Most Popular',
     features: [
       'Unlimited AI Scenario Chat turns',
       'Advanced 85% Strict Phonetic Formant Analysis',

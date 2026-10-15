@@ -313,6 +313,40 @@ export function getDuolingoUnits(language: Language, nativeCode: string = 'en'):
       milestoneGems: 25,
       nodes: [
         {
+          id: 'a1-alphabet',
+          title: isDutch ? 'Schriftmechanica & Alfabet' : 'Script Mechanics & Alphabet',
+          nativeTitle: lex.alphabetTitle,
+          category: 'Script & Sounds',
+          cefr: 'A1',
+          description: isDutch 
+            ? `Leer de authentieke lettertekens, open klinkers en foneemregels van het ${name}.` 
+            : `Master authentic letterforms, open vowels, and phonetic rules in ${name}.`,
+          xpReward: 30,
+          gemReward: 8,
+          targetDurationMinutes: 3,
+          iconName: 'BookOpen',
+          coordinates: { x: 0, y: 0 },
+          exercises: [
+            {
+              id: 'ex-a1-alpha',
+              type: 'multiple-choice',
+              prompt: isDutch ? `Wat vormt het fundament van het schrift en de klankregels van het ${name}?` : `What constitutes the foundational sound rules and script of ${name}?`,
+              targetPhrase: lex.vowelsNodeTitle,
+              translation: isDutch ? 'Klankregels, klinkers en lettergrepen' : 'Phonetic rules, vowels and script mechanics',
+              options: [
+                lex.vowelsNodeTitle,
+                isDutch ? 'Abstracte academische argumentatie' : 'Abstract academic discourse',
+                isDutch ? 'Complexe syntactische inversie' : 'Complex syntactic inversion',
+                isDutch ? 'Verleden tijd conjunctieven' : 'Past tense conjunctives'
+              ],
+              correctAnswer: lex.vowelsNodeTitle,
+              culturalNote: isDutch ? 'Het beheersen van de klankregels voorkomt vroege fossiliseringsfouten.' : 'Mastering native script rules establishes perfect phonetic muscle memory.',
+              exampleSentence: `— ${lex.vowelsNodeTitle}`,
+              exampleTranslation: 'Native phonetic and orthographic foundation.'
+            }
+          ]
+        },
+        {
           id: 'a1-greetings',
           title: isDutch ? 'Begroetingen & Beleefdheid' : 'Greetings & Courtesy',
           nativeTitle: lex.greetingsNodeTitle,
@@ -629,9 +663,9 @@ export function getDuolingoUnits(language: Language, nativeCode: string = 'en'):
               translation: isDutch ? 'Begrip tonen met een constructieve kanttekening' : 'Validating ideas while offering practical alternatives',
               options: [
                 isDutch ? 'Ik begrijp je idee, maar we moeten ook rekening houden met de planning' : 'I see your point, but we must also consider the timeline',
-                isDutch ? 'Dat idee is volledig onbruikbaar' : 'That concept is totally wrong',
-                lex.stationPhrase,
-                lex.waterPhrase
+                isDutch ? 'Dat idee is volledig onbruikbaar voor onze organisatie' : 'That concept is unsuitable for our organizational scope',
+                isDutch ? 'We moeten alternatieve risicoscenario\'s empirisch onderzoeken' : 'We must empirically evaluate alternative risk scenarios',
+                isDutch ? 'De voorgestelde methodologie vereist bredere academische validatie' : 'The proposed methodology requires comprehensive empirical validation'
               ],
               correctAnswer: isDutch ? 'Ik begrijp je idee, maar we moeten ook rekening houden met de planning' : 'I see your point, but we must also consider the timeline',
               culturalNote: isDutch ? 'Essentieel voor professionele beleefdheid.' : 'Crucial for constructive professional collaboration.',
@@ -664,8 +698,8 @@ export function getDuolingoUnits(language: Language, nativeCode: string = 'en'):
               options: [
                 isDutch ? 'Laten we de presentatie naar volgende week verschuiven' : 'Let us reschedule the presentation to next week',
                 isDutch ? 'We stoppen direct met het hele project' : 'We cancel the initiative completely',
-                lex.coffeePhrase,
-                greeting
+                isDutch ? 'De stuurgroep verzoekt om herziening van de strategische mijlpalen' : 'The committee requests a revision of strategic milestones',
+                isDutch ? 'We analyseren eerst de kwartaalstatistieken en productierendementen' : 'We first analyze the quarterly metrics and production yields'
               ],
               correctAnswer: isDutch ? 'Laten we de presentatie naar volgende week verschuiven' : 'Let us reschedule the presentation to next week',
               exampleSentence: 'Propongo coordinar una breve reunión técnica mañana.',
@@ -713,12 +747,12 @@ export function getDuolingoUnits(language: Language, nativeCode: string = 'en'):
               targetPhrase: isDutch ? 'De onderliggende bedoeling begrijpen die niet direct uitgesproken is' : 'Understanding underlying intentions not directly spoken',
               translation: isDutch ? 'Genuanceerd empathisch luisteren' : 'Perceiving subtext and unspoken nuances',
               options: [
-                isDutch ? 'De onderliggende bedoeling begrijpen die niet direct uitgesproken is' : 'Understanding underlying intentions not directly spoken',
-                isDutch ? 'Een boek letterlijk heel snel doorbladeren' : 'Flipping through printed pages quickly',
-                lex.stationPhrase,
-                lex.goodbyePhrase
+                isDutch ? 'De onderliggende bedoeling begrijpen die niet direct uitgesproken is' : 'Understanding subtle underlying intentions not explicitly spoken',
+                isDutch ? 'Een document oppervlakkig scannen zonder syntactische synthese' : 'Superficially skimming a text devoid of semantic synthesis',
+                isDutch ? 'Epistemische falsificatie van theoretische premissen' : 'Epistemic falsification of theoretical premises',
+                isDutch ? 'Hermeneutische deductie in academisch bronnenonderzoek' : 'Hermeneutic deduction in historiographical critique'
               ],
-              correctAnswer: isDutch ? 'De onderliggende bedoeling begrijpen die niet direct uitgesproken is' : 'Understanding underlying intentions not directly spoken',
+              correctAnswer: isDutch ? 'De onderliggende bedoeling begrijpen die niet direct uitgesproken is' : 'Understanding subtle underlying intentions not explicitly spoken',
               exampleSentence: 'Su comentario contenía una sutil ironía comprensible para pocos.',
               exampleTranslation: 'Their remark held subtle irony appreciated by attentive listeners.'
             }
@@ -742,16 +776,16 @@ export function getDuolingoUnits(language: Language, nativeCode: string = 'en'):
             {
               id: 'ex-c2-1',
               type: 'multiple-choice',
-              prompt: isDutch ? `Wat betekent het spreekwoord "het licht aan het einde van de tunnel zien"?` : `What does "seeing the light at the end of the tunnel" signify?`,
-              targetPhrase: isDutch ? 'Hoop en opluchting dat een zware periode bijna overwonnen is' : 'Relief and confidence that a challenging period is concluding',
+              prompt: isDutch ? `Wat betekent het gevorderde spreekwoord "het licht aan het einde van de tunnel zien"?` : `What does the high-register idiom "seeing the light at the end of the tunnel" signify?`,
+              targetPhrase: isDutch ? 'Hoop en opluchting dat een zware beproeving bijna overwonnen is' : 'Relief and confidence that a prolonged challenging trial is concluding',
               translation: isDutch ? 'Spreekwoord voor hoopvol perspectief' : 'Idiom representing hopeful triumph over hardship',
               options: [
-                isDutch ? 'Hoop en opluchting dat een zware periode bijna overwonnen is' : 'Relief and confidence that a challenging period is concluding',
-                isDutch ? 'Letterlijk een trein zien aankomen in een station' : 'Literally observing an oncoming train',
-                lex.rightPhrase,
-                lex.billPhrase
+                isDutch ? 'Hoop en opluchting dat een zware beproeving bijna overwonnen is' : 'Relief and confidence that a prolonged challenging trial is concluding',
+                isDutch ? 'Letterlijke optische luminantie in een spoorwegtunnel' : 'Literal optical illumination in a railway tunnel',
+                isDutch ? 'Retorische antithese in parlementair debat' : 'Rhetorical antithesis in parliamentary deliberation',
+                isDutch ? 'Dialectische synthese van maatschappelijke stromingen' : 'Dialectical synthesis of sociopolitical currents'
               ],
-              correctAnswer: isDutch ? 'Hoop en opluchting dat een zware periode bijna overwonnen is' : 'Relief and confidence that a challenging period is concluding',
+              correctAnswer: isDutch ? 'Hoop en opluchting dat een zware beproeving bijna overwonnen is' : 'Relief and confidence that a prolonged challenging trial is concluding',
               culturalNote: isDutch ? 'Teken van hoogste idiomatische spreekvaardigheid.' : 'Hallmark of effortless C2 native discourse.',
               exampleSentence: 'Tras meses de intenso esfuerzo colectivo, por fin vemos la luz al final del túnel.',
               exampleTranslation: 'After months of collective dedication, we finally see light at the end of the tunnel.'
@@ -859,11 +893,11 @@ export const DuolingoPathView: React.FC<DuolingoPathViewProps> = ({
                       {/* Floating START Pill above active node */}
                       {isActive && (
                         <div className="absolute -top-10 z-20 animate-bounce">
-                          <div className="px-3.5 py-1 rounded-full bg-slate-900 text-white font-black text-[11px] tracking-wider uppercase shadow-lg flex items-center gap-1">
-                            <Sparkles className="w-3 h-3 text-amber-400 fill-amber-400" />
+                          <div className="px-3.5 py-1 rounded-full bg-gradient-to-r from-[#1B365D] to-[#0F2137] text-[#D4AF37] border border-[#C5A059]/40 font-black text-[11px] tracking-wider uppercase shadow-lg flex items-center gap-1">
+                            <Sparkles className="w-3 h-3 text-[#D4AF37] fill-[#D4AF37]" />
                             <span>{isDutch ? 'BEGIN' : 'START'}</span>
                           </div>
-                          <div className="w-2.5 h-2.5 bg-slate-900 rotate-45 mx-auto -mt-1 shadow-xs" />
+                          <div className="w-2.5 h-2.5 bg-[#0F2137] border-b border-r border-[#C5A059]/40 rotate-45 mx-auto -mt-1 shadow-xs" />
                         </div>
                       )}
 

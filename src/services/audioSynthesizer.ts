@@ -402,8 +402,49 @@ class AudioSynthesizer {
   /**
    * Native Web Speech Synthesis with target language localization & Custom Persona Neural Audio
    */
+  private cachedVoices: SpeechSynthesisVoice[] = [];
+
+  constructor() {
+    if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+      this.cachedVoices = window.speechSynthesis.getVoices();
+      window.speechSynthesis.onvoiceschanged = () => {
+        this.cachedVoices = window.speechSynthesis.getVoices();
+      };
+    }
+  }
+
+  public getAvailableVoices(langCode?: string): SpeechSynthesisVoice[] {
+    if (typeof window === 'undefined' || !('speechSynthesis' in window)) return [];
+    if (!this.cachedVoices.length) {
+      this.cachedVoices = window.speechSynthesis.getVoices();
+    }
+    if (!langCode) return this.cachedVoices;
+    const clean = langCode.trim().toLowerCase().split(/[-_]/)[0];
+    return this.cachedVoices.filter((v) => v.lang.toLowerCase().startsWith(clean));
+  }
+
+  /**
+   * Finds the highest quality neural or premium voice for a given language code
+   */
+  public getBestVoiceForLanguage(langCode: string): SpeechSynthesisVoice | null {
+    const voices = this.getAvailableVoices(langCode);
+    if (!voices.length) return null;
+
+    // Prioritize neural, natural, premium, and Google voices
+    const neuralPriority = voices.find((v) => 
+      /neural|natural|premium|online|google|enhanced|siri/i.test(v.name)
+    );
+    if (neuralPriority) return neuralPriority;
+
+    // Exact regional match
+    const exactMatch = voices.find((v) => v.lang.toLowerCase() === langCode.toLowerCase());
+    if (exactMatch) return exactMatch;
+
+    return voices[0] || null;
+  }
+
   public speakPhraseNative(phrase: string, langCode: string = 'es'): Promise<void> {
-    const customRate = this.customPersona?.enabled ? this.customPersona.rate : 0.9;
+    const customRate = this.customPersona?.enabled ? this.customPersona.rate : 0.95;
     return this.speakText(phrase, langCode, customRate);
   }
 
@@ -411,9 +452,13 @@ class AudioSynthesizer {
     return this.speakText(phrase, langCode, rate);
   }
 
+  public speakSlow(phrase: string, langCode: string = 'es'): Promise<void> {
+    return this.speakText(phrase, langCode, 0.75);
+  }
+
   public speakText(text: string, langCode: string = 'es', rate: number = 0.95): Promise<void> {
     return new Promise((resolve) => {
-      if (!('speechSynthesis' in window)) {
+      if (typeof window === 'undefined' || !('speechSynthesis' in window)) {
         console.warn('Speech synthesis not supported on this browser.');
         resolve();
         return;
@@ -423,22 +468,25 @@ class AudioSynthesizer {
       const utterance = new SpeechSynthesisUtterance(text);
       utterance.lang = langCode;
 
-      // Apply custom voice persona if active
+      // Apply custom voice persona or neural acoustic tuning
       if (this.customPersona && this.customPersona.enabled) {
-        utterance.pitch = Math.max(0.6, Math.min(1.6, this.customPersona.pitch));
+        utterance.pitch = Math.max(0.7, Math.min(1.4, this.customPersona.pitch));
         utterance.rate = Math.max(0.6, Math.min(1.4, this.customPersona.rate));
       } else {
+        // Natural human speech cadence: 0.75 for slow, 0.95-1.0 for normal, warm 1.02 pitch
         utterance.rate = rate;
-        utterance.pitch = 1.0;
+        utterance.pitch = 1.02;
       }
 
-      // Try to find matching voice
-      const voices = window.speechSynthesis.getVoices();
-      let selectedVoice = voices.find((v) => v.lang.startsWith(langCode));
-
+      // Query and assign premium/neural voice profiles matching target language
+      let selectedVoice: SpeechSynthesisVoice | null = null;
       if (this.customPersona?.enabled && this.customPersona.voiceName) {
-        const customMatch = voices.find((v) => v.name.includes(this.customPersona!.voiceName!));
-        if (customMatch) selectedVoice = customMatch;
+        const allVoices = this.getAvailableVoices();
+        selectedVoice = allVoices.find((v) => v.name.includes(this.customPersona!.voiceName!)) || null;
+      }
+
+      if (!selectedVoice) {
+        selectedVoice = this.getBestVoiceForLanguage(langCode);
       }
 
       if (selectedVoice) {

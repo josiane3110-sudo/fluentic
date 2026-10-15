@@ -4,7 +4,7 @@
  */
 
 // BCP-47 Language mapping
-const BCP47_MAP: Record<string, string> = {
+export const BCP47_MAP: Record<string, string> = {
   ar: 'ar-SA',
   en: 'en-US',
   es: 'es-ES',
@@ -35,7 +35,27 @@ const BCP47_MAP: Record<string, string> = {
   he: 'he-IL',
   fa: 'fa-IR',
   tl: 'fil-PH',
+  lt: 'lt-LT',
+  lv: 'lv-LV',
+  et: 'et-EE',
+  bn: 'bn-BD',
+  ur: 'ur-PK',
+  ms: 'ms-MY',
+  bg: 'bg-BG',
+  hr: 'hr-HR',
+  sr: 'sr-RS',
+  sk: 'sk-SK',
+  sl: 'sl-SI',
+  ca: 'ca-ES',
+  sw: 'sw-KE',
 };
+
+export function getBcp47Locale(langCode?: string): string {
+  if (!langCode) return 'en-US';
+  const clean = langCode.trim().toLowerCase().split(/[-_]/)[0];
+  return BCP47_MAP[clean] || `${clean}-${clean.toUpperCase()}`;
+}
+
 
 export interface SpeechDetectionOptions {
   langCode?: string;

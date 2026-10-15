@@ -1361,7 +1361,7 @@ function getArabicQuestions(isDutch: boolean, _variant: string): PlacementTestQu
       level: 'A1',
       target_skill: isDutch ? 'Begroetingen & Etiquette' : 'Greetings & Etiquette',
       instruction: isDutch ? 'Wat betekent deze Arabische begroeting?' : 'What does this Arabic greeting mean?',
-      prompt: 'السَّلامُ عَلَيْكُم (As-salāmu ʿalaykum)',
+      prompt: 'السَّلامُ عَلَيْكُم',
       options: [
         { key: 'A', text: isDutch ? 'Vrede zij met u (Hallo / Goedendag)' : 'Peace be upon you (Hello / Greetings)' },
         { key: 'B', text: isDutch ? 'Waar is het vliegveld?' : 'Where is the airport?' },
@@ -1381,10 +1381,10 @@ function getArabicQuestions(isDutch: boolean, _variant: string): PlacementTestQu
       instruction: isDutch ? 'Hoe bedank je iemand hartelijk in het Arabisch?' : 'How do you say thank you in Arabic?',
       prompt: isDutch ? 'Dank u wel / Bedankt.' : 'Thank you very much.',
       options: [
-        { key: 'A', text: 'مِن فَضْلِك (Min fadlik)' },
-        { key: 'B', text: 'شُكْراً جَزِيلاً (Shukran jazīlan)' },
-        { key: 'C', text: 'عَفْواً (ʿAfwan)' },
-        { key: 'D', text: 'نَعَم (Naʿam)' },
+        { key: 'A', text: 'مِن فَضْلِك' },
+        { key: 'B', text: 'شُكْراً جَزِيلاً' },
+        { key: 'C', text: 'عَفْواً' },
+        { key: 'D', text: 'نَعَم' },
       ],
       correct_key: 'B',
       explanation: isDutch
@@ -1397,12 +1397,12 @@ function getArabicQuestions(isDutch: boolean, _variant: string): PlacementTestQu
       level: 'A2',
       target_skill: isDutch ? 'Nominale Zinnen & Voornaamwoorden' : 'Nominal Sentences',
       instruction: isDutch ? 'Kies het juiste voornaamwoord voor "Ik ben student":' : 'Choose the correct pronoun for "I am a student":',
-      prompt: '_____ طالِبٌ في الجامِعَةِ (_____ tālibun fī al-jāmiʿah).',
+      prompt: '_____ طالِبٌ في الجامِعَةِ',
       options: [
-        { key: 'A', text: 'هُوَ (Huwa)' },
-        { key: 'B', text: 'هِيَ (Hiya)' },
-        { key: 'C', text: 'أَنَا (Anā)' },
-        { key: 'D', text: 'نَحْنُ (Nahnu)' },
+        { key: 'A', text: 'هُوَ' },
+        { key: 'B', text: 'هِيَ' },
+        { key: 'C', text: 'أَنَا' },
+        { key: 'D', text: 'نَحْنُ' },
       ],
       correct_key: 'C',
       explanation: isDutch
@@ -1414,8 +1414,8 @@ function getArabicQuestions(isDutch: boolean, _variant: string): PlacementTestQu
       id: 4,
       level: 'A2',
       target_skill: isDutch ? 'Vragen naar de Weg' : 'Asking Directions',
-      instruction: isDutch ? 'Wat betekent "أَيْنَ المَحَطَّة؟" (Ayna al-mahattah)?' : 'What does "Ayna al-mahattah" mean?',
-      prompt: 'أَيْنَ المَحَطَّة؟ (Ayna al-mahattah?)',
+      instruction: isDutch ? 'Wat betekent "أَيْنَ المَحَطَّة؟"?' : 'What does "أَيْنَ المَحَطَّة؟" mean?',
+      prompt: 'أَيْنَ المَحَطَّة؟',
       options: [
         { key: 'A', text: isDutch ? 'Hoe heet u?' : 'What is your name?' },
         { key: 'B', text: isDutch ? 'Het is mooi weer.' : 'The weather is fine.' },
@@ -1433,12 +1433,12 @@ function getArabicQuestions(isDutch: boolean, _variant: string): PlacementTestQu
       level: 'B1',
       target_skill: isDutch ? 'Verleden Tijd Vervoeging' : 'Past Tense Conjugation',
       instruction: isDutch ? 'Welke vorm betekent "Wij gingen / reisden":' : 'Which verb form corresponds to "We went / traveled":',
-      prompt: 'الأَمْس، نَحْنُ _____ إِلى المَدينَة (Al-ams, nahnu _____ ilā al-madīnah).',
+      prompt: 'الأَمْس، نَحْنُ _____ إِلى المَدينَة',
       options: [
-        { key: 'A', text: 'ذَهَبْنَا (Dhahabnā)' },
-        { key: 'B', text: 'ذَهَبْتُ (Dhahabtu)' },
-        { key: 'C', text: 'يَذْهَب (Yadhhab)' },
-        { key: 'D', text: 'ذَهَبُوا (Dhahabū)' },
+        { key: 'A', text: 'ذَهَبْنَا' },
+        { key: 'B', text: 'ذَهَبْتُ' },
+        { key: 'C', text: 'يَذْهَب' },
+        { key: 'D', text: 'ذَهَبُوا' },
       ],
       correct_key: 'A',
       explanation: isDutch
@@ -1450,8 +1450,8 @@ function getArabicQuestions(isDutch: boolean, _variant: string): PlacementTestQu
       id: 6,
       level: 'B1',
       target_skill: isDutch ? 'Izafa Constructie (Bezit)' : 'Izafa Genitive Construct',
-      instruction: isDutch ? 'Wat betekent de izafa constructie "كِتَابُ الطَّالِب" (Kitābu at-tālib)?' : 'What does "Kitābu at-tālib" mean?',
-      prompt: 'كِتَابُ الطَّالِب (Kitābu at-tālib)',
+      instruction: isDutch ? 'Wat betekent de izafa constructie "كِتَابُ الطَّالِب"?' : 'What does "كِتَابُ الطَّالِب" mean?',
+      prompt: 'كِتَابُ الطَّالِب',
       options: [
         { key: 'A', text: isDutch ? 'De student leest' : 'The student reads' },
         { key: 'B', text: isDutch ? 'Het boek van de student' : 'The book of the student' },
@@ -1469,12 +1469,12 @@ function getArabicQuestions(isDutch: boolean, _variant: string): PlacementTestQu
       level: 'B2',
       target_skill: isDutch ? 'Voorwaardelijke Zinnen (Lau vs In)' : 'Conditionals (Law vs In)',
       instruction: isDutch ? 'Welk partikel leidt een hypothetische onvervulbare voorwaarde in?' : 'Which particle introduces an unreal / counterfactual condition?',
-      prompt: '_____ كُنْتُ أَعْلَمُ، لَسَاعَدْتُكَ (_____ kuntu aʿlamu, la-sāʿadtuka).',
+      prompt: '_____ كُنْتُ أَعْلَمُ، لَسَاعَدْتُكَ',
       options: [
-        { key: 'A', text: 'إِذَا (Idhā)' },
-        { key: 'B', text: 'إِنْ (In)' },
-        { key: 'C', text: 'لَوْ (Law)' },
-        { key: 'D', text: 'مُنْذُ (Mundhu)' },
+        { key: 'A', text: 'إِذَا' },
+        { key: 'B', text: 'إِنْ' },
+        { key: 'C', text: 'لَوْ' },
+        { key: 'D', text: 'مُنْذُ' },
       ],
       correct_key: 'C',
       explanation: isDutch
@@ -1486,8 +1486,8 @@ function getArabicQuestions(isDutch: boolean, _variant: string): PlacementTestQu
       id: 8,
       level: 'B2',
       target_skill: isDutch ? 'Afgeleide Werkwoordsvormen (Awzān)' : 'Derived Verb Forms',
-      instruction: isDutch ? 'Welke betekenisnuance heeft Vorm III (فَاعَلَ / Fāʿala) typisch?' : 'What meaning does Verb Form III (Fāʿala) typically convey?',
-      prompt: 'شَارَكَ (Shāraka - Vorm III van شَرِكَ)',
+      instruction: isDutch ? 'Welke betekenisnuance heeft Vorm III (فَاعَلَ) typisch?' : 'What meaning does Verb Form III (فَاعَلَ) typically convey?',
+      prompt: 'شَارَكَ',
       options: [
         { key: 'A', text: isDutch ? 'Intensivering van een actie' : 'Intensification of an action' },
         { key: 'B', text: isDutch ? 'Wederkerigheid of interactie met een ander (participeren / delen)' : 'Reciprocity or interacting with another (participating / sharing)' },
@@ -1505,7 +1505,7 @@ function getArabicQuestions(isDutch: boolean, _variant: string): PlacementTestQu
       level: 'C1',
       target_skill: isDutch ? 'Grammaticale Naamvallen (Iʿrāb)' : 'Grammatical Moods & Case Endings',
       instruction: isDutch ? 'Welke naamvalsklinker krijgt het lijdend voorwerp (Mafʿūl bihi) in het Modern Standaard Arabisch?' : 'What case marker does the direct object receive in formal Arabic?',
-      prompt: 'قَرَأَ الكاتِبُ الرِّوَايَةَ (Qaraʼa al-kātibu ar-riwāyata).',
+      prompt: 'قَرَأَ الكاتِبُ الرِّوَايَةَ',
       options: [
         { key: 'A', text: isDutch ? 'Fatha (-a / Mansūb)' : 'Fatha (-a / Accusative / Mansūb)' },
         { key: 'B', text: isDutch ? 'Damma (-u / Marfūʿ)' : 'Damma (-u / Nominative / Marfūʿ)' },
@@ -1522,8 +1522,8 @@ function getArabicQuestions(isDutch: boolean, _variant: string): PlacementTestQu
       id: 10,
       level: 'C2',
       target_skill: isDutch ? 'Klassiek Idioom & Balāghah' : 'Classical Rhetoric & Metaphor',
-      instruction: isDutch ? 'Wat betekent de literaire uitdrukking "وَضَعَ النِّقَاطَ عَلَى الحُرُوف"?' : 'What does "Wadaʿa an-niqāt ʿalā al-hurūf" signify?',
-      prompt: 'وَضَعَ النِّقَاطَ عَلَى الحُرُوف (Wadaʿa an-niqāt ʿalā al-hurūf)',
+      instruction: isDutch ? 'Wat betekent de literaire uitdrukking "وَضَعَ النِّقَاطَ عَلَى الحُرُوف"?' : 'What does "وَضَعَ النِّقَاطَ عَلَى الحُرُوف" mean?',
+      prompt: 'وَضَعَ النِّقَاطَ عَلَى الحُرُوف',
       options: [
         { key: 'A', text: isDutch ? 'Kalligrafieles geven aan beginners' : 'Giving calligraphy lessons' },
         { key: 'B', text: isDutch ? 'Volledige helderheid scheppen en alle twijfel wegnemen' : 'Putting things completely in order / clarifying beyond doubt' },
@@ -1545,8 +1545,8 @@ function getJapaneseQuestions(isDutch: boolean, _variant: string): PlacementTest
       id: 1,
       level: 'A1',
       target_skill: isDutch ? 'Begroetingen & Kennismaking' : 'Daily Greetings',
-      instruction: isDutch ? 'Wat betekent "こんにちは" (Konnichiwa)?' : 'What does "Konnichiwa" mean?',
-      prompt: 'こんにちは (Konnichiwa)',
+      instruction: isDutch ? 'Wat betekent "こんにちは"?' : 'What does "こんにちは" mean?',
+      prompt: 'こんにちは',
       options: [
         { key: 'A', text: isDutch ? 'Goedemorgen' : 'Good morning' },
         { key: 'B', text: isDutch ? 'Hallo / Goedendag' : 'Hello / Good afternoon' },
@@ -1566,10 +1566,10 @@ function getJapaneseQuestions(isDutch: boolean, _variant: string): PlacementTest
       instruction: isDutch ? 'Hoe bestel je beleefd één koffie?' : 'How do you politely order one coffee in Japanese?',
       prompt: isDutch ? 'Eén koffie, alstublieft.' : 'One coffee, please.',
       options: [
-        { key: 'A', text: 'お水をください (Omizu o kudasai)' },
-        { key: 'B', text: '駅はどこですか (Eki wa doko desu ka)' },
-        { key: 'C', text: 'コーヒーを一つお願いします (Kōhī o hitotsu onegai shimasu)' },
-        { key: 'D', text: 'お会計をお願いします (Okaikei o onegai shimasu)' },
+        { key: 'A', text: 'お水をください' },
+        { key: 'B', text: '駅はどこですか' },
+        { key: 'C', text: 'コーヒーを一つお願いします' },
+        { key: 'D', text: 'お会計をお願いします' },
       ],
       correct_key: 'C',
       explanation: isDutch
@@ -1582,12 +1582,12 @@ function getJapaneseQuestions(isDutch: boolean, _variant: string): PlacementTest
       level: 'A2',
       target_skill: isDutch ? 'Grammatica Partikels (wa vs o)' : 'Particles (wa vs o)',
       instruction: isDutch ? 'Welk partikel markeert het lijdend voorwerp (brood eten)?' : 'Which particle marks the direct object (eating bread)?',
-      prompt: 'パン _____ 食べます (Pan _____ tabemasu).',
+      prompt: 'パン _____ 食べます',
       options: [
-        { key: 'A', text: 'は (wa)' },
-        { key: 'B', text: 'を (o)' },
-        { key: 'C', text: 'に (ni)' },
-        { key: 'D', text: 'で (de)' },
+        { key: 'A', text: 'は' },
+        { key: 'B', text: 'を' },
+        { key: 'C', text: 'に' },
+        { key: 'D', text: 'で' },
       ],
       correct_key: 'B',
       explanation: isDutch
@@ -1599,8 +1599,8 @@ function getJapaneseQuestions(isDutch: boolean, _variant: string): PlacementTest
       id: 4,
       level: 'A2',
       target_skill: isDutch ? 'Werkwoord Te-vorm (Verzoek)' : 'Te-form Request',
-      instruction: isDutch ? 'Wat betekent "ちょっと待ってください" (Chotto matte kudasai)?' : 'What does "Chotto matte kudasai" mean?',
-      prompt: 'ちょっと待ってください (Chotto matte kudasai)',
+      instruction: isDutch ? 'Wat betekent "ちょっと待ってください"?' : 'What does "ちょっと待ってください" mean?',
+      prompt: 'ちょっと待ってください',
       options: [
         { key: 'A', text: isDutch ? 'Een ogenblikje geduld, alstublieft' : 'Please wait a moment' },
         { key: 'B', text: isDutch ? 'Eet smakelijk' : 'Enjoy your meal' },
@@ -1618,12 +1618,12 @@ function getJapaneseQuestions(isDutch: boolean, _variant: string): PlacementTest
       level: 'B1',
       target_skill: isDutch ? 'Voorwaarden (tara / ba / to)' : 'Conditional Tara Form',
       instruction: isDutch ? 'Welke vorm drukt "Als de regen stopt, gaan we naar buiten" uit?' : 'Which form expresses "If the rain stops, let\'s go out"?',
-      prompt: '雨が_____、出かけましょう (Ame ga _____, dekakemashō).',
+      prompt: '雨が_____、出かけましょう',
       options: [
-        { key: 'A', text: 'やんで (yande)' },
-        { key: 'B', text: 'やんだら (yandara)' },
-        { key: 'C', text: 'やまない (yamanai)' },
-        { key: 'D', text: 'やみます (yamimasu)' },
+        { key: 'A', text: 'やんで' },
+        { key: 'B', text: 'やんだら' },
+        { key: 'C', text: 'やまない' },
+        { key: 'D', text: 'やみます' },
       ],
       correct_key: 'B',
       explanation: isDutch
@@ -1636,12 +1636,12 @@ function getJapaneseQuestions(isDutch: boolean, _variant: string): PlacementTest
       level: 'B1',
       target_skill: isDutch ? 'Potentiële Vorm (Kunnen)' : 'Potential Form (Can do)',
       instruction: isDutch ? 'Welk werkwoord betekent "Ik kan Japans spreken":' : 'Which verb form means "I can speak Japanese":',
-      prompt: '日本語を _____ (Nihongo o _____).',
+      prompt: '日本語を _____',
       options: [
-        { key: 'A', text: '話せます (hanasemasu)' },
-        { key: 'B', text: '話します (hanashimasu)' },
-        { key: 'C', text: '話しました (hanashimashita)' },
-        { key: 'D', text: '話したい (hanashitai)' },
+        { key: 'A', text: '話せます' },
+        { key: 'B', text: '話します' },
+        { key: 'C', text: '話しました' },
+        { key: 'D', text: '話したい' },
       ],
       correct_key: 'A',
       explanation: isDutch
@@ -1654,12 +1654,12 @@ function getJapaneseQuestions(isDutch: boolean, _variant: string): PlacementTest
       level: 'B2',
       target_skill: isDutch ? 'Lijdende Vorm (Ukemikei)' : 'Passive Voice (Ukemi)',
       instruction: isDutch ? 'Welke zin bevat een passieve vorm (geprezen worden door de leraar)?' : 'Which sentence uses the passive voice ("praised by the teacher")?',
-      prompt: '先生に _____ (Sensei ni _____).',
+      prompt: '先生に _____',
       options: [
-        { key: 'A', text: '褒めました (homemashita)' },
-        { key: 'B', text: '褒められました (homeraremashita)' },
-        { key: 'C', text: '褒めさせました (homesasemashita)' },
-        { key: 'D', text: '褒めてあげました (homete agemashita)' },
+        { key: 'A', text: '褒めました' },
+        { key: 'B', text: '褒められました' },
+        { key: 'C', text: '褒めさせました' },
+        { key: 'D', text: '褒めてあげました' },
       ],
       correct_key: 'B',
       explanation: isDutch
@@ -1671,8 +1671,8 @@ function getJapaneseQuestions(isDutch: boolean, _variant: string): PlacementTest
       id: 8,
       level: 'B2',
       target_skill: isDutch ? 'Formele Connectieven' : 'Formal Connectors',
-      instruction: isDutch ? 'Wat betekent het formele connectief "にもかかわらず" (ni mo kakawarazu)?' : 'What does "ni mo kakawarazu" signify?',
-      prompt: '大雨だったにもかかわらず (Ōame datta ni mo kakawarazu)',
+      instruction: isDutch ? 'Wat betekent het formele connectief "にもかかわらず"?' : 'What does "にもかかわらず" signify?',
+      prompt: '大雨だったにもかかわらず',
       options: [
         { key: 'A', text: isDutch ? 'Omdat het zwaar regende' : 'Because it rained heavily' },
         { key: 'B', text: isDutch ? 'Ondanks dat het zwaar regende' : 'In spite of / despite the heavy rain' },
@@ -1690,12 +1690,12 @@ function getJapaneseQuestions(isDutch: boolean, _variant: string): PlacementTest
       level: 'C1',
       target_skill: isDutch ? 'Keigo Eerbieds- en Nederigheidstaal' : 'Honorific Keigo System',
       instruction: isDutch ? 'Welk nederig werkwoord (Kenjōgo) gebruik je als je zelf naar het kantoor van een klant gaat?' : 'Which humble verb (Kenjōgo) is used when you yourself go to a client\'s office?',
-      prompt: '明日、御社へ _____ (Ashita, onsha e _____).',
+      prompt: '明日、御社へ _____',
       options: [
-        { key: 'A', text: 'いらっしゃいます (irasshaimasu)' },
-        { key: 'B', text: '参ります (mairimasu)' },
-        { key: 'C', text: 'おいでになります (oide ni narimasu)' },
-        { key: 'D', text: '召し上がります (meshiaagarimasu)' },
+        { key: 'A', text: 'いらっしゃいます' },
+        { key: 'B', text: '参ります' },
+        { key: 'C', text: 'おいでになります' },
+        { key: 'D', text: '召し上がります' },
       ],
       correct_key: 'B',
       explanation: isDutch
@@ -1707,8 +1707,8 @@ function getJapaneseQuestions(isDutch: boolean, _variant: string): PlacementTest
       id: 10,
       level: 'C2',
       target_skill: isDutch ? 'Klassieke Vierkarakter Idioom (Yojijukugo)' : 'Four-Character Idioms (Yojijukugo)',
-      instruction: isDutch ? 'Wat is de betekenis van het gevorderde idioom "一期一会" (Ichigo Ichie)?' : 'What is the precise philosophical meaning of "Ichigo Ichie"?',
-      prompt: '一期一会 (Ichigo Ichie)',
+      instruction: isDutch ? 'Wat is de betekenis van het gevorderde idioom "一期一会"?' : 'What is the precise philosophical meaning of "一期一会"?',
+      prompt: '一期一会',
       options: [
         { key: 'A', text: isDutch ? 'Harde fysieke arbeid loont altijd' : 'Hard physical work pays off' },
         { key: 'B', text: isDutch ? 'Een eenmalige, unieke ontmoeting in het leven die men diep moet koesteren' : 'A once-in-a-lifetime encounter to treasure deeply' },
@@ -1730,8 +1730,8 @@ function getChineseQuestions(isDutch: boolean, _variant: string): PlacementTestQ
       id: 1,
       level: 'A1',
       target_skill: isDutch ? 'Begroetingen & Kennismaking' : 'Foundational Greetings',
-      instruction: isDutch ? 'Wat betekent "你好！很高兴认识你" (Nǐ hǎo! Hěn gāoxìng rènshì nǐ)?' : 'What does "Nǐ hǎo! Hěn gāoxìng rènshì nǐ" mean?',
-      prompt: '你好！很高兴认识你 (Nǐ hǎo! Hěn gāoxìng rènshì nǐ)',
+      instruction: isDutch ? 'Wat betekent "你好！很高兴认识你"?' : 'What does "你好！很高兴认识你" mean?',
+      prompt: '你好！很高兴认识你',
       options: [
         { key: 'A', text: isDutch ? 'Hallo! Leuk je te ontmoeten.' : 'Hello! Pleased to meet you.' },
         { key: 'B', text: isDutch ? 'Goedenavond! Waar ga je heen?' : 'Good evening! Where are you going?' },
@@ -1751,10 +1751,10 @@ function getChineseQuestions(isDutch: boolean, _variant: string): PlacementTestQ
       instruction: isDutch ? 'Hoe vraag je om de rekening in een Chinees restaurant?' : 'How do you ask for the check in a restaurant?',
       prompt: isDutch ? 'De rekening, alstublieft.' : 'The bill / check, please.',
       options: [
-        { key: 'A', text: '洗手间在哪儿？(Xǐshǒujiān zài nǎr?)' },
-        { key: 'B', text: '买单，谢谢！(Mǎidān, xièxiè!)' },
-        { key: 'C', text: '太贵了！(Tài guì le!)' },
-        { key: 'D', text: '我不懂。(Wǒ bù dǒng.)' },
+        { key: 'A', text: '洗手间在哪儿？' },
+        { key: 'B', text: '买单，谢谢！' },
+        { key: 'C', text: '太贵了！' },
+        { key: 'D', text: '我不懂。' },
       ],
       correct_key: 'B',
       explanation: isDutch
@@ -1766,8 +1766,8 @@ function getChineseQuestions(isDutch: boolean, _variant: string): PlacementTestQ
       id: 3,
       level: 'A2',
       target_skill: isDutch ? 'Aspect Partikel 了 (Le)' : 'Aspect Particle Le',
-      instruction: isDutch ? 'Wat geeft het partikel "了" (le) aan in "我吃了早饭" (Wǒ chī le zǎofàn)?' : 'What does "le" mark in "Wǒ chī le zǎofàn"?',
-      prompt: '我吃了早饭 (Wǒ chī le zǎofàn)',
+      instruction: isDutch ? 'Wat geeft het partikel "了" aan in "我吃了早饭"?' : 'What does "了" mark in "我吃了早饭"?',
+      prompt: '我吃了早饭',
       options: [
         { key: 'A', text: isDutch ? 'Toekomstige handeling' : 'Future action' },
         { key: 'B', text: isDutch ? 'Een voltooide handeling (Ik heb ontbeten)' : 'A completed action (I ate breakfast)' },
@@ -1784,8 +1784,8 @@ function getChineseQuestions(isDutch: boolean, _variant: string): PlacementTestQ
       id: 4,
       level: 'A2',
       target_skill: isDutch ? 'De Weg Vragen' : 'Directions & Wayfinding',
-      instruction: isDutch ? 'Wat betekent "请问，火车站怎么走？" (Qǐngwèn, huǒchēzhàn zěnme zǒu)?' : 'What does this navigation question ask?',
-      prompt: '请问，火车站怎么走？(Qǐngwèn, huǒchēzhàn zěnme zǒu?)',
+      instruction: isDutch ? 'Wat betekent "请问，火车站怎么走？"?' : 'What does "请问，火车站怎么走？" ask?',
+      prompt: '请问，火车站怎么走？',
       options: [
         { key: 'A', text: isDutch ? 'Mag ik vragen hoe ik bij het treinstation kom?' : 'Excuse me, how do I get to the train station?' },
         { key: 'B', text: isDutch ? 'Hoe laat vertrekt de trein?' : 'What time does the train leave?' },
@@ -1803,12 +1803,12 @@ function getChineseQuestions(isDutch: boolean, _variant: string): PlacementTestQ
       level: 'B1',
       target_skill: isDutch ? 'Vergelijkende Constructie (Bǐ)' : 'Comparative Structures with Bǐ',
       instruction: isDutch ? 'Welke zin betekent "Vandaag is warmer dan gisteren":' : 'Which sentence means "Today is warmer than yesterday":',
-      prompt: '今天比昨天 _____ (Jīntiān bǐ zuótiān _____).',
+      prompt: '今天比昨天 _____',
       options: [
-        { key: 'A', text: '冷 (lěng)' },
-        { key: 'B', text: '暖和 (nuǎnhuo)' },
-        { key: 'C', text: '下雨 (xiàyǔ)' },
-        { key: 'D', text: '没有 (méiyǒu)' },
+        { key: 'A', text: '冷' },
+        { key: 'B', text: '暖和' },
+        { key: 'C', text: '下雨' },
+        { key: 'D', text: '没有' },
       ],
       correct_key: 'B',
       explanation: isDutch
@@ -1820,8 +1820,8 @@ function getChineseQuestions(isDutch: boolean, _variant: string): PlacementTestQ
       id: 6,
       level: 'B1',
       target_skill: isDutch ? 'De 把 (Bǎ) Constructie' : 'The Bǎ Construction',
-      instruction: isDutch ? 'Wat typeert de "把" (bǎ) zin in de Chinese grammatica?' : 'What does the "bǎ" sentence structure do?',
-      prompt: '他把窗户打开了 (Tā bǎ chuānghu dǎkāi le)',
+      instruction: isDutch ? 'Wat typeert de "把"-zin in de Chinese grammatica?' : 'What does the "把" sentence structure do?',
+      prompt: '他把窗户打开了',
       options: [
         { key: 'A', text: isDutch ? 'Het plaatst het lijdend voorwerp vóór het werkwoord om het resultaat van de handeling te benadrukken' : 'It moves the object before the verb to emphasize disposal/result' },
         { key: 'B', text: isDutch ? 'Het vormt altijd een ontkenning' : 'It creates a negative clause' },
@@ -1838,8 +1838,8 @@ function getChineseQuestions(isDutch: boolean, _variant: string): PlacementTestQ
       id: 7,
       level: 'B2',
       target_skill: isDutch ? 'Lijdende Vorm met 被 (Bèi)' : 'Passive Voice with Bèi',
-      instruction: isDutch ? 'Wat betekent "手机被他拿走了" (Shǒujī bèi tā názǒu le)?' : 'What does "Shǒujī bèi tā názǒu le" mean?',
-      prompt: '手机被他拿走了 (Shǒujī bèi tā názǒu le)',
+      instruction: isDutch ? 'Wat betekent "手机被他拿走了"?' : 'What does "手机被他拿走了" mean?',
+      prompt: '手机被他拿走了',
       options: [
         { key: 'A', text: isDutch ? 'Hij heeft een nieuwe telefoon gekocht' : 'He bought a new phone' },
         { key: 'B', text: isDutch ? 'De telefoon is door hem meegenomen' : 'The phone was taken away by him' },
@@ -1859,10 +1859,10 @@ function getChineseQuestions(isDutch: boolean, _variant: string): PlacementTestQ
       instruction: isDutch ? 'Welk voegwoordpaar drukt "Niet alleen... maar ook..." uit?' : 'Which pair means "Not only... but also..."?',
       prompt: '_____ 汉语很难，_____ 很有趣。',
       options: [
-        { key: 'A', text: '虽然... 但是... (Suīrán... dànshì...)' },
-        { key: 'B', text: '不仅... 而且... (Bùjǐn... érqiě...)' },
-        { key: 'C', text: '因为... 所以... (Yīnwèi... suǒyǐ...)' },
-        { key: 'D', text: '只要... 就... (Zhǐyào... jiù...)' },
+        { key: 'A', text: '虽然... 但是...' },
+        { key: 'B', text: '不仅... 而且...' },
+        { key: 'C', text: '因为... 所以...' },
+        { key: 'D', text: '只要... 就...' },
       ],
       correct_key: 'B',
       explanation: isDutch
@@ -1874,8 +1874,8 @@ function getChineseQuestions(isDutch: boolean, _variant: string): PlacementTestQ
       id: 9,
       level: 'C1',
       target_skill: isDutch ? 'Klassieke Partikels in Modern Chinees' : 'Classical Particles in Written Register',
-      instruction: isDutch ? 'Wat betekent het formele schriftelijke partikel "之" (zhī) in "成功之路"?' : 'What does the classical particle "之" (zhī) express in formal Chinese?',
-      prompt: '成功之路 (Chénggōng zhī lù)',
+      instruction: isDutch ? 'Wat betekent het formele schriftelijke partikel "之" in "成功之路"?' : 'What does the classical particle "之" express in formal Chinese?',
+      prompt: '成功之路',
       options: [
         { key: 'A', text: isDutch ? 'Het fungeert als het bezittelijke "的" (van): "De weg naar succes"' : 'It functions as possessive "de": "The path of success"' },
         { key: 'B', text: isDutch ? 'Het geeft een ontkenning aan' : 'It indicates negation' },
@@ -1892,8 +1892,8 @@ function getChineseQuestions(isDutch: boolean, _variant: string): PlacementTestQ
       id: 10,
       level: 'C2',
       target_skill: isDutch ? 'Vierkarakter Idioom (Chéngyǔ)' : 'Literary Idioms (Chéngyǔ)',
-      instruction: isDutch ? 'Wat betekent het klassieke Chéngyǔ "胸有成竹" (Xiōng yǒu chéng zhú)?' : 'What is the precise meaning of the idiom "Xiōng yǒu chéng zhú"?',
-      prompt: '胸有成竹 (Xiōng yǒu chéng zhú)',
+      instruction: isDutch ? 'Wat betekent het klassieke idioom "胸有成竹"?' : 'What is the precise meaning of the idiom "胸有成竹"?',
+      prompt: '胸有成竹',
       options: [
         { key: 'A', text: isDutch ? 'Pijn op de borst hebben van vermoeidheid' : 'Suffering chest pain from fatigue' },
         { key: 'B', text: isDutch ? 'Van tevoren een voldragen, zelfverzekerd plan in je hoofd hebben' : 'Having a well-thought-out, confident plan beforehand' },
@@ -1916,7 +1916,7 @@ function getRussianQuestions(isDutch: boolean, _variant: string): PlacementTestQ
       level: 'A1',
       target_skill: isDutch ? 'Begroetingen & Beleefdheid' : 'Greetings & Etiquette',
       instruction: isDutch ? 'Wat betekent "Здравствуйте! Как дела?"?' : 'What does "Здравствуйте! Как дела?" mean?',
-      prompt: 'Здравствуйте! Как дела? (Zdravstvuyte! Kak dela?)',
+      prompt: 'Здравствуйте! Как дела?',
       options: [
         { key: 'A', text: isDutch ? 'Hallo! Hoe gaat het?' : 'Hello! How are you?' },
         { key: 'B', text: isDutch ? 'Goedenavond! Waar woon je?' : 'Good evening! Where do you live?' },
@@ -1936,10 +1936,10 @@ function getRussianQuestions(isDutch: boolean, _variant: string): PlacementTestQ
       instruction: isDutch ? 'Hoe bestel je koffie in het Russisch?' : 'How do you politely order coffee in Russian?',
       prompt: isDutch ? 'Eén koffie, alstublieft.' : 'One coffee, please.',
       options: [
-        { key: 'A', text: 'Где находится метро? (Gde nakhoditsya metro?)' },
-        { key: 'B', text: 'Чашку кофе, пожалуйста. (Chashku kofe, pozhaluysta.)' },
-        { key: 'C', text: 'Сколько это стоит? (Skolko eto stoit?)' },
-        { key: 'D', text: 'Меня зовут Иван. (Menya zovut Ivan.)' },
+        { key: 'A', text: 'Где находится метро?' },
+        { key: 'B', text: 'Чашку кофе, пожалуйста.' },
+        { key: 'C', text: 'Сколько это стоит?' },
+        { key: 'D', text: 'Меня зовут Иван.' },
       ],
       correct_key: 'B',
       explanation: isDutch
@@ -1952,12 +1952,12 @@ function getRussianQuestions(isDutch: boolean, _variant: string): PlacementTestQ
       level: 'A2',
       target_skill: isDutch ? 'Naamvallen: Prepositionalis (Padezh 6)' : 'Prepositional Case',
       instruction: isDutch ? 'Kies de juiste uitgang voor "Ik woon in Moskou":' : 'Select the correct ending for "I live in Moscow":',
-      prompt: 'Я живу в _____ (Moskv...):',
+      prompt: 'Я живу в _____:',
       options: [
-        { key: 'A', text: 'Москву (Moskvu)' },
-        { key: 'B', text: 'Москвы (Moskvy)' },
-        { key: 'C', text: 'Москве (Moskve)' },
-        { key: 'D', text: 'Москвой (Moskvoy)' },
+        { key: 'A', text: 'Москву' },
+        { key: 'B', text: 'Москвы' },
+        { key: 'C', text: 'Москве' },
+        { key: 'D', text: 'Москвой' },
       ],
       correct_key: 'C',
       explanation: isDutch
@@ -1972,10 +1972,10 @@ function getRussianQuestions(isDutch: boolean, _variant: string): PlacementTestQ
       instruction: isDutch ? 'Welk werkwoord past bij een vrouwelijke spreker ("Ik las een boek")?' : 'Which past tense form agrees with a female subject ("I read")?',
       prompt: 'Вчера я (женщина) _____ интересную книгу.',
       options: [
-        { key: 'A', text: 'читал (chital)' },
-        { key: 'B', text: 'читала (chitala)' },
-        { key: 'C', text: 'читало (chitalo)' },
-        { key: 'D', text: 'читали (chitali)' },
+        { key: 'A', text: 'читал' },
+        { key: 'B', text: 'читала' },
+        { key: 'C', text: 'читало' },
+        { key: 'D', text: 'читали' },
       ],
       correct_key: 'B',
       explanation: isDutch
@@ -1990,10 +1990,10 @@ function getRussianQuestions(isDutch: boolean, _variant: string): PlacementTestQ
       instruction: isDutch ? 'Welk aspect gebruik je voor een eenmalig voltooide handeling ("Ik heb het boek uitgelezen")?' : 'Which aspect marks a completed finished result?',
       prompt: 'Я наконец-то _____ эту сложную книгу.',
       options: [
-        { key: 'A', text: 'прочитал (prochital - SV)' },
-        { key: 'B', text: 'читал (chital - NSV)' },
-        { key: 'C', text: 'читаю (chitayu - pres)' },
-        { key: 'D', text: 'буду читать (budu chitat)' },
+        { key: 'A', text: 'прочитал' },
+        { key: 'B', text: 'читал' },
+        { key: 'C', text: 'читаю' },
+        { key: 'D', text: 'буду читать' },
       ],
       correct_key: 'A',
       explanation: isDutch
@@ -2008,10 +2008,10 @@ function getRussianQuestions(isDutch: boolean, _variant: string): PlacementTestQ
       instruction: isDutch ? 'Welk werkwoord betekent te voet gaan in één specifieke richting (unidirectioneel)?' : 'Which motion verb means walking in one definite direction right now?',
       prompt: 'Сейчас я _____ на работу.',
       options: [
-        { key: 'A', text: 'хожу (khozhu)' },
-        { key: 'B', text: 'иду (idu)' },
-        { key: 'C', text: 'езжу (yezzhu)' },
-        { key: 'D', text: 'еду (yedu)' },
+        { key: 'A', text: 'хожу' },
+        { key: 'B', text: 'иду' },
+        { key: 'C', text: 'езжу' },
+        { key: 'D', text: 'еду' },
       ],
       correct_key: 'B',
       explanation: isDutch
@@ -2026,10 +2026,10 @@ function getRussianQuestions(isDutch: boolean, _variant: string): PlacementTestQ
       instruction: isDutch ? 'Hoe formuleer je een hypothetische wens ("Als ik tijd had, zou ik reizen")?' : 'How is a counterfactual condition formed in Russian?',
       prompt: 'Если бы у меня было время, я _____ по миру.',
       options: [
-        { key: 'A', text: 'путешествую (puteshestvuyu)' },
-        { key: 'B', text: 'путешествовал бы (puteshestvoval by)' },
-        { key: 'C', text: 'буду путешествовать (budu puteshestvovat)' },
-        { key: 'D', text: 'путешествуй (puteshestvuy)' },
+        { key: 'A', text: 'путешествую' },
+        { key: 'B', text: 'путешествовал бы' },
+        { key: 'C', text: 'буду путешествовать' },
+        { key: 'D', text: 'путешествуй' },
       ],
       correct_key: 'B',
       explanation: isDutch
@@ -2042,7 +2042,7 @@ function getRussianQuestions(isDutch: boolean, _variant: string): PlacementTestQ
       level: 'B2',
       target_skill: isDutch ? 'Deelwoorden & Gerundia' : 'Gerunds (Deechastie)',
       instruction: isDutch ? 'Wat drukt het gerundium "Прочитав письмо, он улыбнулся" uit?' : 'What does the adverbial participle (deechastie) express?',
-      prompt: 'Прочитав письмо, он улыбнулся (Prochitav pismo, on ulybnulsya)',
+      prompt: 'Прочитав письмо, он улыбнулся',
       options: [
         { key: 'A', text: isDutch ? 'Nadat hij de brief had gelezen, glimlachte hij' : 'Having read the letter, he smiled' },
         { key: 'B', text: isDutch ? 'Terwijl hij de brief schreef, huilde hij' : 'While writing the letter, he cried' },
@@ -2062,10 +2062,10 @@ function getRussianQuestions(isDutch: boolean, _variant: string): PlacementTestQ
       instruction: isDutch ? 'Welke voegwoordcombinatie drukt een formele concessie ("hoewel") uit?' : 'Which conjunction marks formal concession ("notwithstanding / although")?',
       prompt: '_____ на трудности, проект был успешно завершён.',
       options: [
-        { key: 'A', text: 'Потому что (Potomu chto)' },
-        { key: 'B', text: 'Несмотря на (Nesmotrya na)' },
-        { key: 'C', text: 'Для того чтобы (Dlya togo chtoby)' },
-        { key: 'D', text: 'Как будто (Kak budto)' },
+        { key: 'A', text: 'Потому что' },
+        { key: 'B', text: 'Несмотря на' },
+        { key: 'C', text: 'Для того чтобы' },
+        { key: 'D', text: 'Как будто' },
       ],
       correct_key: 'B',
       explanation: isDutch
@@ -2078,7 +2078,7 @@ function getRussianQuestions(isDutch: boolean, _variant: string): PlacementTestQ
       level: 'C2',
       target_skill: isDutch ? 'Gevorderde Idiomatiek & Metafoor' : 'Advanced Idiomatic Expressions',
       instruction: isDutch ? 'Wat betekent het Russische idioom "Спустя рукава"?' : 'What does the idiom "Spustya rukava" mean?',
-      prompt: 'Работать спустя рукава (Rabotat spustya rukava)',
+      prompt: 'Работать спустя рукава',
       options: [
         { key: 'A', text: isDutch ? 'Met opgestroopte mouwen heel hard werken' : 'Working very hard with rolled-up sleeves' },
         { key: 'B', text: isDutch ? 'Laks, slordig en zonder enige toewijding werken' : 'Working sloppily, carelessly, half-heartedly' },
@@ -2100,7 +2100,7 @@ function getUniversalLanguageQuestions(
   isDutch: boolean
 ): PlacementTestQuestion[] {
   const lang = WORLD_LANGUAGES.find((l) => l.code === targetCode);
-  const greeting = lang?.sampleGreeting || `Hello (${targetName})`;
+  const greeting = lang?.sampleGreeting || `Hello`;
   const nativeName = lang?.nativeName || targetName;
 
   return [
@@ -2127,11 +2127,11 @@ function getUniversalLanguageQuestions(
       level: 'A1',
       target_skill: isDutch ? 'In het Café & Bestellen' : 'In a Café & Ordering',
       instruction: isDutch ? `Je bent in een café. Hoe vraag je beleefd om een drankje in het ${targetName}?` : `You are in a café. How do you politely order a drink in ${targetName}?`,
-      prompt: isDutch ? `Een koffie, alstublieft (${targetName})` : `A coffee, please (${targetName})`,
+      prompt: isDutch ? `Een koffie, alstublieft` : `A coffee, please`,
       options: [
         { key: 'A', text: isDutch ? 'Hoe laat is het?' : 'What time is it?' },
         { key: 'B', text: isDutch ? 'Waar woon je?' : 'Where do you live?' },
-        { key: 'C', text: isDutch ? `Een koffie, alstublieft (${nativeName})` : `A coffee, please (${nativeName})` },
+        { key: 'C', text: isDutch ? `Een koffie, alstublieft` : `A coffee, please` },
         { key: 'D', text: isDutch ? 'Tot morgen' : 'See you tomorrow' },
       ],
       correct_key: 'C',
@@ -2145,7 +2145,7 @@ function getUniversalLanguageQuestions(
       level: 'A2',
       target_skill: isDutch ? 'Kennismaking & Woonplaats' : 'Introductions & Where You Live',
       instruction: isDutch ? `Iemand vraagt waar je woont. Wat betekent het antwoord: "Wij wonen in het centrum"?` : `Someone asks where you live. What does: "We live in the city center" mean?`,
-      prompt: isDutch ? `Wij wonen in het centrum van de stad (${targetName})` : `We live in the city center (${targetName})`,
+      prompt: isDutch ? `Wij wonen in het centrum van de stad` : `We live in the city center`,
       options: [
         { key: 'A', text: isDutch ? 'Wij wonen in het centrum van de stad' : 'We live in the city center' },
         { key: 'B', text: isDutch ? 'Wij werken buiten de stad' : 'We work outside the city' },
@@ -2163,7 +2163,7 @@ function getUniversalLanguageQuestions(
       level: 'A2',
       target_skill: isDutch ? 'De Weg Vragen & Oriëntatie' : 'Directions & Navigation',
       instruction: isDutch ? `Een voorbijganger legt de weg uit naar het station. Welke aanwijzing hoor je?` : `A local gives you directions to the station. What instruction do they give?`,
-      prompt: isDutch ? `Ga rechtdoor en sla rechtsaf bij de volgende straat (${targetName})` : `Go straight ahead and turn right at the next street (${targetName})`,
+      prompt: isDutch ? `Ga rechtdoor en sla rechtsaf bij de volgende straat` : `Go straight ahead and turn right at the next street`,
       options: [
         { key: 'A', text: isDutch ? 'Het station is vandaag gesloten' : 'The station is closed today' },
         { key: 'B', text: isDutch ? 'Het is half vier in de middag' : 'It is half past three in the afternoon' },
@@ -2181,7 +2181,7 @@ function getUniversalLanguageQuestions(
       level: 'B1',
       target_skill: isDutch ? 'Reizen & Hotel Check-in' : 'Travel & Hotel Check-in',
       instruction: isDutch ? `De hotelreceptionist zegt: "Uw kamer is klaar op de tweede verdieping." Wat betekent dit?` : `The hotel receptionist says: "Your room is ready on the second floor." What does this mean?`,
-      prompt: isDutch ? `Uw kamer is klaar op de tweede verdieping (${targetName})` : `Your room is ready on the second floor (${targetName})`,
+      prompt: isDutch ? `Uw kamer is klaar op de tweede verdieping` : `Your room is ready on the second floor`,
       options: [
         { key: 'A', text: isDutch ? 'Het hotel is helaas volgeboekt' : 'The hotel is unfortunately fully booked' },
         { key: 'B', text: isDutch ? 'Uw kamer is klaar op de tweede verdieping' : 'Your room is ready on the second floor' },
@@ -2199,7 +2199,7 @@ function getUniversalLanguageQuestions(
       level: 'B1',
       target_skill: isDutch ? 'Vrije Tijd & Weekendplannen' : 'Free Time & Weekend Activities',
       instruction: isDutch ? `Een vriend vertelt: "Gisteren hebben we gewandeld en een geweldige film gezien." Wat deden ze?` : `A friend shares: "Yesterday we went for a walk and watched a great movie." What did they do?`,
-      prompt: isDutch ? `Gisteren hebben we gewandeld en een geweldige film gezien (${targetName})` : `Yesterday we went for a walk and watched a great movie (${targetName})`,
+      prompt: isDutch ? `Gisteren hebben we gewandeld en een geweldige film gezien` : `Yesterday we went for a walk and watched a great movie`,
       options: [
         { key: 'A', text: isDutch ? 'Ze bleven thuis om te studeren' : 'They stayed home to study' },
         { key: 'B', text: isDutch ? 'Ze zijn van plan morgen naar de bioscoop te gaan' : 'They plan to visit the cinema tomorrow' },
@@ -2218,7 +2218,7 @@ function getUniversalLanguageQuestions(
       target_skill: isDutch ? 'Uitnodiging & Sociale Afspraken' : 'Social Invitations & Polite Plans',
       instruction: isDutch ? `Iemand stelt voor: "Zullen we vanavond samen gaan eten als je tijd hebt?" Wat wordt er gevraagd?` : `Someone suggests: "Shall we have dinner together tonight if you have time?" What are they asking?`
       ,
-      prompt: isDutch ? `Zullen we vanavond samen gaan eten als je tijd hebt? (${targetName})` : `Shall we have dinner together tonight if you have time? (${targetName})`,
+      prompt: isDutch ? `Zullen we vanavond samen gaan eten als je tijd hebt?` : `Shall we have dinner together tonight if you have time?`,
       options: [
         { key: 'A', text: isDutch ? 'Een vriendelijke uitnodiging om vanavond samen te eten' : 'A friendly invitation to have dinner together tonight' },
         { key: 'B', text: isDutch ? 'Een verzoek om de lunch van morgen te annuleren' : 'A request to cancel tomorrow\'s lunch' },
@@ -2237,7 +2237,7 @@ function getUniversalLanguageQuestions(
       target_skill: isDutch ? 'Mening & Genuanceerd Standpunt' : 'Expressing Opinions & Nuance',
       instruction: isDutch ? `In een discussie zegt iemand: "Ik begrijp je idee, maar we moeten ook aan het budget denken." Wat bedoelt de spreker?` : `In a discussion someone says: "I see your point, but we must also keep the budget in mind." What do they mean?`
       ,
-      prompt: isDutch ? `Ik begrijp je idee, maar we moeten ook aan het budget denken (${targetName})` : `I see your point, but we must also keep the budget in mind (${targetName})`,
+      prompt: isDutch ? `Ik begrijp je idee, maar we moeten ook aan het budget denken` : `I see your point, but we must also keep the budget in mind`,
       options: [
         { key: 'A', text: isDutch ? 'Het project wordt zonder aarzeling afgewezen' : 'The project is rejected without discussion' },
         { key: 'B', text: isDutch ? 'Het project heeft geen financieel budget nodig' : 'The project requires zero financial budget' },
@@ -2256,7 +2256,7 @@ function getUniversalLanguageQuestions(
       target_skill: isDutch ? 'Professioneel Werkoverleg & Synthese' : 'Workplace Dialogue & Problem Solving',
       instruction: isDutch ? `In een werkbericht staat: "Gezien de nieuwe planning stellen we voor de presentatie naar volgende week te verschuiven." Wat is het voorstel?` : `In a workplace message: "Given the updated timeline, we propose moving the presentation to next week." What is proposed?`
       ,
-      prompt: isDutch ? `We stellen voor de presentatie naar volgende week te verschuiven (${targetName})` : `We propose moving the presentation to next week (${targetName})`,
+      prompt: isDutch ? `We stellen voor de presentatie naar volgende week te verschuiven` : `We propose moving the presentation to next week`,
       options: [
         { key: 'A', text: isDutch ? 'De presentatie verzetten naar volgende week' : 'Rescheduling the presentation to next week' },
         { key: 'B', text: isDutch ? 'De presentatie definitief annuleren' : 'Cancelling the presentation permanently' },
@@ -2275,7 +2275,7 @@ function getUniversalLanguageQuestions(
       target_skill: isDutch ? 'Natuurlijk Idioom & Culturele Beeldspraak' : 'Natural Idioms & Cultural Nuance',
       instruction: isDutch ? `Een spreker zegt na een lange inspanning: "We zien eindelijk het licht aan het einde van de tunnel." Wat drukt dit uit?` : `A speaker reflects after a long effort: "We finally see the light at the end of the tunnel." What does this express?`
       ,
-      prompt: isDutch ? `Het licht aan het einde van de tunnel zien (${targetName})` : `Seeing the light at the end of the tunnel (${targetName})`,
+      prompt: isDutch ? `Het licht aan het einde van de tunnel zien` : `Seeing the light at the end of the tunnel`,
       options: [
         { key: 'A', text: isDutch ? 'Letterlijke duisternis tijdens een reis' : 'Literal darkness encountered during travel' },
         { key: 'B', text: isDutch ? 'Een waarschuwing voor gevaarlijk verkeer' : 'A warning regarding hazardous traffic' },

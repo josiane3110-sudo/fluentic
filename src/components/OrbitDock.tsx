@@ -18,6 +18,7 @@ interface OrbitDockProps {
   activeTab: NavigationTab;
   onSelectTab: (tab: NavigationTab) => void;
   onOpenAITutor: () => void;
+  isAITutorActive?: boolean;
   isPro: boolean;
   nativeLanguageCode?: string;
   soundscapeMode?: 'alpha' | 'cosmic' | 'rain' | 'mute';
@@ -37,6 +38,7 @@ export const OrbitDock: React.FC<OrbitDockProps> = ({
   activeTab,
   onSelectTab,
   onOpenAITutor,
+  isAITutorActive = false,
   isPro,
   nativeLanguageCode = 'nl',
   soundscapeMode = 'mute',
@@ -84,9 +86,9 @@ export const OrbitDock: React.FC<OrbitDockProps> = ({
     <nav
       id="fluentic-spatial-orbit-dock"
       aria-label="Main spatial navigation dock"
-      className="fixed bottom-2 sm:bottom-3 left-1/2 -translate-x-1/2 z-40 px-2 sm:px-3 py-1.5 rounded-2xl bg-white/95 backdrop-blur-xl border border-slate-200/90 shadow-2xl shadow-slate-900/15 flex items-center gap-1 sm:gap-1.5 max-w-[98vw] overflow-x-auto scrollbar-none text-slate-800"
+      className="fixed bottom-2 sm:bottom-3 left-1/2 -translate-x-1/2 z-40 px-2 sm:px-3 py-1.5 rounded-2xl bg-white/95 backdrop-blur-xl border border-slate-200/90 shadow-2xl shadow-slate-900/15 flex items-center gap-1 sm:gap-1.5 max-w-[98vw] overflow-x-auto no-scrollbar scrollbar-none text-slate-800"
     >
-      {/* Core Tabs: Home, Path, AI Dialogues, Grammar, AI Translator */}
+      {/* Core Tabs: Home, Path (Learn), AI Dialogues, Grammar, AI Translator */}
       {coreTabs.map((item) => {
         const Icon = item.icon;
         const isActive = activeTab === item.id;
@@ -121,7 +123,7 @@ export const OrbitDock: React.FC<OrbitDockProps> = ({
         );
       })}
 
-      {/* DEDICATED STANDALONE AI TUTOR MENU BUTTON (NAVY & GOLD THEME) */}
+      {/* DEDICATED STANDALONE AI TUTOR BUTTON: Navy when inactive; Gold gradient ONLY when active */}
       <button
         id="dock-tab-ai-tutor-btn"
         type="button"
@@ -129,22 +131,32 @@ export const OrbitDock: React.FC<OrbitDockProps> = ({
           audioSynth.playGentleFeedback();
           onOpenAITutor();
         }}
-        className="relative flex flex-col items-center justify-center min-w-[58px] sm:min-w-[66px] py-1.5 px-2.5 rounded-xl bg-gradient-to-r from-[#0F2137] via-[#1B365D] to-[#0F2137] text-[#D4AF37] border border-[#C5A059]/40 shadow-md shadow-blue-950/25 hover:scale-105 active:scale-95 transition-all group cursor-pointer shrink-0"
+        className={`relative flex flex-col items-center justify-center min-w-[56px] sm:min-w-[64px] py-1.5 px-2.5 rounded-xl transition-all group cursor-pointer shrink-0 ${
+          isAITutorActive
+            ? 'bg-gradient-to-r from-[#D4AF37] via-[#FFD700] to-[#C5A059] text-slate-950 font-black shadow-lg shadow-amber-400/25 border border-[#D4AF37] scale-105 ring-2 ring-amber-300/40'
+            : 'bg-[#0A1128] hover:bg-[#1C2541] text-slate-200 hover:text-white border border-slate-800/80 shadow-xs'
+        }`}
         title="Open Fluentic AI Polyglot Tutor"
       >
         <div className="relative flex items-center justify-center">
-          <Sparkles className="w-4 h-4 sm:w-4.5 sm:h-4.5 text-[#D4AF37] fill-[#D4AF37]/30 transition-transform group-hover:scale-110" />
-          <span className="absolute -top-1 -right-1 flex h-2 w-2">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-2 w-2 bg-[#D4AF37]"></span>
-          </span>
+          <Sparkles className={`w-4 h-4 sm:w-4.5 sm:h-4.5 transition-transform group-hover:scale-110 ${
+            isAITutorActive ? 'text-slate-950 fill-slate-950/25' : 'text-[#D4AF37] fill-[#D4AF37]/30'
+          }`} />
+          {isAITutorActive && (
+            <span className="absolute -top-1 -right-1 flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-[#D4AF37]"></span>
+            </span>
+          )}
         </div>
-        <span className="text-[10px] sm:text-[11px] font-black tracking-normal text-[#D4AF37] whitespace-nowrap mt-0.5">
+        <span className={`text-[10px] sm:text-[11px] tracking-normal whitespace-nowrap text-center mt-0.5 ${
+          isAITutorActive ? 'text-slate-950 font-black' : 'text-slate-200 font-bold'
+        }`}>
           AI Tutor
         </span>
       </button>
 
-      {/* Overflow Tabs: Hidden on small screens to prevent jamming */}
+      {/* All Navigation Tabs: Accessible on all viewports with smooth horizontal scroll */}
       {overflowTabs.map((item) => {
         const Icon = item.icon;
         const isActive = activeTab === item.id;
@@ -157,7 +169,7 @@ export const OrbitDock: React.FC<OrbitDockProps> = ({
               audioSynth.playGentleFeedback();
               onSelectTab(item.id);
             }}
-            className={`hidden md:flex flex-col items-center justify-center min-w-[56px] sm:min-w-[62px] py-1.5 px-2 rounded-xl transition-all group cursor-pointer shrink-0 ${
+            className={`flex flex-col items-center justify-center min-w-[56px] sm:min-w-[62px] py-1.5 px-2 rounded-xl transition-all group cursor-pointer shrink-0 ${
               isActive
                 ? 'bg-gradient-to-r from-[#1B365D] to-[#0F2137] text-[#D4AF37] font-black shadow-md shadow-blue-950/20 border border-[#C5A059]/40 scale-102'
                 : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'

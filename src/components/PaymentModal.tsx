@@ -204,7 +204,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
                     required
                     value={cardholderName}
                     onChange={(e) => setCardholderName(e.target.value)}
-                    placeholder="e.g. Jordan Miller"
+                    placeholder="Enter your name"
                     className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs text-slate-900 outline-none focus:border-blue-500"
                   />
                 </div>

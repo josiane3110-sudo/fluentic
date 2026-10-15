@@ -225,6 +225,70 @@ export const HomeView: React.FC<HomeViewProps> = ({
         </div>
       </section>
 
+      {/* Daily Duration Target Selector (5m, 10m, 15m, custom) with ZERO Visible Timers */}
+      <section 
+        id="home-duration-target-card"
+        className="rounded-2xl bg-white/95 backdrop-blur-md border border-slate-200 p-3.5 sm:p-4 shadow-xs space-y-2.5"
+      >
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="p-1.5 rounded-lg bg-blue-50 text-blue-600 border border-blue-200">
+              <Clock className="w-4 h-4" />
+            </div>
+            <div>
+              <h3 className="text-xs sm:text-sm font-black text-slate-900 tracking-normal">
+                {isDutch ? 'Dagelijks Leervoornemen' : (user.nativeLanguageCode === 'es' ? 'Meta Diaria de Estudio' : user.nativeLanguageCode === 'fr' ? 'Objectif d\'Étude Quotidien' : user.nativeLanguageCode === 'de' ? 'Tägliches Lernziel' : 'Daily Practice Duration Target')}
+              </h3>
+              <p className="text-[10px] text-slate-500">
+                {isDutch ? 'Geen tikkende timers — leer ontspannen op jouw eigen tempo' : (user.nativeLanguageCode === 'es' ? 'Sin temporizadores estresantes — aprende a tu propio ritmo' : user.nativeLanguageCode === 'fr' ? 'Sans minuteurs stressants — apprenez à votre rythme' : user.nativeLanguageCode === 'de' ? 'Kein Zeitdruck — lerne in deinem eigenen Wohlfühltempo' : 'Zero timer pressure — master language at your own comfortable pace')}
+              </p>
+            </div>
+          </div>
+          <span className="px-2.5 py-1 rounded-full bg-blue-50 text-blue-700 font-bold text-xs border border-blue-200 whitespace-nowrap">
+            {user.dailyGoalMinutes || 15}m / {isDutch ? 'dag' : 'day'}
+          </span>
+        </div>
+
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+          {[
+            { minutes: 5, label: isDutch ? '5 min (Ontspannen)' : '5m (Casual)' },
+            { minutes: 10, label: isDutch ? '10 min (Regulier)' : '10m (Regular)' },
+            { minutes: 15, label: isDutch ? '15 min (Toegewijd)' : '15m (Dedicated)' },
+            { minutes: 30, label: isDutch ? '30 min (Aangepast)' : 'Custom (30m)' },
+          ].map((target) => {
+            const isSelected = (user.dailyGoalMinutes || 15) === target.minutes;
+            return (
+              <button
+                key={target.minutes}
+                type="button"
+                onClick={() => {
+                  audioSynth.playGentleFeedback();
+                  if (onUpdateUser) {
+                    onUpdateUser({
+                      ...user,
+                      dailyGoalMinutes: target.minutes,
+                    });
+                  }
+                  showToast(
+                    isDutch 
+                      ? `🎯 Doel bijgewerkt: ${target.minutes} minuten per dag!` 
+                      : `🎯 Daily goal set to ${target.minutes} min/day!`
+                  );
+                }}
+                className={`py-2 px-2.5 rounded-xl border text-center transition-all cursor-pointer font-bold text-xs flex items-center justify-center gap-1.5 ${
+                  isSelected
+                    ? 'bg-gradient-to-r from-[#1B365D] to-[#0F2137] text-[#D4AF37] border-[#C5A059]/50 shadow-xs ring-1 ring-[#C5A059]/30'
+                    : 'bg-slate-50 hover:bg-slate-100 text-slate-700 border-slate-200'
+                }`}
+              >
+                {isSelected && <Check className="w-3.5 h-3.5 text-[#D4AF37]" />}
+                <span>{target.label}</span>
+              </button>
+            );
+          })}
+        </div>
+      </section>
+
       {/* Compact 2-Col Dashboard Row (Daily Quests + Streak Shield) */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4">
         

@@ -83,15 +83,81 @@ export class PlacementAssessmentEngine {
       };
     });
 
+    // Programmatically scramble multiple-choice answer positions (A, B, C, D) using a true randomization/shuffle
+    // Guarantees correct answers are distributed across all positions and never default to A or B
+    const scrambledQuestions = this.scrambleQuestionOptions(normalizedQuestions);
+
     const testVariant: PlacementTestVariant = {
       language: targetLanguageName,
       languageCode: targetLanguageCode,
       variant,
-      questions: normalizedQuestions
+      questions: scrambledQuestions
     };
 
     this.synchronousTestCache.set(cacheKey, testVariant);
     return testVariant;
+  }
+
+  public static clearTestCache(): void {
+    this.synchronousTestCache.clear();
+  }
+
+  /**
+   * True Fisher-Yates randomization of multiple-choice positions with even distribution across A, B, C, D
+   */
+  public static scrambleQuestionOptions(questions: PlacementTestQuestion[]): PlacementTestQuestion[] {
+    const keys: ('A' | 'B' | 'C' | 'D')[] = ['A', 'B', 'C', 'D'];
+    
+    // Balanced target positions across 10 questions ensuring non-skewed distribution across C, D, B, A
+    const targetKeyDistribution: ('A' | 'B' | 'C' | 'D')[] = ['C', 'D', 'B', 'A', 'C', 'D', 'A', 'B', 'D', 'C'];
+    
+    // True shuffle of the distribution targets
+    for (let i = targetKeyDistribution.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [targetKeyDistribution[i], targetKeyDistribution[j]] = [targetKeyDistribution[j], targetKeyDistribution[i]];
+    }
+
+    return questions.map((q, qIndex) => {
+      // Locate the authentic correct option
+      const originalCorrect = q.options.find((opt) => opt.key === q.correct_key) || q.options[0];
+      const distractors = q.options.filter((opt) => opt !== originalCorrect);
+
+      // Shuffle distractors
+      for (let i = distractors.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [distractors[i], distractors[j]] = [distractors[j], distractors[i]];
+      }
+
+      // Assign the target correct key from the balanced distribution
+      const targetCorrectKey = targetKeyDistribution[qIndex % targetKeyDistribution.length];
+      const targetCorrectIndex = keys.indexOf(targetCorrectKey);
+
+      // Reassemble options with refreshed keys
+      const shuffledOptions: PlacementQuestionOption[] = [];
+      let distractorIdx = 0;
+
+      for (let i = 0; i < 4; i++) {
+        const key = keys[i];
+        if (i === targetCorrectIndex) {
+          shuffledOptions.push({
+            ...originalCorrect,
+            key,
+          });
+        } else {
+          const dist = distractors[distractorIdx++] || originalCorrect;
+          shuffledOptions.push({
+            ...dist,
+            key,
+          });
+        }
+      }
+
+      return {
+        ...q,
+        options: shuffledOptions,
+        correct_key: targetCorrectKey,
+      };
+    });
   }
 
   private static buildUniversalQuestions(

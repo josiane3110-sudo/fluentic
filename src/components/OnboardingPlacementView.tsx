@@ -13,7 +13,7 @@ import {
   PlacementQuestionOption
 } from '../services/placementTestService';
 import { getI18n } from '../services/localization';
-import { isRtlLanguage, resolveDirection, hasRtlCharacters } from '../services/languageTypography';
+import { isRtlLanguage, resolveDirection, hasRtlCharacters, stripTransliteration } from '../services/languageTypography';
 import { 
   Sparkles, 
   CheckCircle2, 
@@ -57,11 +57,11 @@ export const OnboardingPlacementView: React.FC<OnboardingPlacementViewProps> = (
     }
   }, [initialProfile]);
 
-  // Placement Test State & Dynamic Adaptive Routing
+  // Placement Test State & Dynamic Adaptive Routing (Strict 10-Question Standardized CEFR Assessment)
   const [selectedVariant, setSelectedVariant] = useState<'A' | 'B' | 'C' | 'D'>('A');
-  const [adaptiveStep, setAdaptiveStep] = useState(0); // 0 to 7 (8 adaptive questions)
-  const TOTAL_ADAPTIVE_QUESTIONS = 8;
-  const [activeTier, setActiveTier] = useState<CefrLevel>('A2'); // Standard adaptive entry point
+  const [adaptiveStep, setAdaptiveStep] = useState(0); // 0 to 9 (10 questions across A1-C2)
+  const TOTAL_ADAPTIVE_QUESTIONS = 10;
+  const [activeTier, setActiveTier] = useState<CefrLevel>('A1');
   const [selectedOptionKey, setSelectedOptionKey] = useState<'A' | 'B' | 'C' | 'D' | null>(null);
   const [isAnswerChecked, setIsAnswerChecked] = useState(false);
   const [score, setScore] = useState(0);
@@ -71,6 +71,7 @@ export const OnboardingPlacementView: React.FC<OnboardingPlacementViewProps> = (
   const [officialScoreText, setOfficialScoreText] = useState('');
   const [answeredQuestionIds, setAnsweredQuestionIds] = useState<number[]>([]);
   const [tierPerformance, setTierPerformance] = useState<{ level: CefrLevel; correct: boolean }[]>([]);
+  const [testQuestions, setTestQuestions] = useState<PlacementTestQuestion[]>([]);
 
   // Localized dictionary based on chosen native language
   const i18n = getI18n(nativeLanguageCode);
@@ -87,42 +88,39 @@ export const OnboardingPlacementView: React.FC<OnboardingPlacementViewProps> = (
     return `${lang.name} • ${lang.nativeName}`;
   };
 
-  // Grouped questions by CEFR tier for dynamic adaptive routing
-  const adaptiveBank = PlacementAssessmentEngine.getAdaptivePlacementBank(
-    targetLanguage.code,
-    targetLanguage.name,
-    nativeLanguageCode,
-    selectedVariant
-  );
-
-  // Pick next question from active tier that hasn't been asked yet
-  const getAdaptiveQuestionForTier = (tier: CefrLevel): PlacementTestQuestion => {
-    const questionsInTier = adaptiveBank[tier] || [];
-    const available = questionsInTier.filter((q) => !answeredQuestionIds.includes(q.id));
-    if (available.length > 0) {
-      return available[0];
-    }
-    // Fallback: pick any unused question across adjacent tiers
-    const allQuestions = PlacementAssessmentEngine.getPlacementTest(
+  // Stable retrieval of authentic, scrambled placement questions
+  const getLoadedQuestions = React.useCallback((variant: 'A' | 'B' | 'C' | 'D' = selectedVariant) => {
+    const test = PlacementAssessmentEngine.getPlacementTest(
       targetLanguage.code,
       targetLanguage.name,
-      selectedVariant,
+      variant,
       nativeLanguageCode
-    ).questions;
-    const unused = allQuestions.filter((q) => !answeredQuestionIds.includes(q.id));
-    return unused[0] || allQuestions[0];
-  };
+    );
+    return test.questions;
+  }, [targetLanguage.code, targetLanguage.name, selectedVariant, nativeLanguageCode]);
 
-  const currentQuestion = getAdaptiveQuestionForTier(activeTier);
+  React.useEffect(() => {
+    setTestQuestions(getLoadedQuestions(selectedVariant));
+  }, [getLoadedQuestions, selectedVariant]);
 
-  // Step 1 -> Step 2: Start the Adaptive Placement Test
+  const currentQuestion = testQuestions[adaptiveStep] || getLoadedQuestions()[adaptiveStep] || getLoadedQuestions()[0];
+
+  // Step 1 -> Step 2: Start the 10-Question Standardized Placement Test
   const handleStartPlacementTest = () => {
     if (!name.trim()) {
       setName(nativeLanguageCode === 'nl' ? 'Taalstudent' : 'Polyglot Explorer');
     }
     audioSynth.playSuccessChime();
+    PlacementAssessmentEngine.clearTestCache();
+    const fresh = PlacementAssessmentEngine.getPlacementTest(
+      targetLanguage.code,
+      targetLanguage.name,
+      selectedVariant,
+      nativeLanguageCode
+    ).questions;
+    setTestQuestions(fresh);
     setAdaptiveStep(0);
-    setActiveTier('A2');
+    setActiveTier('A1');
     setAnsweredQuestionIds([]);
     setTierPerformance([]);
     setSelectedOptionKey(null);
@@ -386,7 +384,7 @@ export const OnboardingPlacementView: React.FC<OnboardingPlacementViewProps> = (
                   type="text"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  placeholder={nativeLanguageCode === 'nl' ? 'Bijv. Jan, Sophie of Polyglot' : 'e.g. Alex'}
+                  placeholder={nativeLanguageCode === 'nl' ? 'Vul je naam in' : 'Enter your name'}
                   className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-300 focus:border-blue-600 focus:bg-white text-slate-900 text-sm font-semibold outline-none transition-all shadow-inner"
                 />
               </div>
@@ -625,7 +623,7 @@ export const OnboardingPlacementView: React.FC<OnboardingPlacementViewProps> = (
                       resolveDirection(currentQuestion.prompt || currentQuestion.prompt_native, targetLanguage.code) === 'rtl' ? 'text-right font-arabic' : 'text-left'
                     }`}
                   >
-                    {currentQuestion.prompt || currentQuestion.prompt_native}
+                    {stripTransliteration(currentQuestion.prompt || currentQuestion.prompt_native)}
                   </p>
                 </div>
 
@@ -702,7 +700,7 @@ export const OnboardingPlacementView: React.FC<OnboardingPlacementViewProps> = (
                           resolveDirection(optionText, targetLanguage.code) === 'rtl' ? 'text-right font-arabic' : 'text-left'
                         }`}
                       >
-                        {optionText}
+                        {stripTransliteration(optionText)}
                       </div>
                     </button>
                   );

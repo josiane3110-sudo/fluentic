@@ -68,8 +68,9 @@ export function getDirectionProps(text?: string, langCode?: string) {
 export function stripTransliteration(text: string): string {
   if (!text) return '';
   return text
-    // Remove parentheses that contain Latin letters / diacritics / romanization tokens
-    .replace(/\s*\([A-Za-z0-9āīūḍṣṭẓʿʾēōáéíóúàèìòùâêîôûäëïöüñçß\s_—',.\-?!/:;]+\)/g, '')
-    // Remove trailing / leading excess spaces
+    // Remove any parenthesis containing Latin letters / diacritics / romanization tokens, along with optional trailing punctuation
+    .replace(/\s*\([^)]*[A-Za-zāīūḍṣṭẓʿʾēōáéíóúàèìòùâêîôûäëïöüñçß][^)]*\)[.\s]*/g, ' ')
+    // Normalize spaces and trim
+    .replace(/\s{2,}/g, ' ')
     .trim();
 }

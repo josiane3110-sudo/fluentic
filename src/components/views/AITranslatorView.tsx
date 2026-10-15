@@ -331,7 +331,7 @@ export const AITranslatorView: React.FC<AITranslatorViewProps> = ({
     langCodeHint?: string
   ) => {
     try {
-      const code = langCodeHint && langCodeHint !== 'auto' ? langCodeHint : 'en';
+      const code = langCodeHint && langCodeHint !== 'auto' ? langCodeHint : (activeLanguage?.code || 'es');
       const started = await speechDetector.startListening({
         langCode: code,
         onTranscript: (finalTranscript) => {
