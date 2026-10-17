@@ -15,6 +15,7 @@ import {
   Zap
 } from 'lucide-react';
 import { Language, CefrLevel, UserProfile } from '../types';
+import { WORLD_LANGUAGES } from '../data/languages';
 import { audioSynth } from '../services/audioSynthesizer';
 import { getBcp47Locale } from '../services/speechDetectionService';
 import { FluenticLogo } from './FluenticLogo';
@@ -87,7 +88,7 @@ export const AITutorModal: React.FC<AITutorModalProps> = ({
     const SpeechRecognition =
       (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
     if (!SpeechRecognition) {
-      alert('Speech recognition is not supported in this browser environment.');
+      console.warn('Speech recognition is not supported in this browser environment.');
       return;
     }
 
@@ -153,6 +154,9 @@ export const AITutorModal: React.FC<AITutorModalProps> = ({
     setIsLoading(true);
 
     try {
+      const nativeLangObj = WORLD_LANGUAGES.find((l) => l.code === user.nativeLanguageCode);
+      const nativeLanguageName = nativeLangObj?.name || (user.nativeLanguageCode === 'nl' ? 'Dutch' : 'English');
+
       const res = await fetch('/api/gemini/ai-tutor', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -160,7 +164,7 @@ export const AITutorModal: React.FC<AITutorModalProps> = ({
           userMessage: text,
           targetLanguage: activeLanguage.name,
           userLevel: activeCefr,
-          nativeLanguage: user.nativeLanguageCode === 'nl' ? 'Dutch' : 'English',
+          nativeLanguage: nativeLanguageName,
           context: `User learning ${activeLanguage.name}, CEFR ${activeCefr}`,
         }),
       });

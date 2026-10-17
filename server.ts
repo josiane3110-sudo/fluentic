@@ -590,34 +590,34 @@ Learner's Native Language: ${nativeLanguage || 'English'}
 Conversation Context: "${context || 'Interactive tutoring session'}"
 
 PEDAGOGICAL DIRECTIVES:
-1. Deliver master-tier linguistic clarity: explain "why" the language works this way using accessible comparative linguistics (contrasting with ${nativeLanguage || 'English'}).
-2. Always supply authentic, idiomatic phrasing rather than robotic textbook translations.
+1. Deliver master-tier linguistic clarity: explain "why" the language works this way using accessible comparative linguistics. ALL explanations, grammar notes, translations, and mnemonics MUST be written exclusively in the learner's native language (${nativeLanguage || 'English'}). Zero English leakage if native language is not English.
+2. Always supply authentic, idiomatic phrasing in ${targetLanguage || 'the target language'} using authentic native script.
 3. If the user asks a grammar rule, give:
-   - Direct immediate answer with rule of thumb.
+   - Direct immediate answer with rule of thumb in ${nativeLanguage || 'English'}.
    - Morphological breakdown (root, tense, gender/case agreement).
-   - An intuitive mnemonic or mental image.
-   - 2 real-world native conversational examples.
+   - An intuitive mnemonic or mental image in ${nativeLanguage || 'English'}.
+   - 2 real-world native conversational examples in ${targetLanguage} with ${nativeLanguage || 'English'} translations.
    - The single most common trap/pitfall learners fall into and how to avoid it.
 4. If the user writes or speaks in the target language:
    - Celebrate communicative intent.
    - Gently refine phrasing to sound 100% natural, colloquial, or professional.
-5. Provide 3 interactive, thought-provoking follow-up prompts to keep the learner practicing.
+5. Provide 3 interactive, thought-provoking follow-up prompts to keep the learner practicing in ${nativeLanguage || 'English'}.
 
 Format your response STRICTLY as a valid JSON object matching:
 {
-  "reply": "Masterful, warm, concise yet rich pedagogical explanation.",
-  "targetLanguageSnippet": "Exemplary phrase or natural expression in ${targetLanguage || 'the target language'}",
+  "reply": "Masterful, warm, concise yet rich pedagogical explanation written entirely in ${nativeLanguage || 'English'}.",
+  "targetLanguageSnippet": "Exemplary phrase or natural expression in ${targetLanguage || 'the target language'} (native script)",
   "phoneticGuide": "IPA transcription and syllable stress (e.g., [ˈbwenos ˈdi.as])",
-  "englishTranslation": "Natural English translation (+ literal breakdown if idiomatic)",
-  "grammarAnatomy": "Morphosyntactic analysis (e.g., subjunctive trigger, reflexive pronoun, dative agreement)",
-  "mnemonic": "Memorable trick, memory palace association, or visual analogy",
+  "englishTranslation": "Natural translation in ${nativeLanguage || 'English'} (+ literal breakdown if idiomatic)",
+  "grammarAnatomy": "Morphosyntactic analysis in ${nativeLanguage || 'English'} (e.g., subjunctive trigger, reflexive pronoun, case agreement)",
+  "mnemonic": "Memorable trick or visual analogy in ${nativeLanguage || 'English'}",
   "realWorldExamples": [
-    {"target": "Native dialogue example 1", "translation": "English translation 1"},
-    {"target": "Native dialogue example 2", "translation": "English translation 2"}
+    {"target": "Native dialogue example 1 in ${targetLanguage}", "translation": "Translation in ${nativeLanguage || 'English'} 1"},
+    {"target": "Native dialogue example 2 in ${targetLanguage}", "translation": "Translation in ${nativeLanguage || 'English'} 2"}
   ],
-  "commonMistakes": "Key error learners make and the native perspective",
-  "quickTips": ["Actionable golden rule 1", "Actionable golden rule 2"],
-  "suggestedFollowUps": ["Follow-up practice query 1", "Follow-up practice query 2", "Follow-up practice query 3"]
+  "commonMistakes": "Key error learners make and the native perspective in ${nativeLanguage || 'English'}",
+  "quickTips": ["Actionable golden rule 1 in ${nativeLanguage || 'English'}", "Actionable golden rule 2 in ${nativeLanguage || 'English'}"],
+  "suggestedFollowUps": ["Follow-up practice query 1 in ${nativeLanguage || 'English'}", "Follow-up practice query 2", "Follow-up practice query 3"]
 }`;
 
       const response = await generateContentWithFallback(ai, {
@@ -1100,47 +1100,70 @@ Format strictly as JSON:
 
       const trimmedText = text.trim();
       const isAuto = !sourceLanguage || sourceLanguage.toLowerCase() === "auto" || sourceLanguage.toLowerCase() === "auto-detect" || detectSource;
-      const srcLang = isAuto ? "auto-detected language" : sourceLanguage;
+      const srcLang = isAuto ? "auto-detected" : sourceLanguage;
       const tgtLang = targetLanguage || "English";
 
       let translatedText = "";
       let detectedSourceLanguage: string | undefined = undefined;
 
-      // Ultra-fast instant translation using Gemini (sub-second to 1.5s response)
+      // Ultra-fast sub-second neural translation using Gemini with strict application/json
       const ai = getGeminiClient();
       if (ai) {
         try {
-          const sysPrompt = isAuto
-            ? `You are a lightning-fast, ultra-accurate translation engine (speed: sub-second).
-Detect the input language and translate directly to ${tgtLang}.
-OUTPUT FORMAT: Return JSON strictly without markdown formatting:
-{"detectedSource":"<Detected Language>","translation":"<Pure accurate ${tgtLang} translation>"}`
-            : `You are a lightning-fast real-time translator (sub-second speed).
-Translate directly from ${srcLang} to ${tgtLang}.
-Output ONLY pure ${tgtLang} words. Strictly zero words of other languages. No quotes, intro, or commentary.`;
+          const sysPrompt = `You are a high-speed, sub-second neural translation engine.
+Translate the input into ${tgtLang}.
+INPUT SOURCE LANGUAGE: ${srcLang}.
+STRICT OUTPUT REQUIREMENT:
+Return valid JSON matching this schema:
+{
+  "translation": "<pure accurate ${tgtLang} text with zero commentary, zero explanations, and zero surrounding quotes>",
+  "detectedSource": "<name of detected source language>"
+}`;
 
           const response = await generateContentWithFallback(ai, {
             contents: trimmedText,
             preferredModel: "gemini-3.8-flash",
             config: {
               systemInstruction: sysPrompt,
+              responseMimeType: "application/json",
               temperature: 0.1,
-              maxOutputTokens: 250,
+              maxOutputTokens: 300,
             },
           });
 
           const rawResult = (response.text || "").trim();
-          if (isAuto && (rawResult.startsWith("{") || rawResult.includes('"translation"'))) {
+          if (rawResult) {
             try {
-              const cleanedJson = rawResult.replace(/```json/g, '').replace(/```/g, '').trim();
+              const cleanedJson = rawResult.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/i, '').trim();
               const parsed = JSON.parse(cleanedJson);
-              translatedText = (parsed.translation || "").trim().replace(/^["']|["']$/g, "");
-              detectedSourceLanguage = parsed.detectedSource;
+              if (parsed.translation || parsed.translatedText) {
+                translatedText = String(parsed.translation || parsed.translatedText || "").trim();
+                detectedSourceLanguage = parsed.detectedSource || parsed.detectedSourceLanguage;
+              }
             } catch {
-              translatedText = rawResult.replace(/^["']|["']$/g, "");
+              // Regex fallback to pull "translation" value safely
+              const match = rawResult.match(/"translation"\s*:\s*"([^"\\]*(?:\\.[^"\\]*)*)"/i);
+              if (match) {
+                translatedText = match[1].replace(/\\"/g, '"').replace(/\\n/g, '\n').trim();
+              }
+              const detMatch = rawResult.match(/"detectedSource"\s*:\s*"([^"\\]*(?:\\.[^"\\]*)*)"/i);
+              if (detMatch) {
+                detectedSourceLanguage = detMatch[1].trim();
+              }
             }
-          } else {
-            translatedText = rawResult.replace(/^["']|["']$/g, "");
+
+            // Secondary cleanup: If translatedText is still raw JSON or empty
+            if (!translatedText || translatedText.startsWith('{')) {
+              const plain = rawResult
+                .replace(/^\{[\s\S]*"translation"\s*:\s*"([^"\\]*(?:\\.[^"\\]*)*)"[\s\S]*\}$/i, '$1')
+                .replace(/^```json\s*/i, '')
+                .replace(/\s*```$/i, '')
+                .replace(/^["']|["']$/g, '')
+                .trim();
+              if (plain && !plain.startsWith('{')) {
+                translatedText = plain;
+              }
+            }
           }
         } catch (geminiErr) {
           console.warn("[Gemini Translate Warning]", geminiErr);
@@ -1160,7 +1183,7 @@ Output ONLY pure ${tgtLang} words. Strictly zero words of other languages. No qu
             body: JSON.stringify({
               model: "openrouter/free",
               messages: [
-                { role: "system", content: `Translate directly to ${tgtLang}. Output only raw translation.` },
+                { role: "system", content: `Translate directly into ${tgtLang}. Output ONLY raw translated text string. No JSON, no markdown, no quotes.` },
                 { role: "user", content: trimmedText },
               ],
               max_tokens: 200,
@@ -1169,7 +1192,18 @@ Output ONLY pure ${tgtLang} words. Strictly zero words of other languages. No qu
           });
           if (orResponse.ok) {
             const orData = await orResponse.json();
-            translatedText = (orData.choices?.[0]?.message?.content || "").trim();
+            const rawContent = (orData.choices?.[0]?.message?.content || "").trim();
+            // Ensure no JSON string from openrouter
+            if (rawContent.startsWith('{') && rawContent.includes('"translation"')) {
+              try {
+                const parsed = JSON.parse(rawContent);
+                translatedText = (parsed.translation || "").trim();
+              } catch {
+                translatedText = rawContent;
+              }
+            } else {
+              translatedText = rawContent;
+            }
           }
         } catch (e) {
           console.warn("[OpenRouter fallback]", e);
@@ -1180,8 +1214,20 @@ Output ONLY pure ${tgtLang} words. Strictly zero words of other languages. No qu
         translatedText = trimmedText;
       }
 
+      // Ensure final safety: never return raw JSON string as translatedText
+      if (translatedText.startsWith('{') && translatedText.includes('"translation"')) {
+        try {
+          const parsed = JSON.parse(translatedText);
+          translatedText = parsed.translation || translatedText;
+          if (parsed.detectedSource) detectedSourceLanguage = parsed.detectedSource;
+        } catch {
+          // ignore
+        }
+      }
+
       res.json({
         translatedText,
+        translation: translatedText,
         detectedSourceLanguage: detectedSourceLanguage || (isAuto ? "Auto-Detected" : undefined),
       });
     } catch (error: any) {

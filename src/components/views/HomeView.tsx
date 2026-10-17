@@ -66,74 +66,71 @@ export const HomeView: React.FC<HomeViewProps> = ({
     }, 2800);
   };
 
-  // Curated achievement milestones
+  // Curated cognitive competency milestones (Zero arcade gamification)
   const achievements: Achievement[] = [
     {
       id: 'first-step',
-      title: isDutch ? 'Eerste Stap' : 'First Step',
+      title: isDutch ? 'Eerste Stap (A1 Fundament)' : 'Foundational Phonics (A1)',
       description: isDutch 
-        ? 'Voltooi je eerste les op het leerpad.' 
-        : 'Complete your first interactive lesson.',
+        ? 'Voltooi je eerste les in schriftmechanica en klankregels.' 
+        : 'Master foundational letterforms and sound rules.',
       icon: Sparkles,
-      color: 'from-blue-500 to-indigo-500',
+      color: 'from-blue-600 to-indigo-600',
       progress: completedLessonsCount >= 1 ? 100 : 0,
       isUnlocked: completedLessonsCount >= 1,
-      rewardXp: 50,
-      rewardGems: 15,
+      rewardXp: 0,
+      rewardGems: 0,
     },
     {
       id: 'streak-ignited',
-      title: isDutch ? 'Reeks Ontstoken' : 'Streak Spark',
+      title: isDutch ? 'Dagelijkse Leerdiscipline' : 'Cognitive Consistency',
       description: isDutch 
-        ? 'Houd een actieve dagelijkse leerreeks vast.' 
-        : 'Maintain an active daily learning streak.',
+        ? 'Houd een actieve dagelijkse leerdiscipline vast.' 
+        : 'Maintain daily spaced immersion for synaptic retention.',
       icon: Flame,
-      color: 'from-orange-500 to-amber-500',
+      color: 'from-orange-500 to-amber-600',
       progress: streak >= 1 ? 100 : 0,
       isUnlocked: streak >= 1,
-      rewardXp: 40,
-      rewardGems: 15,
+      rewardXp: 0,
+      rewardGems: 0,
     },
     {
       id: 'dialogue-master',
-      title: isDutch ? 'Dialoog Meester' : 'Scenario Master',
+      title: isDutch ? 'Spontane Dialoogvaardigheid' : 'Spontaneous Active Recall',
       description: isDutch 
-        ? 'Oefen real-time scenario gesprekken in Dialogue Theatre.' 
-        : 'Practice real-time roleplay dialogues in Dialogue Theatre.',
+        ? 'Oefen real-time scenariogesprekken in Dialogue Theatre.' 
+        : 'Engage in contextual conversational recall.',
       icon: MessageSquare,
-      color: 'from-emerald-500 to-teal-500',
+      color: 'from-emerald-500 to-teal-600',
       progress: Math.min(100, Math.round((completedLessonsCount * 5 / 20) * 100)),
       isUnlocked: completedLessonsCount >= 1,
-      rewardXp: 80,
-      rewardGems: 25,
+      rewardXp: 0,
+      rewardGems: 0,
     },
     {
       id: 'polyglot-pioneer',
-      title: isDutch ? 'ERK Kwalificatie' : 'CEFR Qualified',
+      title: isDutch ? 'Gestandaardiseerde ERK Kwalificatie' : 'Standardized CEFR Assessment',
       description: isDutch 
-        ? 'Kwalificeer je ERK-niveau via de niveautest.' 
-        : 'Complete your standardized CEFR assessment.',
+        ? 'Kwalificeer je ERK-niveau via de 10-vragen niveautest.' 
+        : 'Demonstrate proficiency on the 10-question placement test.',
       icon: Trophy,
-      color: 'from-purple-500 to-indigo-500',
+      color: 'from-purple-600 to-indigo-600',
       progress: user.hasCompletedOnboarding ? 100 : 0,
       isUnlocked: Boolean(user.hasCompletedOnboarding),
-      rewardXp: 120,
-      rewardGems: 30,
+      rewardXp: 0,
+      rewardGems: 0,
     },
   ];
 
-  // Single press handler for achievements
+  // Single press handler for milestones
   const handleSinglePressAchievement = (ach: Achievement) => {
     const isClaimed = claimedAchievements.includes(ach.id);
 
     if (ach.isUnlocked && !isClaimed) {
-      // Claim reward with 1 press!
       audioSynth.playSuccessChime();
       const nextClaimed = [...claimedAchievements, ach.id];
       const updatedUser: UserProfile = {
         ...user,
-        xp: (user.xp || 0) + ach.rewardXp,
-        gems: (user.gems || 0) + ach.rewardGems,
         claimedAchievements: nextClaimed,
       };
 
@@ -143,22 +140,22 @@ export const HomeView: React.FC<HomeViewProps> = ({
 
       showToast(
         isDutch 
-          ? `🎉 ${ach.title} Geclaimd! +${ach.rewardXp} XP, +${ach.rewardGems} 💎`
-          : `🎉 ${ach.title} Claimed! +${ach.rewardXp} XP, +${ach.rewardGems} 💎`
+          ? `✓ ${ach.title}: Competentie geverifieerd!` 
+          : `✓ ${ach.title}: Competency verified!`
       );
     } else if (isClaimed) {
       audioSynth.playGentleFeedback();
       showToast(
         isDutch 
-          ? `✓ ${ach.title} is al geclaimd!`
-          : `✓ ${ach.title} is already claimed!`
+          ? `✓ ${ach.title} is al geverifieerd!` 
+          : `✓ ${ach.title} is already verified!`
       );
     } else {
       audioSynth.playGentleFeedback();
       showToast(
         isDutch 
-          ? `ℹ️ Nog niet ontgrendeld: ${ach.description}`
-          : `ℹ️ Not yet unlocked: ${ach.description}`
+          ? `ℹ️ Nog niet bereikt: ${ach.description}` 
+          : `ℹ️ In progress: ${ach.description}`
       );
     }
   };
@@ -304,7 +301,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
               </h3>
             </div>
             <span className="text-[11px] font-bold text-slate-500">
-              +{gems} 💎 {i18n.gems.toLowerCase()}
+              {isDutch ? 'Dagelijkse Leerdiscipline' : 'Daily Immersion Target'}
             </span>
           </div>
 
@@ -313,27 +310,27 @@ export const HomeView: React.FC<HomeViewProps> = ({
             {[
               {
                 id: 'q1',
-                title: isDutch ? '15 minuten intensief leren' : '15 min practice',
-                progress: 0,
+                title: isDutch ? '15 minuten actieve taalonderdompeling' : '15 min active immersion',
+                progress: Math.min(15, user.totalPracticeMinutes || 0),
                 max: 15,
                 unit: 'min',
-                rewardGems: 5,
+                focusTag: isDutch ? 'Focusdoel' : 'Focus Goal',
               },
               {
                 id: 'q2',
-                title: isDutch ? 'Speaking uitspraakscore (puntuación)' : 'Speaking pronunciation',
+                title: isDutch ? 'Uitspraak- en formantprecisie' : 'Phonetic formant calibration',
                 progress: 0,
                 max: 100,
                 unit: '%',
-                rewardGems: 10,
+                focusTag: isDutch ? 'Fonetiek' : 'Phonetics',
               },
               {
                 id: 'q3',
-                title: isDutch ? '1 Conversatie in Dialogue Theatre' : '1 Dialogue Theatre scenario',
+                title: isDutch ? '1 Scenariogesprek in Dialogue Theatre' : '1 Dialogue Theatre scenario',
                 progress: 0,
                 max: 1,
                 unit: 'scenario',
-                rewardGems: 10,
+                focusTag: isDutch ? 'Dialoog' : 'Active Recall',
               },
             ].map((q) => {
               const isCompleted = q.progress >= q.max;
@@ -365,7 +362,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
                       </span>
                     ) : (
                       <span className="px-2 py-0.5 rounded-lg bg-blue-50 text-blue-700 font-bold text-[10px] border border-blue-200 whitespace-nowrap">
-                        +{q.rewardGems} 💎
+                        {q.focusTag}
                       </span>
                     )}
                   </div>
@@ -375,7 +372,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
           </div>
         </div>
 
-        {/* Right: Streak & Shield Card */}
+        {/* Right: Daily Discipline Card */}
         <div className="rounded-2xl bg-white/95 backdrop-blur-md border border-slate-200 p-3.5 sm:p-4 shadow-xs flex flex-col justify-between space-y-2">
           <div>
             <div className="flex items-center justify-between mb-2">
@@ -385,7 +382,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
                 </div>
                 <div>
                   <h4 className="text-xs sm:text-sm font-black text-slate-900 tracking-normal">
-                    {streak} {isDutch ? 'Dagen Reeks' : 'Day Streak'}
+                    {streak} {isDutch ? 'Dagen Actieve Reeks' : 'Day Consistency'}
                   </h4>
                 </div>
               </div>
@@ -396,8 +393,8 @@ export const HomeView: React.FC<HomeViewProps> = ({
 
             <p className="text-[11px] text-slate-600 leading-snug">
               {isDutch 
-                ? 'Oefen elke dag om je reeks levend te houden en extra edelstenen te verdienen.'
-                : 'Practice every day to keep your learning streak burning and earn bonus gems.'}
+                ? 'Consistente dagelijkse blootstelling versterkt synaptische geheugensporen en voorkomt de vergeetcurve.'
+                : 'Daily spaced exposure cements neural pathways and prevents the Ebbinghaus forgetting curve.'}
             </p>
           </div>
 
@@ -405,58 +402,58 @@ export const HomeView: React.FC<HomeViewProps> = ({
             onClick={() => onNavigate('daily-disciplines')}
             className="w-full py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 text-[11px] font-bold transition-all text-center cursor-pointer"
           >
-            {isDutch ? 'Bekijk Reeks & Doelen' : 'View Goals & Streaks'}
+            {isDutch ? 'Bekijk Leerdiscipline & Doelen' : 'View Consistency & Goals'}
           </button>
         </div>
       </div>
 
-      {/* Interactive Currency & Metrics Purpose Explainer: Tells the user what they are used for */}
+      {/* Pure Pedagogical Architecture & Cognitive Retention Guide */}
       <section 
-        id="home-currency-guide"
+        id="home-cognitive-pedagogy-guide"
         className="rounded-2xl bg-white/95 backdrop-blur-md border border-slate-200 p-4 shadow-xs space-y-3"
       >
         <div className="flex items-center justify-between">
           <h4 className="text-xs sm:text-sm font-black text-slate-900 flex items-center gap-1.5">
-            <HelpCircle className="w-4 h-4 text-blue-600" />
-            <span>{isDutch ? 'Waarvoor worden Gems, Reeksen & XP gebruikt?' : 'What are Gems, Streaks & XP used for?'}</span>
+            <Sparkles className="w-4 h-4 text-blue-600" />
+            <span>{isDutch ? 'Cognitieve Verwervingswetenschap & Leermethode' : 'Cognitive Retention Science & Pure Pedagogy'}</span>
           </h4>
-          <span className="text-[11px] font-bold text-slate-400">Account Guide</span>
+          <span className="text-[11px] font-bold text-slate-400">Pure Methodology</span>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
           <div className="p-3 rounded-xl bg-blue-50/70 border border-blue-100 space-y-1">
             <div className="flex items-center gap-1.5 font-extrabold text-blue-900">
-              <Gem className="w-4 h-4 text-blue-600 fill-blue-600" />
-              <span>💎 Gems ({gems})</span>
+              <Sparkles className="w-4 h-4 text-blue-600" />
+              <span>{isDutch ? '🧠 FSRS Gespreide Herhaling' : '🧠 FSRS Spaced Retention'}</span>
             </div>
             <p className="text-[11px] text-slate-600 leading-relaxed">
-              <strong>{isDutch ? 'Gebruikt voor:' : 'Used for:'}</strong> {isDutch 
-                ? 'Koop Streak Shields (50 💎) om je reeks te beschermen bij afwezigheid, ontgrendel Pro AI-scenario\'s en vraag spraakfeedback aan.'
-                : 'Buy Streak Freeze Shields (50 💎) so you never lose your progress if you miss a day, unlock Pro generative AI dialogues, and access detailed accent surgery.'}
+              <strong>{isDutch ? 'Wetenschappelijk principe:' : 'Cognitive principle:'}</strong> {isDutch 
+                ? 'Actieve herinneringsintervallen afgestemd op de vergeetcurve zorgen voor blijvende verankering in het langetermijngeheugen.'
+                : 'Optimal active recall intervals mathematically calibrated against the forgetting curve for permanent long-term storage.'}
             </p>
           </div>
 
           <div className="p-3 rounded-xl bg-orange-50/70 border border-orange-100 space-y-1">
             <div className="flex items-center gap-1.5 font-extrabold text-orange-900">
               <Flame className="w-4 h-4 text-orange-600 fill-orange-600" />
-              <span>🔥 {isDutch ? 'Dagelijkse Reeks' : 'Day Streak'} ({streak}d)</span>
+              <span>{isDutch ? '🔥 Dagelijkse Onderdompeling' : '🔥 Daily Immersion Discipline'}</span>
             </div>
             <p className="text-[11px] text-slate-600 leading-relaxed">
-              <strong>{isDutch ? 'Gebruikt voor:' : 'Used for:'}</strong> {isDutch
-                ? 'Meet je aaneengesloten dagen van studie. Mijlpalen (7, 14, 30 dagen) belonen je met gratis bonus-edelstenen.'
-                : 'Measures your uninterrupted consecutive practice days. 7, 14, and 30-day milestones award free bonus gems and cement fluency.'}
+              <strong>{isDutch ? 'Neuroplasticiteit:' : 'Neuroplasticity:'}</strong> {isDutch
+                ? 'Korte, frequente micro-sessies bouwen automatische taalreflexen op zonder cognitieve overbelasting of willekeurige gamescores.'
+                : 'Focused daily micro-sessions build native grammatical reflexes and phonological awareness without arcade score anxiety.'}
             </p>
           </div>
 
           <div className="p-3 rounded-xl bg-indigo-50/70 border border-indigo-100 space-y-1">
             <div className="flex items-center gap-1.5 font-extrabold text-indigo-900">
-              <Zap className="w-4 h-4 text-indigo-600" />
-              <span>⭐ {isDutch ? 'Ervaringspunten (XP)' : 'Experience (XP)'} ({user.xp || 0})</span>
+              <Target className="w-4 h-4 text-indigo-600" />
+              <span>{isDutch ? '🏛️ ERK Structurele Opbouw' : '🏛️ CEFR Scaffolding'}</span>
             </div>
             <p className="text-[11px] text-slate-600 leading-relaxed">
-              <strong>{isDutch ? 'Gebruikt voor:' : 'Used for:'}</strong> {isDutch
-                ? 'Verhoogt je algehele taalvaardigheidslevel en kwalificeert je voor hogere ERK-niveaus (A1 t/m C2).'
-                : 'Cumulative language fluency progress. XP unlocks advanced grammar tiers and advances your CEFR qualification level.'}
+              <strong>{isDutch ? 'Curriculumfocus:' : 'Structural focus:'}</strong> {isDutch
+                ? 'Gestructureerde progressie van schriftmechanica (A1) tot formele syntaxis, academisch debat en idioom (C1/C2).'
+                : 'Systematic progression from authentic script mechanics (A1) to complex syntactic registers and debate (C1/C2).'}
             </p>
           </div>
         </div>
@@ -628,8 +625,10 @@ export const HomeView: React.FC<HomeViewProps> = ({
                 </div>
 
                 <div className="mt-2 pt-1.5 border-t border-slate-100 flex items-center justify-between text-[10px] font-bold text-slate-600">
-                  <span>+{ach.rewardXp} XP</span>
-                  <span className="text-blue-600">+{ach.rewardGems} 💎</span>
+                  <span className={ach.progress === 100 ? 'text-emerald-700' : 'text-slate-500'}>
+                    {ach.progress === 100 ? (isDutch ? '✓ Beheerst' : '✓ Mastered') : (isDutch ? 'In Ontwikkeling' : 'In Progress')}
+                  </span>
+                  <span className="text-blue-600">{isDutch ? 'ERK Validatie' : 'CEFR Validated'}</span>
                 </div>
               </button>
             );

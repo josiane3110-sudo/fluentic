@@ -25,11 +25,33 @@ export const DailyDisciplinesView: React.FC<DailyDisciplinesViewProps> = ({
   activeLanguage,
   onToggleShield,
 }) => {
+  const isDutch = (user.nativeLanguageCode || 'nl') === 'nl';
+
   const [rituals, setRituals] = useState([
-    { id: 'r-1', title: 'Complete 1 Path Lesson', xp: 50, completed: false },
-    { id: 'r-2', title: 'Complete 1 Interactive Grammar Drill', xp: 30, completed: false },
-    { id: 'r-3', title: 'Record 1 Phonetic Articulation in Speech Lab', xp: 40, completed: false },
-    { id: 'r-4', title: 'Engage in 1 Generative Roleplay Scenario', xp: 60, completed: false },
+    { 
+      id: 'r-1', 
+      title: isDutch ? 'Voltooi 1 Leerpad-les' : 'Complete 1 Path Lesson', 
+      category: isDutch ? 'Leerpad' : 'Path Scaffolding', 
+      completed: false 
+    },
+    { 
+      id: 'r-2', 
+      title: isDutch ? 'Oefen 1 Grammatica-oefening' : 'Complete 1 Interactive Grammar Drill', 
+      category: isDutch ? 'Grammatica' : 'Syntax Drill', 
+      completed: false 
+    },
+    { 
+      id: 'r-3', 
+      title: isDutch ? 'Neem 1 Spraakopname op in Speech Lab' : 'Record 1 Phonetic Articulation in Speech Lab', 
+      category: isDutch ? 'Fonetiek' : 'Phonetics Lab', 
+      completed: false 
+    },
+    { 
+      id: 'r-4', 
+      title: isDutch ? 'Doe 1 Scenariogesprek in Dialogue Theatre' : 'Engage in 1 Generative Roleplay Scenario', 
+      category: isDutch ? 'Actieve Herinnering' : 'Active Recall', 
+      completed: false 
+    },
   ]);
 
   const handleToggleRitual = (id: string) => {
@@ -121,8 +143,8 @@ export const DailyDisciplinesView: React.FC<DailyDisciplinesViewProps> = ({
                   </span>
                 </div>
 
-                <span className="text-xs font-bold text-amber-600 bg-amber-50 px-2 py-0.5 rounded-md">
-                  +{ritual.xp} XP
+                <span className="text-xs font-bold text-blue-700 bg-blue-50 px-2.5 py-0.5 rounded-lg border border-blue-200">
+                  {ritual.completed ? (isDutch ? '✓ Beheerst' : '✓ Mastered') : ritual.category}
                 </span>
               </div>
             ))}
@@ -135,17 +157,23 @@ export const DailyDisciplinesView: React.FC<DailyDisciplinesViewProps> = ({
             <div className="w-10 h-10 rounded-2xl bg-cyan-50 text-cyan-600 flex items-center justify-center font-bold mb-3">
               <ShieldCheck className="w-5 h-5" />
             </div>
-            <h3 className="font-extrabold text-slate-900 text-base">Streak Freeze Shield</h3>
+            <h3 className="font-extrabold text-slate-900 text-base">
+              {isDutch ? 'Reeksbeschermer' : 'Streak Freeze Shield'}
+            </h3>
             <p className="text-xs text-slate-500 mt-1">
-              Guarantees zero streak loss if you miss an active practice session while traveling.
+              {isDutch 
+                ? 'Behoudt je leervoortgang en synaptische continuïteit wanneer je een dag afwezig bent.'
+                : 'Guarantees zero learning interruption or streak reset when traveling or busy.'}
             </p>
           </div>
 
           <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-3">
             <div className="flex items-center justify-between text-xs font-bold text-slate-700">
-              <span>Shield Protection:</span>
+              <span>{isDutch ? 'Status Bescherming:' : 'Protection Status:'}</span>
               <span className={user.streakProtected ? 'text-emerald-600 font-extrabold' : 'text-slate-400'}>
-                {user.streakProtected ? 'ACTIVE (1 Shield)' : 'INACTIVE'}
+                {user.streakProtected 
+                  ? (isDutch ? 'ACTIEF (Beschermd)' : 'ACTIVE (Protected)') 
+                  : (isDutch ? 'INACTIEF' : 'INACTIVE')}
               </span>
             </div>
 
@@ -157,7 +185,9 @@ export const DailyDisciplinesView: React.FC<DailyDisciplinesViewProps> = ({
                   : 'bg-slate-900 hover:bg-slate-800 text-white'
               }`}
             >
-              {user.streakProtected ? 'Shield Armed' : 'Equip Freeze Shield (50 💎)'}
+              {user.streakProtected 
+                ? (isDutch ? 'Schild Geactiveerd' : 'Shield Armed') 
+                : (isDutch ? 'Activeer Reeksbeschermer' : 'Arm Freeze Shield')}
             </button>
           </div>
         </div>

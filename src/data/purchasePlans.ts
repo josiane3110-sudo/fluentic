@@ -48,7 +48,7 @@ export const SUBSCRIPTION_PLANS: PurchasePlan[] = [
     type: 'subscription',
     duration: '1 Month',
     priceUsd: 4.99,
-    badge: 'Most Popular',
+    badge: 'Flexible Monthly',
     features: [
       'Unlimited AI Scenario Chat turns',
       'Advanced 85% Strict Phonetic Formant Analysis',
@@ -76,7 +76,7 @@ export const SUBSCRIPTION_PLANS: PurchasePlan[] = [
     type: 'subscription',
     duration: '1 Year',
     priceUsd: 39.99,
-    badge: 'Best Value (Save 33%)',
+    badge: 'Most Popular',
     features: [
       'All Pro privileges for a full year',
       'Lifetime Grand Arena leader rank eligibility',

@@ -85,6 +85,7 @@ export const TopHorizonDeck: React.FC<TopHorizonDeckProps> = ({
   const [attemptedLevel, setAttemptedLevel] = useState<CefrLevel>('A2');
 
   const i18n = getI18n(user?.nativeLanguageCode || 'nl');
+  const isDutch = (user?.nativeLanguageCode || 'nl') === 'nl';
   const unlockedLevels = user?.unlockedCefrLevels || ['A1'];
 
   const filteredLanguages = WORLD_LANGUAGES.filter(
@@ -287,20 +288,20 @@ export const TopHorizonDeck: React.FC<TopHorizonDeckProps> = ({
               )}
             </div>
 
-            {/* Gems Counter with Interactive Usage Explanation */}
+            {/* Cognitive Retention & CEFR Structural Mastery Indicator */}
             <div className="relative">
               <button
                 type="button"
-                id="top-deck-gems-pill"
+                id="top-deck-mastery-pill"
                 onClick={() => {
                   setShowGemsInfo(!showGemsInfo);
                   setShowStreakInfo(false);
                 }}
-                className="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 py-1.5 rounded-xl bg-blue-50 hover:bg-blue-100 border border-blue-200 text-blue-700 text-xs font-black shadow-2xs transition-colors cursor-pointer"
-                title="Click to see what Gems are used for"
+                className="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 py-1.5 rounded-xl bg-blue-50 hover:bg-blue-100 border border-blue-200 text-blue-800 text-xs font-black shadow-2xs transition-colors cursor-pointer"
+                title="Cognitive Retention Science & CEFR Structural Mastery"
               >
-                <Gem className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-blue-500 fill-blue-500" />
-                <span>{user?.gems || 0} 💎</span>
+                <Sparkles className="w-3.5 h-3.5 text-blue-600" />
+                <span>{user?.activeCefr || 'A1'} {isDutch ? 'Beheersing' : 'Mastery'}</span>
               </button>
 
               {showGemsInfo && (
@@ -308,10 +309,10 @@ export const TopHorizonDeck: React.FC<TopHorizonDeckProps> = ({
                   className="absolute right-0 mt-2 w-72 p-3 rounded-2xl bg-white border border-blue-200 shadow-xl z-50 text-slate-900 animate-in fade-in zoom-in-95"
                   onClick={(e) => e.stopPropagation()}
                 >
-                  <div className="flex items-center justify-between pb-1.5 border-b border-blue-100 text-xs font-black text-blue-800">
+                  <div className="flex items-center justify-between pb-1.5 border-b border-blue-100 text-xs font-black text-blue-900">
                     <span className="flex items-center gap-1.5">
-                      <Gem className="w-4 h-4 fill-blue-500 text-blue-500" />
-                      Gems Balance ({user?.gems || 0} 💎)
+                      <Sparkles className="w-4 h-4 text-blue-600" />
+                      {isDutch ? 'Cognitieve Verwervingswetenschap' : 'Cognitive Retention Science'}
                     </span>
                     <button
                       onClick={() => setShowGemsInfo(false)}
@@ -321,28 +322,21 @@ export const TopHorizonDeck: React.FC<TopHorizonDeckProps> = ({
                     </button>
                   </div>
                   <p className="text-[11px] text-slate-600 mt-2 leading-relaxed">
-                    <strong>What are Gems used for?</strong> Gems are Fluentic's reward currency earned through lessons and quests:
+                    {isDutch
+                      ? 'Fluentic vervangt willekeurige gamescores door bewezen cognitieve leermethodologie:'
+                      : 'Fluentic eliminates arbitrary arcade scores in favor of cognitive linguistic science:'}
                   </p>
                   <div className="text-[11px] text-slate-600 mt-1.5 space-y-1.5">
                     <div className="p-1.5 rounded-lg bg-blue-50/70 border border-blue-100">
-                      🛡️ <strong>Streak Freeze Shields:</strong> Buy shields (50 💎) so you never lose your practice streak when busy or traveling.
+                      🧠 <strong>{isDutch ? 'FSRS Gespreide Herhaling:' : 'FSRS Spaced Retention:'}</strong> {isDutch ? 'Actieve herinneringsintervallen voor langdurige neuronale opslag.' : 'Optimal active recall intervals to maximize long-term vocabulary retention.'}
                     </div>
                     <div className="p-1.5 rounded-lg bg-indigo-50/70 border border-indigo-100">
-                      🎭 <strong>Generative AI Roleplays:</strong> Access advanced cultural scenarios in Dialogue Theatre.
+                      📚 <strong>{isDutch ? 'ERK Structurele Opbouw:' : 'CEFR Scaffolding:'}</strong> {isDutch ? 'Doelgerichte progressie van klankregels (A1) tot formeel debat (C2).' : 'Graduated linguistic progression from sound mechanics (A1) to formal debate (C2).'}
                     </div>
-                    <div className="p-1.5 rounded-lg bg-amber-50/70 border border-amber-100">
-                      ⚡ <strong>Instant Refills:</strong> Refill practice drills and custom speed challenges in the Pro Studio.
+                    <div className="p-1.5 rounded-lg bg-emerald-50/70 border border-emerald-100">
+                      🎯 <strong>{isDutch ? 'Geen Spelstress:' : 'Zero Fluff & Pure Mastery:'}</strong> {isDutch ? 'Succes wordt gemeten in echt begrip en vloeiende communicatie.' : 'Success measured purely by structural fluency and communicative depth.'}
                     </div>
                   </div>
-                  <button
-                    onClick={() => {
-                      setShowGemsInfo(false);
-                      onOpenProModal();
-                    }}
-                    className="w-full mt-2 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-[11px] font-bold text-center cursor-pointer transition-colors"
-                  >
-                    Open Pro Studio & Plans →
-                  </button>
                 </div>
               )}
             </div>

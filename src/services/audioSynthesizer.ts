@@ -3,6 +3,8 @@
  * Zero external MP3 dependencies. 100% synthesized in-browser.
  */
 
+import { getBcp47Locale } from './speechDetectionService';
+
 declare global {
   interface Window {
     webkitAudioContext?: typeof AudioContext;
@@ -427,17 +429,26 @@ class AudioSynthesizer {
    * Finds the highest quality neural or premium voice for a given language code
    */
   public getBestVoiceForLanguage(langCode: string): SpeechSynthesisVoice | null {
-    const voices = this.getAvailableVoices(langCode);
+    const fullLocale = getBcp47Locale(langCode);
+    const clean = (langCode || 'en').trim().toLowerCase().split(/[-_]/)[0];
+    const voices = this.getAvailableVoices(clean);
     if (!voices.length) return null;
 
-    // Prioritize neural, natural, premium, and Google voices
+    // 1. Prioritize neural, natural, premium, Google, or Siri voices matching exact full locale
+    const neuralLocaleMatch = voices.find((v) => 
+      v.lang.toLowerCase() === fullLocale.toLowerCase() &&
+      /neural|natural|premium|online|google|enhanced|siri/i.test(v.name)
+    );
+    if (neuralLocaleMatch) return neuralLocaleMatch;
+
+    // 2. Prioritize neural, natural, premium voices matching language prefix
     const neuralPriority = voices.find((v) => 
       /neural|natural|premium|online|google|enhanced|siri/i.test(v.name)
     );
     if (neuralPriority) return neuralPriority;
 
-    // Exact regional match
-    const exactMatch = voices.find((v) => v.lang.toLowerCase() === langCode.toLowerCase());
+    // 3. Exact full regional match
+    const exactMatch = voices.find((v) => v.lang.toLowerCase() === fullLocale.toLowerCase());
     if (exactMatch) return exactMatch;
 
     return voices[0] || null;
@@ -466,7 +477,8 @@ class AudioSynthesizer {
 
       window.speechSynthesis.cancel();
       const utterance = new SpeechSynthesisUtterance(text);
-      utterance.lang = langCode;
+      const bcp47 = getBcp47Locale(langCode);
+      utterance.lang = bcp47;
 
       // Apply custom voice persona or neural acoustic tuning
       if (this.customPersona && this.customPersona.enabled) {

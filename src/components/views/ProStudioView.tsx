@@ -339,20 +339,20 @@ export const ProStudioView: React.FC<ProStudioViewProps> = ({
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {SUBSCRIPTION_PLANS.map((plan) => {
                 const isCurrentActive = user.isPro;
-                const isProMonthly = plan.id === 'pro-monthly';
+                const isMostPopular = plan.id === 'pro-1year';
                 return (
                   <div
                     key={plan.id}
-                    className={`p-6 rounded-3xl border flex flex-col justify-between transition-all relative shadow-md hover:shadow-lg ${
-                      isProMonthly
-                        ? 'bg-gradient-to-b from-amber-50/60 to-white border-[#D4AF37] ring-2 ring-[#D4AF37]/50 scale-[1.01]'
+                    className={`p-6 rounded-3xl border flex flex-col justify-between transition-all relative shadow-md hover:shadow-lg h-full min-h-[420px] ${
+                      isMostPopular
+                        ? 'bg-gradient-to-b from-amber-50/70 via-white to-amber-50/30 border-[#D4AF37] ring-2 ring-[#D4AF37]/60 shadow-xl shadow-amber-500/15'
                         : 'bg-gradient-to-b from-blue-50/70 to-white border-[#C5A059]/40 ring-1 ring-[#C5A059]/20'
                     }`}
                   >
                     {plan.badge && (
                       <div className={`absolute -top-3 right-5 px-3 py-0.5 rounded-full font-black text-[10px] uppercase tracking-wide shadow-xs border ${
-                        isProMonthly
-                          ? 'bg-gradient-to-r from-[#D4AF37] to-[#FFD700] text-slate-950 border-[#D4AF37]'
+                        isMostPopular
+                          ? 'bg-gradient-to-r from-[#D4AF37] via-[#FFD700] to-[#C5A059] text-slate-950 border-[#D4AF37] ring-2 ring-amber-300/40'
                           : 'bg-[#1B365D] text-[#D4AF37] border-[#C5A059]/40'
                       }`}>
                         {plan.badge}
@@ -373,7 +373,7 @@ export const ProStudioView: React.FC<ProStudioViewProps> = ({
                       <div className="space-y-2 pt-2 border-t border-slate-100 text-xs text-slate-700">
                         {plan.features.map((f, idx) => (
                           <div key={idx} className="flex items-start gap-2">
-                            <Check className={`w-4 h-4 shrink-0 mt-0.5 ${isProMonthly ? 'text-[#D4AF37]' : 'text-[#C5A059]'}`} />
+                            <Check className={`w-4 h-4 shrink-0 mt-0.5 ${isMostPopular ? 'text-[#D4AF37]' : 'text-[#C5A059]'}`} />
                             <span className="leading-snug">{f}</span>
                           </div>
                         ))}
@@ -387,8 +387,8 @@ export const ProStudioView: React.FC<ProStudioViewProps> = ({
                         className={`w-full py-3 rounded-2xl font-black text-xs shadow-sm transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
                           isCurrentActive
                             ? 'bg-slate-100 text-slate-700 hover:bg-slate-200'
-                            : isProMonthly
-                            ? 'bg-gradient-to-r from-[#D4AF37] to-[#C5A059] text-slate-950 hover:brightness-105 border border-[#D4AF37] hover:scale-101 active:scale-99'
+                            : isMostPopular
+                            ? 'bg-gradient-to-r from-[#D4AF37] via-[#FFD700] to-[#C5A059] text-slate-950 hover:brightness-105 border border-[#D4AF37] hover:scale-101 active:scale-99 ring-1 ring-amber-300/50'
                             : 'bg-gradient-to-r from-[#1B365D] to-[#0F2137] text-[#D4AF37] hover:bg-[#0F2137] border border-[#C5A059]/40 hover:scale-101 active:scale-99'
                         }`}
                       >

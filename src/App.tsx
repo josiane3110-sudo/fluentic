@@ -356,7 +356,7 @@ export function App() {
 
         {activeTab === 'syllabus' && (
           <DuolingoPathView
-            user={user}
+            user={{ ...user, activeCefr }}
             activeLanguage={activeLanguage}
             onSelectNode={(node) => setActiveLessonNode(node)}
             onClaimMilestone={(rewardGems) => {

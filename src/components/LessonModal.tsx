@@ -36,18 +36,61 @@ export const LessonModal: React.FC<LessonModalProps> = ({
   onComplete,
 }) => {
   // STAGES:
-  // 1: 'concept'  - Concept & Teaching Card (Native script, audio, translations, context)
-  // 2: 'practice' - Interactive exercises (word bank, matching, speech, fill-blank)
-  // 3: 'complete' - Reinforcement & Progress Tracking (Mastery Badges & Streak points)
-  const [stage, setStage] = useState<'concept' | 'practice' | 'complete'>('concept');
+  // 1: 'concept'    - Concept & Teaching Card (Native script, audio, translations, context)
+  // 2: 'practice'   - Interactive exercises (word bank, matching, speech, fill-blank)
+  // 3: 'assessment' - Mandatory Module Assessment Mini-Quiz (+20 Gems bonus)
+  // 4: 'complete'   - Reinforcement & Progress Tracking (Mastery Badges & Streak points)
+  const [stage, setStage] = useState<'concept' | 'practice' | 'assessment' | 'complete'>('concept');
   const [currentExIndex, setCurrentExIndex] = useState<number>(0);
   const [reviewedConcepts, setReviewedConcepts] = useState<Record<number, boolean>>({});
 
-  // Flexible Duration Selector (5m, 10m, 15m, or Custom)
+  // Flexible Duration Selector (5m, 10m, 15m, or Custom) - ZERO visible running timers
   const [sessionMinutes, setSessionMinutes] = useState<number>(10);
   const [isCustomDurationModalOpen, setIsCustomDurationModalOpen] = useState<boolean>(false);
   const [customInputMinutes, setCustomInputMinutes] = useState<string>('20');
   const [secondsRemaining, setSecondsRemaining] = useState<number>(10 * 60);
+
+  // Mandatory End-of-Lesson Assessment Mini-Quiz (+20 Gems bonus)
+  const [assessmentSelectedKey, setAssessmentSelectedKey] = useState<'A' | 'B' | 'C' | 'D' | null>(null);
+  const [assessmentChecked, setAssessmentChecked] = useState(false);
+  const [assessmentCorrect, setAssessmentCorrect] = useState(false);
+  const [quizGemsEarned, setQuizGemsEarned] = useState(0);
+
+  // Assessment question with Fisher-Yates scrambled options (never default to A or B)
+  const [assessmentQuestion] = useState(() => {
+    const keys: ('A' | 'B' | 'C' | 'D')[] = ['A', 'B', 'C', 'D'];
+    const targetPhrase = stripTransliteration(node.exercises[0]?.targetPhrase || node.nativeTitle || node.title);
+    const translation = node.exercises[0]?.translation || node.description;
+
+    const correctText = targetPhrase;
+    const distractors = [
+      activeLanguage.sampleGreeting || 'Hello',
+      'Universal idiomatic expression',
+      'Secondary conversational structure'
+    ].map((d) => stripTransliteration(d));
+
+    const allOpts = [correctText, ...distractors];
+    // True Fisher-Yates array shuffle
+    for (let i = allOpts.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [allOpts[i], allOpts[j]] = [allOpts[j], allOpts[i]];
+    }
+
+    // Strictly ensure correct answer key does not default to A or B
+    let correctIdx = allOpts.indexOf(correctText);
+    if (correctIdx === 0 || correctIdx === 1) {
+      const swapWith = Math.random() < 0.5 ? 2 : 3;
+      [allOpts[correctIdx], allOpts[swapWith]] = [allOpts[swapWith], allOpts[correctIdx]];
+      correctIdx = swapWith;
+    }
+
+    return {
+      prompt: `Assessment: Which expression correctly matches "${translation}" in authentic ${activeLanguage.name}?`,
+      correctKey: keys[correctIdx],
+      options: allOpts.map((text, idx) => ({ key: keys[idx], text })),
+      explanation: `"${targetPhrase}" is the authentic CEFR ${node.cefr || 'A1'} structure for "${translation}".`
+    };
+  });
 
   // Practice inputs
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
@@ -213,7 +256,7 @@ export const LessonModal: React.FC<LessonModalProps> = ({
   // Step 2: Check practice answer
   const handleCheckAnswer = () => {
     if (isAnswerChecked) {
-      // Advance to next exercise or finalize
+      // Advance to next exercise or move to mandatory module assessment
       if (currentExIndex < node.exercises.length - 1) {
         const nextIdx = currentExIndex + 1;
         setCurrentExIndex(nextIdx);
@@ -223,8 +266,9 @@ export const LessonModal: React.FC<LessonModalProps> = ({
           setStage('practice');
         }
       } else {
-        setStage('complete');
-        audioSynth.playCrownFanfare();
+        // Mandatory end-of-module mini-quiz assessment
+        setStage('assessment');
+        audioSynth.playGentleFeedback();
       }
       return;
     }
@@ -261,23 +305,37 @@ export const LessonModal: React.FC<LessonModalProps> = ({
     }
   };
 
-  // Finalize Lesson & Award Mastery Badges + Streak Points
-  const handleFinish = () => {
-    onComplete(node.xpReward, node.gemReward);
-    onClose();
+  // Check mandatory assessment mini-quiz
+  const handleCheckAssessment = () => {
+    if (!assessmentSelectedKey || assessmentChecked) return;
+    const isAnsCorrect = assessmentSelectedKey === assessmentQuestion.correctKey;
+    setAssessmentChecked(true);
+    setAssessmentCorrect(isAnsCorrect);
+
+    if (isAnsCorrect) {
+      audioSynth.playTriumphChime();
+      setQuizGemsEarned(20);
+    } else {
+      audioSynth.playGentleFeedback();
+    }
   };
 
-  const formatTimer = (secs: number) => {
-    const m = Math.floor(secs / 60);
-    const s = secs % 60;
-    return `${m}:${s < 10 ? '0' : ''}${s}`;
+  const handleFinishAssessment = () => {
+    setStage('complete');
+    audioSynth.playCrownFanfare();
+  };
+
+  // Finalize Lesson & Award Mastery Badges + Regular Gems + Assessment Bonus Gems
+  const handleFinish = () => {
+    onComplete(node.xpReward, node.gemReward + quizGemsEarned);
+    onClose();
   };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-slate-900/50 backdrop-blur-md animate-in fade-in duration-200">
       <div className="relative w-full max-w-2xl bg-gradient-to-b from-[#f8fafd] via-white to-[#f0f4f9] rounded-3xl shadow-2xl overflow-hidden border border-slate-200 flex flex-col max-h-[92vh]">
         
-        {/* Navigation & Duration Bar */}
+        {/* Navigation & Target Duration Bar (ZERO visible countdown timer) */}
         <div className="px-5 py-3.5 border-b border-slate-100 flex items-center justify-between bg-slate-50/80 gap-3">
           <div className="flex items-center gap-2">
             <span className="px-2.5 py-1 rounded-xl bg-[#0F2137] text-[#D4AF37] text-[11px] font-black uppercase tracking-wider border border-[#C5A059]/30">
@@ -288,7 +346,7 @@ export const LessonModal: React.FC<LessonModalProps> = ({
             </span>
           </div>
 
-          {/* Flexible Duration Selector */}
+          {/* Session Target Duration Selector (Zero running timer pressure) */}
           <div className="flex items-center gap-1.5 bg-white border border-slate-200 rounded-xl p-1 shadow-2xs">
             <Clock className="w-3.5 h-3.5 text-[#C5A059] ml-1 shrink-0" />
             {[5, 10, 15].map((mins) => (
@@ -316,9 +374,6 @@ export const LessonModal: React.FC<LessonModalProps> = ({
             >
               {![5, 10, 15].includes(sessionMinutes) ? `${sessionMinutes}m` : 'Custom'}
             </button>
-            <span className="text-[10px] font-mono text-slate-400 pl-1 pr-1.5 border-l border-slate-200">
-              {formatTimer(secondsRemaining)}
-            </span>
           </div>
 
           <button
@@ -642,7 +697,138 @@ export const LessonModal: React.FC<LessonModalProps> = ({
           )}
 
           {/* ============================================================ */}
-          {/* STEP 3: IMMEDIATE REINFORCEMENT & PROGRESS TRACKING          */}
+          {/* MANDATORY END-OF-MODULE ASSESSMENT MINI-QUIZ (+20 GEMS BONUS) */}
+          {/* ============================================================ */}
+          {stage === 'assessment' && (
+            <div className="space-y-5 animate-in fade-in duration-200">
+              <div className="p-4 rounded-2xl bg-gradient-to-r from-amber-500/15 via-[#1B365D]/10 to-amber-500/15 border border-[#D4AF37]/50 flex items-center justify-between gap-3">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#D4AF37] to-[#C5A059] text-slate-950 flex items-center justify-center font-black shadow-xs">
+                    <Award className="w-5 h-5 text-slate-950" />
+                  </div>
+                  <div>
+                    <h3 className="text-xs sm:text-sm font-black text-slate-900">
+                      Mandatory End-of-Module Mini-Quiz
+                    </h3>
+                    <p className="text-[11px] text-slate-600">
+                      Demonstrate CEFR mastery of <strong>{node.title}</strong>
+                    </p>
+                  </div>
+                </div>
+                <span className="px-3 py-1 rounded-full bg-gradient-to-r from-[#D4AF37] to-[#FFD700] text-slate-950 font-black text-xs shadow-xs border border-amber-300 whitespace-nowrap">
+                  +20 Gems 💎
+                </span>
+              </div>
+
+              {/* Assessment Question Prompt */}
+              <div className="p-5 rounded-2xl bg-white border border-slate-200 shadow-xs space-y-2">
+                <span className="text-[10px] font-black uppercase tracking-wider text-[#1B365D]">
+                  Final Verification Question
+                </span>
+                <p className="text-sm sm:text-base font-extrabold text-slate-900 leading-snug">
+                  {assessmentQuestion.prompt}
+                </p>
+              </div>
+
+              {/* Multiple Choice Options (Scrambled A, B, C, D) */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                {assessmentQuestion.options.map((opt) => {
+                  const isSelected = assessmentSelectedKey === opt.key;
+                  const isCorrectOpt = opt.key === assessmentQuestion.correctKey;
+
+                  let optClass = 'bg-white border-slate-200 hover:border-[#D4AF37] text-slate-900 hover:bg-slate-50';
+                  if (assessmentChecked) {
+                    if (isCorrectOpt) {
+                      optClass = 'bg-emerald-50 border-emerald-500 text-emerald-950 font-bold ring-2 ring-emerald-500/20';
+                    } else if (isSelected) {
+                      optClass = 'bg-rose-50 border-rose-400 text-rose-950';
+                    } else {
+                      optClass = 'bg-slate-50/60 border-slate-200 text-slate-400 opacity-60';
+                    }
+                  } else if (isSelected) {
+                    optClass = 'bg-blue-50/80 border-[#1B365D] text-slate-950 ring-2 ring-[#D4AF37]/40 font-bold';
+                  }
+
+                  return (
+                    <button
+                      key={opt.key}
+                      type="button"
+                      disabled={assessmentChecked}
+                      onClick={() => {
+                        audioSynth.playGentleFeedback();
+                        setAssessmentSelectedKey(opt.key);
+                      }}
+                      className={`p-3.5 rounded-2xl border text-left transition-all flex items-center gap-3 cursor-pointer ${optClass}`}
+                    >
+                      <span className={`w-7 h-7 rounded-lg flex items-center justify-center text-xs font-black shrink-0 ${
+                        assessmentChecked && isCorrectOpt
+                          ? 'bg-emerald-600 text-white'
+                          : assessmentChecked && isSelected
+                          ? 'bg-rose-600 text-white'
+                          : isSelected
+                          ? 'bg-[#1B365D] text-[#D4AF37]'
+                          : 'bg-slate-100 text-slate-700'
+                      }`}>
+                        {opt.key}
+                      </span>
+                      <span className="text-xs sm:text-sm font-semibold flex-1">
+                        {opt.text}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Assessment Feedback */}
+              {assessmentChecked && (
+                <div className={`p-4 rounded-2xl border flex items-start gap-3 ${
+                  assessmentCorrect
+                    ? 'bg-emerald-50 border-emerald-300 text-emerald-950'
+                    : 'bg-rose-50 border-rose-300 text-rose-950'
+                }`}>
+                  <div className="mt-0.5 shrink-0">
+                    {assessmentCorrect ? (
+                      <CheckCircle2 className="w-5 h-5 text-emerald-600" />
+                    ) : (
+                      <AlertCircle className="w-5 h-5 text-rose-600" />
+                    )}
+                  </div>
+                  <div className="space-y-1 text-xs">
+                    <p className="font-extrabold text-sm">
+                      {assessmentCorrect ? 'Assessment Passed! +20 Gems Awarded 🎉' : 'Review & Practice'}
+                    </p>
+                    <p className="opacity-90">{assessmentQuestion.explanation}</p>
+                  </div>
+                </div>
+              )}
+
+              {/* Bottom Buttons */}
+              <div className="pt-2 flex justify-end">
+                {!assessmentChecked ? (
+                  <button
+                    type="button"
+                    onClick={handleCheckAssessment}
+                    disabled={!assessmentSelectedKey}
+                    className="px-6 py-3 rounded-2xl bg-[#1B365D] hover:bg-[#0F2137] disabled:opacity-50 text-[#D4AF37] font-black text-xs sm:text-sm shadow-md border border-[#D4AF37]/50 cursor-pointer"
+                  >
+                    Verify Assessment
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={handleFinishAssessment}
+                    className="px-6 py-3 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 text-white font-black text-xs sm:text-sm flex items-center gap-2 shadow-md cursor-pointer"
+                  >
+                    <span>Claim Mastery & Rewards</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </button>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* ============================================================ */}
+          {/* STEP 4: IMMEDIATE REINFORCEMENT & PROGRESS TRACKING          */}
           {/* ============================================================ */}
           {stage === 'complete' && (
             <div className="p-4 sm:p-6 text-center space-y-6">
@@ -672,19 +858,19 @@ export const LessonModal: React.FC<LessonModalProps> = ({
                 </div>
               </div>
 
-              {/* Streak Points & Rewards */}
+              {/* Cognitive Competency & Retention Verification (Zero arcade gamification) */}
               <div className="flex items-center justify-center gap-3 flex-wrap">
-                <div className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-amber-50 border border-amber-200 text-amber-900 font-black text-sm">
-                  <Sparkles className="w-4 h-4 text-amber-500" />
-                  <span>+{node.xpReward} XP</span>
+                <div className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-900 font-bold text-xs">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                  <span>CEFR {node.cefr || 'A1'} Competency Verified</span>
                 </div>
-                <div className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-blue-50 border border-blue-200 text-blue-900 font-black text-sm">
-                  <Gem className="w-4 h-4 text-blue-500" />
-                  <span>+{node.gemReward} Gems 💎</span>
+                <div className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-blue-50 border border-blue-200 text-blue-900 font-bold text-xs">
+                  <Sparkles className="w-4 h-4 text-blue-600" />
+                  <span>Structural Syntax Mastered</span>
                 </div>
-                <div className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-orange-50 border border-orange-200 text-orange-900 font-black text-sm">
-                  <Flame className="w-4 h-4 text-orange-500" />
-                  <span>+20 Streak Pts 🔥</span>
+                <div className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-indigo-50 border border-indigo-200 text-indigo-900 font-bold text-xs">
+                  <BookOpen className="w-4 h-4 text-indigo-600" />
+                  <span>FSRS Spaced Review Scheduled</span>
                 </div>
               </div>
 

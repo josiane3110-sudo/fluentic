@@ -226,6 +226,60 @@ export const AITranslatorView: React.FC<AITranslatorViewProps> = ({
   // Client-side instant memory cache for 0ms repeated phrases
   const translationCacheRef = useRef<Map<string, { translation: string; detected?: string }>>(new Map());
 
+  // Helper to extract clean text from raw JSON string, object, or markdown
+  const parseCleanTranslationText = (input: any): { translation: string; detected?: string } => {
+    if (!input) return { translation: '' };
+
+    // If input is already an object
+    if (typeof input === 'object' && input !== null) {
+      const text = input.translation || input.translatedText || input.text || '';
+      return {
+        translation: String(text).trim(),
+        detected: input.detectedSource || input.detectedSourceLanguage,
+      };
+    }
+
+    if (typeof input === 'string') {
+      const trimmed = input.trim();
+
+      // Check if string contains JSON structure
+      if (trimmed.startsWith('{') || trimmed.includes('"translation"') || trimmed.includes('"detectedSource"')) {
+        try {
+          const jsonMatch = trimmed.match(/\{[\s\S]*\}/);
+          if (jsonMatch) {
+            const parsed = JSON.parse(jsonMatch[0]);
+            const trans = parsed.translation || parsed.translatedText || parsed.text || '';
+            return {
+              translation: String(trans).trim().replace(/^["']|["']$/g, ''),
+              detected: parsed.detectedSource || parsed.detectedSourceLanguage,
+            };
+          }
+        } catch {
+          // Regex fallback if JSON.parse fails
+          const transMatch = trimmed.match(/"translation"\s*:\s*"([^"\\]*(?:\\.[^"\\]*)*)"/i);
+          const detMatch = trimmed.match(/"detectedSource"\s*:\s*"([^"\\]*(?:\\.[^"\\]*)*)"/i);
+          if (transMatch) {
+            return {
+              translation: transMatch[1].replace(/\\"/g, '"').replace(/\\n/g, '\n').trim(),
+              detected: detMatch ? detMatch[1].trim() : undefined,
+            };
+          }
+        }
+      }
+
+      // Strip markdown code fences if present
+      const stripped = trimmed
+        .replace(/^```(?:json)?\s*/i, '')
+        .replace(/\s*```$/i, '')
+        .replace(/^["']|["']$/g, '')
+        .trim();
+
+      return { translation: stripped };
+    }
+
+    return { translation: String(input) };
+  };
+
   // Perform translation call to /api/translate with instant cache & zero lag
   const performTranslation = async (
     textToTranslate: string,
@@ -256,9 +310,17 @@ export const AITranslatorView: React.FC<AITranslatorViewProps> = ({
     }
 
     const data = await res.json();
+    
+    // Parse response cleanly: inspect data.translation, data.translatedText, or the entire data object
+    const rawVal = data.translation !== undefined ? data.translation : data.translatedText;
+    const extracted = parseCleanTranslationText(rawVal || data);
+
+    const cleanTranslation = stripTransliteration(extracted.translation || '');
+    const cleanDetected = extracted.detected || data.detectedSourceLanguage;
+
     const result = {
-      translation: stripTransliteration(data.translatedText || ''),
-      detected: data.detectedSourceLanguage,
+      translation: cleanTranslation,
+      detected: cleanDetected,
     };
 
     // Store in cache for instantaneous re-use
@@ -492,61 +554,55 @@ export const AITranslatorView: React.FC<AITranslatorViewProps> = ({
   const currentTgtOption = ALL_GLOBAL_LANGUAGES.find((l) => l.name === targetLangName);
 
   return (
-    <div className="w-full max-w-5xl mx-auto px-3 sm:px-5 py-4 sm:py-6 space-y-4 pb-28">
-      {/* Header Banner with Mode Switcher */}
-      <section className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 text-white p-5 shadow-lg shadow-blue-500/15">
-        <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-          <div className="space-y-1">
-            <div className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-white/20 backdrop-blur-md text-blue-100 text-[11px] font-extrabold w-fit border border-white/20">
-              <Globe2 className="w-3.5 h-3.5" />
-              <span>Ultra-Fast Neural Engine • openrouter/free</span>
-            </div>
-            <h1 className="text-xl sm:text-2xl font-black text-white leading-tight">
-              AI Universal Translator
-            </h1>
-            <p className="text-xs text-blue-100/90 font-normal">
-              High-speed neural translation supporting all global languages with auto-detection & live two-way dialogue.
-            </p>
+    <div className="w-full max-w-5xl mx-auto px-3 sm:px-5 py-3 sm:py-5 space-y-3 pb-28">
+      {/* Minimalist Top Control Strip: Mode Switcher */}
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex items-center gap-2">
+          <div className="w-8 h-8 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white flex items-center justify-center shadow-xs">
+            <Languages className="w-4 h-4" />
           </div>
-
-          {/* Mode Switcher Tabs */}
-          <div className="flex items-center p-1 rounded-xl bg-white/15 backdrop-blur-md border border-white/20">
-            <button
-              type="button"
-              id="translator-tab-direct-btn"
-              onClick={() => {
-                audioSynth.playGentleFeedback();
-                setActiveMode('translator');
-              }}
-              className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-black transition-all ${
-                activeMode === 'translator'
-                  ? 'bg-white text-blue-900 shadow-sm'
-                  : 'text-white hover:bg-white/10'
-              }`}
-            >
-              <Languages className="w-3.5 h-3.5" />
-              <span>Text Translator</span>
-            </button>
-
-            <button
-              type="button"
-              id="translator-tab-dialogue-btn"
-              onClick={() => {
-                audioSynth.playGentleFeedback();
-                setActiveMode('dialogue');
-              }}
-              className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-black transition-all ${
-                activeMode === 'dialogue'
-                  ? 'bg-white text-indigo-900 shadow-sm'
-                  : 'text-white hover:bg-white/10'
-              }`}
-            >
-              <MessageSquare className="w-3.5 h-3.5" />
-              <span>Dialogue & Speech Mode</span>
-            </button>
-          </div>
+          <h2 className="text-sm sm:text-base font-black text-slate-900 tracking-tight">
+            Universal Translator
+          </h2>
         </div>
-      </section>
+
+        {/* Mode Switcher Tabs */}
+        <div className="flex items-center p-1 rounded-xl bg-slate-100 border border-slate-200">
+          <button
+            type="button"
+            id="translator-tab-direct-btn"
+            onClick={() => {
+              audioSynth.playGentleFeedback();
+              setActiveMode('translator');
+            }}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-black transition-all cursor-pointer ${
+              activeMode === 'translator'
+                ? 'bg-white text-blue-900 shadow-xs'
+                : 'text-slate-600 hover:text-slate-900'
+            }`}
+          >
+            <Languages className="w-3.5 h-3.5" />
+            <span>Text</span>
+          </button>
+
+          <button
+            type="button"
+            id="translator-tab-dialogue-btn"
+            onClick={() => {
+              audioSynth.playGentleFeedback();
+              setActiveMode('dialogue');
+            }}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-black transition-all cursor-pointer ${
+              activeMode === 'dialogue'
+                ? 'bg-white text-indigo-900 shadow-xs'
+                : 'text-slate-600 hover:text-slate-900'
+            }`}
+          >
+            <MessageSquare className="w-3.5 h-3.5" />
+            <span>Live Dialogue</span>
+          </button>
+        </div>
+      </div>
 
       {/* Language Selector Bar with Searchable Comboboxes & Central Swap Button */}
       <div className="rounded-2xl bg-white border border-slate-200 p-3 sm:p-4 shadow-xs flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 relative z-30">

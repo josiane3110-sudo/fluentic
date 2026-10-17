@@ -2,6 +2,7 @@ import React from 'react';
 import { 
   Sparkles, 
   Check, 
+  CheckCircle2,
   Lock, 
   Star, 
   Crown, 
@@ -32,7 +33,7 @@ export interface PathUnit {
 }
 
 // Generate rich, progressive step-by-step units with authentic native scripts for any language
-export function getDuolingoUnits(language: Language, nativeCode: string = 'en'): PathUnit[] {
+export function getDuolingoUnits(language: Language, nativeCode: string = 'en', activeCefr: CefrLevel = 'A1'): PathUnit[] {
   const isDutch = nativeCode === 'nl';
   const name = language.name;
   const greeting = language.sampleGreeting || 'Hello';
@@ -296,6 +297,568 @@ export function getDuolingoUnits(language: Language, nativeCode: string = 'en'):
     goodbyePhrase: `Goodbye!`
   };
 
+  // ========================================================
+  // STRICT CEFR LEVEL OVERRIDES (C2, C1, B2, B1, A2)
+  // ========================================================
+
+  // C2 Level Override: 100% advanced rhetoric, philosophy, literary prose, zero A1 content
+  if (activeCefr === 'C2' || activeCefr === 'C3') {
+    return [
+      {
+        id: 'unit-c2-1',
+        unitNumber: 1,
+        title: isDutch 
+          ? 'Unit 1 - C2: Gevorderd Literair Proza, Academische Retoriek & Formeel Debat' 
+          : 'Unit 1 - C2: Advanced Literary Prose, Academic Rhetoric & Formal Discourse',
+        subhead: isDutch 
+          ? 'Dialectische synthese, hermeneutische tekstanalyse en parlementaire debatformules' 
+          : 'Dialectical synthesis, hermeneutic deconstruction, and parliamentary formal discourse',
+        themeColor: 'from-amber-600 via-rose-700 to-indigo-900',
+        accentBg: 'bg-amber-50 text-amber-950 border-amber-300',
+        minCefr: 'C2',
+        milestoneGems: 100,
+        nodes: [
+          {
+            id: 'c2-academic-rhetoric',
+            title: isDutch ? 'Academische Retoriek & Synthese' : 'Academic Rhetoric & Dialectical Synthesis',
+            nativeTitle: isDutch ? 'Dialectische Synthese' : 'Dialectical Synthesis',
+            category: 'Advanced Mastery',
+            cefr: 'C2',
+            description: isDutch 
+              ? 'Beheers academische synthese van antithetische premissen in formele betogen.' 
+              : 'Synthesize antithetical theoretical arguments into cohesive formal academic rhetoric.',
+            xpReward: 120,
+            gemReward: 30,
+            targetDurationMinutes: 7,
+            iconName: 'Crown',
+            coordinates: { x: 0, y: 0 },
+            exercises: [
+              {
+                id: 'ex-c2-rhetoric-1',
+                type: 'multiple-choice',
+                prompt: isDutch 
+                  ? 'Welke formulering drukt een strenge dialectische synthese uit in formeel academisch discours?' 
+                  : 'Which formulation articulates rigorous dialectical synthesis in formal academic debate?',
+                targetPhrase: isDutch 
+                  ? 'Het overstijgen van antithetische posities via epistemische integratie' 
+                  : 'Synthesizing antithetical propositions through epistemic integration',
+                translation: isDutch ? 'Dialectische synthese van tegenstellingen' : 'Overcoming thesis and antithesis via synthesis',
+                options: [
+                  isDutch ? 'Het overstijgen van antithetische posities via epistemische integratie' : 'Synthesizing antithetical propositions through epistemic integration',
+                  isDutch ? 'Een eenvoudige opsomming van alledaagse observaties' : 'A basic chronological sequence of casual observations',
+                  isDutch ? 'Oppervlakkige samenvatting zonder methodologische falsificatie' : 'Superficial textual recap lacking falsifiable criteria',
+                  isDutch ? 'Het herhalen van gevestigde aannames zonder kritische distantie' : 'Uncritical reiteration of standard premises'
+                ],
+                correctAnswer: isDutch 
+                  ? 'Het overstijgen van antithetische posities via epistemische integratie' 
+                  : 'Synthesizing antithetical propositions through epistemic integration',
+                culturalNote: isDutch ? 'Hoogste academische register voor proefschriften en beleidsstukken.' : 'Benchmark of doctoral-level academic discourse and policy formulation.',
+                exampleSentence: 'La superación dialéctica de ambas premisas permite formular un nuevo paradigma epistémico.',
+                exampleTranslation: 'The dialectical synthesis of both premises gives rise to a novel epistemic paradigm.'
+              }
+            ]
+          },
+          {
+            id: 'c2-literary-prose',
+            title: isDutch ? 'Literair Proza & Stijlfiguren' : 'Literary Prose & Stylistic Nuance',
+            nativeTitle: isDutch ? 'Hermeneutisch Proza' : 'Hermeneutic Stylistics',
+            category: 'Advanced Mastery',
+            cefr: 'C2',
+            description: isDutch 
+              ? 'Ontleed complexe literaire allegorieën, impliciete betekenissen en stilistische inversies.' 
+              : 'Interpret layered literary allegories, implicit subtext, and classical stylistic inversions.',
+            xpReward: 125,
+            gemReward: 32,
+            targetDurationMinutes: 8,
+            iconName: 'BookOpen',
+            coordinates: { x: 0, y: 0 },
+            exercises: [
+              {
+                id: 'ex-c2-prose-1',
+                type: 'multiple-choice',
+                prompt: isDutch 
+                  ? 'Hoe duidt men een diepe existentiële allegorie in klassiek literair proza?' 
+                  : 'How is deep existential allegory deconstructed in high-register literary prose?',
+                targetPhrase: isDutch 
+                  ? 'De onderliggende metafoor weerspiegelt de vergankelijkheid van menselijke ambities' 
+                  : 'The underlying metaphor mirrors the transient fragility of human ambition',
+                translation: isDutch ? 'Literaire diepte-analyse' : 'Subtle literary thematic analysis',
+                options: [
+                  isDutch ? 'De onderliggende metafoor weerspiegelt de vergankelijkheid van menselijke ambities' : 'The underlying metaphor mirrors the transient fragility of human ambition',
+                  isDutch ? 'De auteur beschrijft slechts het weerpatroon' : 'The author is merely describing meteorological conditions',
+                  isDutch ? 'Een alledaagse reisbeschrijving zonder dubbele bodem' : 'A literal travel narrative devoid of allegorical resonance',
+                  isDutch ? 'Een standaard grammaticaal voorschrift' : 'A standard instructional grammar convention'
+                ],
+                correctAnswer: isDutch 
+                  ? 'De onderliggende metafoor weerspiegelt de vergankelijkheid van menselijke ambities' 
+                  : 'The underlying metaphor mirrors the transient fragility of human ambition',
+                exampleSentence: 'Bajo el manto otoñal palpitaba el eco mudo de una ambición ya extinguida.',
+                exampleTranslation: 'Beneath the autumnal shroud pulsed the muted echo of an extinguished ambition.'
+              }
+            ]
+          },
+          {
+            id: 'c2-formal-debate',
+            title: isDutch ? 'Parlementair & Diplomatiek Debat' : 'Parliamentary & Diplomatic Registers',
+            nativeTitle: isDutch ? 'Diplomatieke Concessie' : 'Diplomatic Concession',
+            category: 'Advanced Mastery',
+            cefr: 'C2',
+            description: isDutch 
+              ? 'Hanteer diplomatieke concessies, hoffelijke afwijzingen en soevereine verdragsregisters.' 
+              : 'Deploy diplomatic concessions, polite deferrals, and formal treaty discourse with precision.',
+            xpReward: 130,
+            gemReward: 35,
+            targetDurationMinutes: 8,
+            iconName: 'Award',
+            coordinates: { x: 0, y: 0 },
+            exercises: [
+              {
+                id: 'ex-c2-debate-1',
+                type: 'multiple-choice',
+                prompt: isDutch 
+                  ? 'Welke clausule luidt een hoog-diplomatieke concessie in tijdens multilaterale beraadslagingen?' 
+                  : 'Which clause initiates an elevated diplomatic concession during multilateral deliberations?',
+                targetPhrase: isDutch 
+                  ? 'Niettegenstaande de gegronde bedenkingen van de geachte delegatie' 
+                  : 'Notwithstanding the justifiable reservations expressed by the honorable delegation',
+                translation: isDutch ? 'Diplomatieke hoffelijkheidsconcessie' : 'High-register diplomatic concession formula',
+                options: [
+                  isDutch ? 'Niettegenstaande de gegronde bedenkingen van de geachte delegatie' : 'Notwithstanding the justifiable reservations expressed by the honorable delegation',
+                  isDutch ? 'Ik ben het er eigenlijk helemaal niet mee eens' : 'I basically completely disagree with you',
+                  isDutch ? 'Laten we er later nog eens over praten bij de lunch' : 'Let us perhaps mention this over lunch later',
+                  isDutch ? 'Dat standpunt is categorisch onjuist' : 'That stance is simply incorrect and wrong'
+                ],
+                correctAnswer: isDutch 
+                  ? 'Niettegenstaande de gegronde bedenkingen van de geachte delegatie' 
+                  : 'Notwithstanding the justifiable reservations expressed by the honorable delegation',
+                culturalNote: isDutch ? 'Cruciaal voor verdragonderhandelingen bij de Verenigde Naties en diplomatieke ambassades.' : 'Integral to high-level ambassadorial protocol and treaty negotiations.',
+                exampleSentence: 'No obstante las fundadas reservas de la delegación, procedemos con espíritu de concordia.',
+                exampleTranslation: 'Notwithstanding the delegation’s reservations, we proceed in a spirit of consensus.'
+              }
+            ]
+          }
+        ]
+      },
+      {
+        id: 'unit-c2-2',
+        unitNumber: 2,
+        title: isDutch 
+          ? 'Unit 2 - C2: Dialectische Filosofie & Epistemisch Redeneren' 
+          : 'Unit 2 - C2: Dialectical Philosophy & Epistemic Reasoning',
+        subhead: isDutch 
+          ? 'Kritische deconstructie van filosofische premissen en epistemologische waarheidscriteria' 
+          : 'Critical deconstruction of philosophical theses and epistemic truth criteria',
+        themeColor: 'from-indigo-800 to-slate-900',
+        accentBg: 'bg-indigo-50 text-indigo-950 border-indigo-200',
+        minCefr: 'C2',
+        milestoneGems: 120,
+        nodes: [
+          {
+            id: 'c2-epistemic',
+            title: isDutch ? 'Epistemische Falsificatie & Deductie' : 'Epistemic Falsification & Deduction',
+            nativeTitle: isDutch ? 'Epistemologie' : 'Epistemic Rigor',
+            category: 'Advanced Mastery',
+            cefr: 'C2',
+            description: isDutch 
+              ? 'Examineer theoretische aannames aan de hand van deductieve bewijsvoering.' 
+              : 'Examine theoretical assertions against rigorous deductive standards of proof.',
+            xpReward: 135,
+            gemReward: 35,
+            targetDurationMinutes: 8,
+            iconName: 'Sparkles',
+            coordinates: { x: 0, y: 0 },
+            exercises: [
+              {
+                id: 'ex-c2-epist-1',
+                type: 'multiple-choice',
+                prompt: isDutch 
+                  ? 'Wat betekent "epistemische falsificatie" in academische theorievorming?' 
+                  : 'What signifies "epistemic falsification" within academic theory formation?',
+                targetPhrase: isDutch 
+                  ? 'Het systematisch weerleggen van hypothesen door tegenbewijs' 
+                  : 'The systematic refutation of hypotheses through empirical counter-evidence',
+                translation: isDutch ? 'Wetenschappelijke weerlegging' : 'Methodological refutation',
+                options: [
+                  isDutch ? 'Het systematisch weerleggen van hypothesen door tegenbewijs' : 'The systematic refutation of hypotheses through empirical counter-evidence',
+                  isDutch ? 'Het klakkeloos aannemen van een stelling' : 'Accepting an unproven assumption as axiomatic truth',
+                  isDutch ? 'Een taalkundige vertaling van documenten' : 'Translating documentary text without critique',
+                  isDutch ? 'Een retorische truc zonder inhoudelijke relevantie' : 'A rhetorical flourish devoid of analytical substance'
+                ],
+                correctAnswer: isDutch 
+                  ? 'Het systematisch weerleggen van hypothesen door tegenbewijs' 
+                  : 'The systematic refutation of hypotheses through empirical counter-evidence'
+              }
+            ]
+          }
+        ]
+      },
+      {
+        id: 'unit-c2-3',
+        unitNumber: 3,
+        title: isDutch 
+          ? 'Unit 3 - C2: Hoge Diplomatieke Registers & Subtiele Ironie' 
+          : 'Unit 3 - C2: High Diplomatic Register, Irony & Subtext',
+        subhead: isDutch 
+          ? 'Ambassadeursniveau diplomatiek discours, onderkoelde ironie en pragmatische subtekst' 
+          : 'Ambassadorial diplomatic discourse, understated irony, and pragmatic subtext',
+        themeColor: 'from-purple-800 to-indigo-950',
+        accentBg: 'bg-purple-50 text-purple-950 border-purple-200',
+        minCefr: 'C2',
+        milestoneGems: 140,
+        nodes: [
+          {
+            id: 'c2-subtext',
+            title: isDutch ? 'Onderkoelde Ironie & Pragmatiek' : 'Understated Irony & Pragmatic Nuance',
+            nativeTitle: isDutch ? 'Pragmatische Subtekst' : 'Pragmatic Subtext',
+            category: 'Advanced Mastery',
+            cefr: 'C2',
+            description: isDutch 
+              ? 'Herken en produceer diplomatieke ironie zonder de formele etiquette te doorbreken.' 
+              : 'Recognize and employ understated irony without breaching formal diplomatic decorum.',
+            xpReward: 140,
+            gemReward: 40,
+            targetDurationMinutes: 8,
+            iconName: 'Crown',
+            coordinates: { x: 0, y: 0 },
+            exercises: [
+              {
+                id: 'ex-c2-sub-1',
+                type: 'multiple-choice',
+                prompt: isDutch 
+                  ? 'Wanneer een diplomaat stelt dat een voorstel "buitengewoon moedig" is, wat is de impliciete subtekst?' 
+                  : 'When an envoy characterizes a proposed measure as "unusually courageous", what is the pragmatic subtext?',
+                targetPhrase: isDutch 
+                  ? 'Het voorstel houdt buitensporige en onaanvaardbare risico’s in' 
+                  : 'The initiative carries unacceptably hazardous political liabilities',
+                translation: isDutch ? 'Diplomatieke waarschuwing' : 'Diplomatic subtextual warning',
+                options: [
+                  isDutch ? 'Het voorstel houdt buitensporige en onaanvaardbare risico’s in' : 'The initiative carries unacceptably hazardous political liabilities',
+                  isDutch ? 'De diplomaat bewondert de morele dapperheid oprecht' : 'The envoy is expressing genuine personal heroism admiration',
+                  isDutch ? 'Het document moet ongewijzigd goedgekeurd worden' : 'The measure should be signed immediately without amendment',
+                  isDutch ? 'Er is geen enkele twijfel over het succes' : 'There is zero reservation regarding guaranteed success'
+                ],
+                correctAnswer: isDutch 
+                  ? 'Het voorstel houdt buitensporige en onaanvaardbare risico’s in' 
+                  : 'The initiative carries unacceptably hazardous political liabilities'
+              }
+            ]
+          }
+        ]
+      },
+      {
+        id: 'unit-c2-4',
+        unitNumber: 4,
+        title: isDutch 
+          ? 'Unit 4 - C2: Klassiek Cultureel Erfgoed & Syntactische Inversie' 
+          : 'Unit 4 - C2: Classical Heritage Idioms & Archaic Syntactic Inversion',
+        subhead: isDutch 
+          ? 'Volledige moedertaalbeheersing van klassiek idioom, archaïsche inversies en spreekwoorden' 
+          : 'Complete native-level command of classical idioms, archaic inversions, and cultural heritage',
+        themeColor: 'from-rose-900 to-amber-900',
+        accentBg: 'bg-rose-50 text-rose-950 border-rose-200',
+        minCefr: 'C2',
+        milestoneGems: 150,
+        nodes: [
+          {
+            id: 'c2-heritage-idioms',
+            title: isDutch ? 'Klassieke Moedertaalspreekwoorden' : 'Classical Idioms & Heritage Proverbs',
+            nativeTitle: isDutch ? 'Culturele Meesterschap' : 'Heritage Idiomatic Mastery',
+            category: 'Advanced Mastery',
+            cefr: 'C2',
+            description: isDutch 
+              ? 'Integreer klassieke spreekwoorden met moeiteloze moedertaalvloeiendheid.' 
+              : 'Seamlessly interweave classical heritage idioms with native-level fluency.',
+            xpReward: 150,
+            gemReward: 45,
+            targetDurationMinutes: 8,
+            iconName: 'Award',
+            coordinates: { x: 0, y: 0 },
+            exercises: [
+              {
+                id: 'ex-c2-herit-1',
+                type: 'multiple-choice',
+                prompt: isDutch 
+                  ? 'Wat drukt het klassieke gezegde "de teerling is geworpen" uit in historische analyses?' 
+                  : 'What does the classical idiom "alea iacta est" (the die is cast) signify in historical analysis?',
+                targetPhrase: isDutch 
+                  ? 'Een onherroepelijke beslissing waarvan de uitkomst definitief vaststaat' 
+                  : 'An irrevocable commitment from which there is no turning back',
+                translation: isDutch ? 'Onomkeerbare beslissing' : 'Irrevocable commitment',
+                options: [
+                  isDutch ? 'Een onherroepelijke beslissing waarvan de uitkomst definitief vaststaat' : 'An irrevocable commitment from which there is no turning back',
+                  isDutch ? 'Een toevallige worp in een kansspel' : 'A frivolous roll of game dice in recreation',
+                  isDutch ? 'Het uitstellen van een stemming' : 'Deferring a vote until subsequent sessions',
+                  isDutch ? 'Een voorzichtige diplomatieke verkenning' : 'A cautious non-binding preliminary query'
+                ],
+                correctAnswer: isDutch 
+                  ? 'Een onherroepelijke beslissing waarvan de uitkomst definitief vaststaat' 
+                  : 'An irrevocable commitment from which there is no turning back'
+              }
+            ]
+          }
+        ]
+      }
+    ];
+  }
+
+  // C1 Level Override: 100% complex syntax, debate registers, subjunctive, zero A1 content
+  if (activeCefr === 'C1') {
+    return [
+      {
+        id: 'unit-c1-1',
+        unitNumber: 1,
+        title: isDutch 
+          ? 'Unit 1 - C1: Complexe Syntaxis & Formele Debatregisters' 
+          : 'Unit 1 - C1: Complex Syntax & Formal Debate Registers',
+        subhead: isDutch 
+          ? 'Complexe zinsconstructies, formele betogen en genuanceerde argumentatieve structuren' 
+          : 'Complex syntactic nesting, structured formal argumentation, and discursive cohesion',
+        themeColor: 'from-indigo-600 via-blue-700 to-indigo-900',
+        accentBg: 'bg-blue-50 text-blue-950 border-blue-200',
+        minCefr: 'C1',
+        milestoneGems: 80,
+        nodes: [
+          {
+            id: 'c1-complex-syntax',
+            title: isDutch ? 'Complexe Zinsconstructies & Onderschatting' : 'Complex Nested Clauses & Syntactic Balance',
+            nativeTitle: isDutch ? 'Syntactische Balans' : 'Syntactic Architecture',
+            category: 'Advanced Mastery',
+            cefr: 'C1',
+            description: isDutch 
+              ? 'Bouw gelaagde bijzinnen met perfecte afstemming van tijden en modi.' 
+              : 'Construct layered multi-clause periods with flawless sequence of tenses and modal agreement.',
+            xpReward: 95,
+            gemReward: 25,
+            targetDurationMinutes: 6,
+            iconName: 'Crown',
+            coordinates: { x: 0, y: 0 },
+            exercises: [
+              {
+                id: 'ex-c1-syn-1',
+                type: 'multiple-choice',
+                prompt: isDutch 
+                  ? 'Welke zinsstructuur demonstreert correcte C1-niveau onderschikking en modaliteit?' 
+                  : 'Which sentence structure exemplifies correct C1-level hypothetical subordination and modal cohesion?',
+                targetPhrase: isDutch 
+                  ? 'Had de raad tijdig geanticipeerd, dan zou deze crisis afgewend zijn' 
+                  : 'Had the council anticipated developments in a timely manner, this crisis would have been averted',
+                translation: isDutch ? 'Hypothetische inversie in de verleden tijd' : 'Counterfactual inversion conditional',
+                options: [
+                  isDutch ? 'Had de raad tijdig geanticipeerd, dan zou deze crisis afgewend zijn' : 'Had the council anticipated developments in a timely manner, this crisis would have been averted',
+                  isDutch ? 'Als de raad oplet dan gaat het goed' : 'If the council watches out then things go fine',
+                  isDutch ? 'De raad wist het niet en daarom ging het fout' : 'The council did not know so it simply failed',
+                  isDutch ? 'Misschien is er een vergadering morgen' : 'Maybe there will be a meeting tomorrow'
+                ],
+                correctAnswer: isDutch 
+                  ? 'Had de raad tijdig geanticipeerd, dan zou deze crisis afgewend zijn' 
+                  : 'Had the council anticipated developments in a timely manner, this crisis would have been averted',
+                culturalNote: isDutch ? 'Klassieke formele inversie ter vervanging van alledaagse voorwaardelijke zinnen.' : 'High-register conditional inversion replacing colloquial if-clauses.',
+                exampleSentence: 'De haber intervenido oportunamente las autoridades, se habría mitigado el impacto financiero.',
+                exampleTranslation: 'Had the authorities intervened in a timely manner, the financial disruption would have been mitigated.'
+              }
+            ]
+          },
+          {
+            id: 'c1-debate-registers',
+            title: isDutch ? 'Formele Debatregisters & Retorische Vragen' : 'Formal Debate Registers & Rhetorical Strategies',
+            nativeTitle: isDutch ? 'Formele Retoriek' : 'Formal Rhetoric',
+            category: 'Advanced Mastery',
+            cefr: 'C1',
+            description: isDutch 
+              ? 'Verdedig standpunten met formele argumentatiemarkers en retorische synthese.' 
+              : 'Defend thesis statements using formal argumentation markers and rhetorical transitions.',
+            xpReward: 100,
+            gemReward: 26,
+            targetDurationMinutes: 7,
+            iconName: 'Award',
+            coordinates: { x: 0, y: 0 },
+            exercises: [
+              {
+                id: 'ex-c1-deb-1',
+                type: 'multiple-choice',
+                prompt: isDutch 
+                  ? 'Welke transitionele frase leidt een sterk tegenargument in zonder confrontatie?' 
+                  : 'Which transitional phrase introduces a cogent counter-argument diplomatically?',
+                targetPhrase: isDutch 
+                  ? 'Desalniettemin dwingt het empirische bewijs ons tot een heroverweging' 
+                  : 'Nonetheless, the empirical evidence impels us to reconsider our initial hypothesis',
+                translation: isDutch ? 'Formele argumentatieve overgang' : 'Formal argumentative transition marker',
+                options: [
+                  isDutch ? 'Desalniettemin dwingt het empirische bewijs ons tot een heroverweging' : 'Nonetheless, the empirical evidence impels us to reconsider our initial hypothesis',
+                  isDutch ? 'Maar dat is gewoon niet waar' : 'But that is just totally untrue',
+                  isDutch ? 'Ik vind van niet' : 'I just don’t think so',
+                  isDutch ? 'Laten we stoppen met praten' : 'Let us stop discussing this now'
+                ],
+                correctAnswer: isDutch 
+                  ? 'Desalniettemin dwingt het empirische bewijs ons tot een heroverweging' 
+                  : 'Nonetheless, the empirical evidence impels us to reconsider our initial hypothesis'
+              }
+            ]
+          }
+        ]
+      },
+      {
+        id: 'unit-c1-2',
+        unitNumber: 2,
+        title: isDutch 
+          ? 'Unit 2 - C1: Conjunctief, Irreële Condities & Nuance' 
+          : 'Unit 2 - C1: Subjunctive Nuance, Counterfactuals & Rhetoric',
+        subhead: isDutch 
+          ? 'Subjuntief meesterschap, hypothetische voorwaarden en epistemische modaliteit' 
+          : 'Subjunctive mastery, hypothetical past conditions, and modal nuances',
+        themeColor: 'from-violet-700 to-purple-900',
+        accentBg: 'bg-violet-50 text-violet-950 border-violet-200',
+        minCefr: 'C1',
+        milestoneGems: 90,
+        nodes: [
+          {
+            id: 'c1-counterfactual',
+            title: isDutch ? 'Irreële Condities & Hypothetisch Redeneren' : 'Counterfactual Logic & Hypothetical Conditionals',
+            nativeTitle: isDutch ? 'Irreële Condities' : 'Counterfactuals',
+            category: 'Advanced Mastery',
+            cefr: 'C1',
+            description: isDutch 
+              ? 'Hanteer complexe irreële voorwaarden in het verleden en heden.' 
+              : 'Master unreal past and present counterfactual structures effortlessly.',
+            xpReward: 105,
+            gemReward: 28,
+            targetDurationMinutes: 7,
+            iconName: 'Sparkles',
+            coordinates: { x: 0, y: 0 },
+            exercises: [
+              {
+                id: 'ex-c1-cf-1',
+                type: 'multiple-choice',
+                prompt: isDutch 
+                  ? 'Wat drukt de irreële conditie in het verleden uit?' 
+                  : 'What does the past counterfactual conditional communicate in formal analysis?',
+                targetPhrase: isDutch 
+                  ? 'Een gebeurtenis die in het verleden had kunnen plaatsvinden maar niet gerealiseerd is' 
+                  : 'An outcome that was possible in hindsight but was never actualized',
+                translation: isDutch ? 'Irreëel verleden' : 'Unreal past condition',
+                options: [
+                  isDutch ? 'Een gebeurtenis die in het verleden had kunnen plaatsvinden maar niet gerealiseerd is' : 'An outcome that was possible in hindsight but was never actualized',
+                  isDutch ? 'Een vaste routine die elke dag plaatsvindt' : 'A recurring daily routine in the present',
+                  isDutch ? 'Een zekere toekomstige voorspelling' : 'A guaranteed certainty in future time',
+                  isDutch ? 'Een bevel aan een ondergeschikte' : 'An imperative command issued to a subordinate'
+                ],
+                correctAnswer: isDutch 
+                  ? 'Een gebeurtenis die in het verleden had kunnen plaatsvinden maar niet gerealiseerd is' 
+                  : 'An outcome that was possible in hindsight but was never actualized'
+              }
+            ]
+          }
+        ]
+      },
+      {
+        id: 'unit-c1-3',
+        unitNumber: 3,
+        title: isDutch 
+          ? 'Unit 3 - C1: Professionele Registers & Idiomatische Vloeiendheid' 
+          : 'Unit 3 - C1: Professional Colloquialisms & Idiomatic Fluency',
+        subhead: isDutch 
+          ? 'Vergaderingen op directieniveau, strategische onderhandeling en idioom' 
+          : 'Executive board-level negotiation and high-register idiomatic expressions',
+        themeColor: 'from-emerald-700 to-teal-900',
+        accentBg: 'bg-emerald-50 text-emerald-950 border-emerald-200',
+        minCefr: 'C1',
+        milestoneGems: 95,
+        nodes: [
+          {
+            id: 'c1-executive',
+            title: isDutch ? 'Directieniveau & Strategische Onderhandeling' : 'Executive Strategy & Strategic Framing',
+            nativeTitle: isDutch ? 'Strategisch Kader' : 'Executive Framing',
+            category: 'Professional',
+            cefr: 'C1',
+            description: isDutch 
+              ? 'Formuleer strategische prioriteiten met zakelijke en diplomatieke verfijning.' 
+              : 'Articulate corporate strategies and fiduciary priorities with institutional polish.',
+            xpReward: 110,
+            gemReward: 30,
+            targetDurationMinutes: 7,
+            iconName: 'Crown',
+            coordinates: { x: 0, y: 0 },
+            exercises: [
+              {
+                id: 'ex-c1-exec-1',
+                type: 'multiple-choice',
+                prompt: isDutch 
+                  ? 'Welke uitdrukking geeft strategische prioritering aan in een directieoverleg?' 
+                  : 'Which phrase denotes strategic prioritization in an executive boardroom briefing?',
+                targetPhrase: isDutch 
+                  ? 'Dit strategische initiatief geniet absolute voorrang boven operationele details' 
+                  : 'This strategic initiative takes precedence over subordinate operational considerations',
+                translation: isDutch ? 'Strategische prioriteitstelling' : 'Executive strategic precedence',
+                options: [
+                  isDutch ? 'Dit strategische initiatief geniet absolute voorrang boven operationele details' : 'This strategic initiative takes precedence over subordinate operational considerations',
+                  isDutch ? 'We kijken er morgen wel even naar' : 'We will glance at it tomorrow whenever',
+                  isDutch ? 'Iedereen mag doen wat hij wil' : 'Everyone can proceed as they wish',
+                  isDutch ? 'Het maakt eigenlijk niet zoveel uit' : 'It does not really matter too much'
+                ],
+                correctAnswer: isDutch 
+                  ? 'Dit strategische initiatief geniet absolute voorrang boven operationele details' 
+                  : 'This strategic initiative takes precedence over subordinate operational considerations'
+              }
+            ]
+          }
+        ]
+      },
+      {
+        id: 'unit-c1-4',
+        unitNumber: 4,
+        title: isDutch 
+          ? 'Unit 4 - C1: Tekstkritiek & Pragmatische Cohesie' 
+          : 'Unit 4 - C1: Literary Criticism & Pragmatic Cohesion',
+        subhead: isDutch 
+          ? 'Analyse van redactionele essays, retorische overgangen en discourse markers' 
+          : 'Discourse markers, cohesive ties, and editorial critical analysis',
+        themeColor: 'from-pink-700 to-rose-900',
+        accentBg: 'bg-pink-50 text-pink-950 border-pink-200',
+        minCefr: 'C1',
+        milestoneGems: 100,
+        nodes: [
+          {
+            id: 'c1-discourse-markers',
+            title: isDutch ? 'Discourse Connectoren & Cohesie' : 'Discourse Connectors & Rhetorical Transitions',
+            nativeTitle: isDutch ? 'Discourse Cohesie' : 'Discursive Cohesion',
+            category: 'Advanced Mastery',
+            cefr: 'C1',
+            description: isDutch 
+              ? 'Verbind alinea’s en thema’s met natuurlijke, hoogstaande tekstuele scharnierpunten.' 
+              : 'Interlink paragraphs and thematic threads with natural textual hinge markers.',
+            xpReward: 115,
+            gemReward: 30,
+            targetDurationMinutes: 7,
+            iconName: 'BookOpen',
+            coordinates: { x: 0, y: 0 },
+            exercises: [
+              {
+                id: 'ex-c1-disc-1',
+                type: 'multiple-choice',
+                prompt: isDutch 
+                  ? 'Welke transitionele discourse connector duidt op een logische causale gevolgtrekking?' 
+                  : 'Which cohesive discourse connector signals an inevitable analytical deduction?',
+                targetPhrase: isDutch 
+                  ? 'Bijgevolg kan men niet anders dan concluderen dat' 
+                  : 'Consequently, one is led inescapably to deduce that',
+                translation: isDutch ? 'Logische gevolgtrekking' : 'Formal deduction connector',
+                options: [
+                  isDutch ? 'Bijgevolg kan men niet anders dan concluderen dat' : 'Consequently, one is led inescapably to deduce that',
+                  isDutch ? 'En daarom zeg ik maar zo' : 'And that is why I say so',
+                  isDutch ? 'Nou ja, wie weet' : 'Well, who really knows',
+                  isDutch ? 'Punt uit' : 'End of story'
+                ],
+                correctAnswer: isDutch 
+                  ? 'Bijgevolg kan men niet anders dan concluderen dat' 
+                  : 'Consequently, one is led inescapably to deduce that'
+              }
+            ]
+          }
+        ]
+      }
+    ];
+  }
+
   return [
     // ========================================================
     // MODULE 1: CEFR A1 — Survival Phrases, Greetings & Food
@@ -316,7 +879,7 @@ export function getDuolingoUnits(language: Language, nativeCode: string = 'en'):
           id: 'a1-alphabet',
           title: isDutch ? 'Schriftmechanica & Alfabet' : 'Script Mechanics & Alphabet',
           nativeTitle: lex.alphabetTitle,
-          category: 'Script & Sounds',
+          category: 'Foundations',
           cefr: 'A1',
           description: isDutch 
             ? `Leer de authentieke lettertekens, open klinkers en foneemregels van het ${name}.` 
@@ -804,8 +1367,9 @@ export const DuolingoPathView: React.FC<DuolingoPathViewProps> = ({
 }) => {
   const nativeCode = user.nativeLanguageCode || 'en';
   const isDutch = nativeCode === 'nl';
+  const activeLevel = user.activeCefr || 'A1';
   const i18n = getI18n(nativeCode);
-  const units = getDuolingoUnits(activeLanguage, nativeCode);
+  const units = getDuolingoUnits(activeLanguage, nativeCode, activeLevel);
   const completedIds = new Set(user.completedNodeIds || []);
 
   let foundFirstActive = false;
@@ -859,9 +1423,9 @@ export const DuolingoPathView: React.FC<DuolingoPathViewProps> = ({
                   <p className="text-xs text-white/90 line-clamp-1">{unit.subhead}</p>
                 </div>
 
-                <div className="shrink-0 flex items-center gap-1.5 px-3 py-1 rounded-xl bg-white/20 backdrop-blur-md text-xs font-black">
-                  <Flame className="w-4 h-4 fill-amber-300 text-amber-300" />
-                  <span>+{unit.milestoneGems} {i18n.gems}</span>
+                <div className="shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/20 backdrop-blur-md text-xs font-bold border border-white/20">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-300" />
+                  <span>{unit.minCefr} {isDutch ? 'Competentie' : 'Mastery'}</span>
                 </div>
               </div>
 
